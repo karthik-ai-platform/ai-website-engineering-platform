@@ -3,13 +3,13 @@
 **Checkpoint:** 2026-08-10 22:50:30 +05:30 (Asia/Calcutta)  
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m01-foundation`  
-**Latest recorded commit:** `ea2e2e5ba744bbdd9cc9021a712db47a20bf963b` (`Initial commit`; M01 work is uncommitted)  
+**Latest recorded commit:** `8064bd6c2017386404ac6a7818828629c1471dd6` (`feat(M01): initialize platform foundation [codex]`)
 **Active milestone:** M01 Foundation - in progress  
 **Completed milestones:** None
 
 ## Exact state
 
-The M01 foundation implementation exists in the uncommitted worktree. Do not repeat the bootstrap work. M01 local validation is stable, including high dependency audit, runtime health, browser checks, and accessibility checks. M01 is not complete because live PostgreSQL validation is skipped locally and GitHub CI has not run.
+The M01 foundation implementation is committed locally. Do not repeat the bootstrap work. M01 local validation is stable, including high dependency audit, runtime health, browser checks, and accessibility checks. M01 is not complete because live PostgreSQL validation is skipped locally and GitHub CI has not run.
 
 Implemented work includes the strict npm workspace monorepo; Next.js 16.3.0 web app; Fastify API; worker process boundary; versioned contracts; domain error/auth/run-state rules; observability logging; PostgreSQL/Drizzle schema and migration; migration runbook; CI/dependabot; Playwright/axe browser and accessibility gate; secret scanner; and local tests.
 
@@ -52,7 +52,7 @@ Implemented work includes the strict npm workspace monorepo; Next.js 16.3.0 web 
 - Runtime verification required PowerShell jobs because `Start-Process` hit duplicate `Path/PATH` in this environment.
 - The environment `agent-browser` CLI was unavailable, so the repository now owns browser/accessibility verification through Playwright and axe.
 - Live PostgreSQL validation is skipped until `DATABASE_MIGRATION_TEST_URL` and `DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE=1` point to a safe disposable endpoint.
-- No M01 commit, push, PR, GitHub CI run, or Vercel preview exists.
+- No push, PR, GitHub CI run, or Vercel preview exists. Push is currently blocked because `gh auth status` reports an invalid GitHub token for `karthik18mohan`.
 
 ## Next exact work
 

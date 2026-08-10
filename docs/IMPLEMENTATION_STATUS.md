@@ -3,7 +3,7 @@
 **Status timestamp:** 2026-08-10 22:50:30 +05:30 (Asia/Calcutta)  
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m01-foundation`  
-**Baseline HEAD:** `ea2e2e5ba744bbdd9cc9021a712db47a20bf963b` (`ea2e2e5 Initial commit`)  
+**Latest checkpoint commit:** `8064bd6c2017386404ac6a7818828629c1471dd6` (`feat(M01): initialize platform foundation [codex]`)
 **Pull request:** None recorded  
 **Vercel preview:** None; production deployment is not authorized
 
@@ -45,7 +45,7 @@
 - **GitHub/Vercel:** no push, PR, GitHub CI run, or Vercel preview recorded. Vercel project remains unlinked; production deployment is not authorized.
 - **Known limitations:** durable workflow, real providers, RBAC, AI Cost Controller implementation, GitHub App, Vercel adapter, runner isolation, and preview are later milestones. M01 completion is blocked by live PostgreSQL evidence or accepted limitation and GitHub CI.
 - **External actions still required:** safe disposable PostgreSQL endpoint; GitHub CI execution after a checkpoint commit/push; later provider/service decisions; product-owner clarification of the PDF header anomaly.
-- **Commit hash:** no milestone commit recorded. Baseline remains `ea2e2e5ba744bbdd9cc9021a712db47a20bf963b`.
+- **Commit hash:** `8064bd6c2017386404ac6a7818828629c1471dd6` (`feat(M01): initialize platform foundation [codex]`).
 - **Next milestone/task:** keep M01 in progress; resolve audit/build/runtime evidence gaps before any M01 completion claim or normal milestone commit.
 
 ## Validation ledger

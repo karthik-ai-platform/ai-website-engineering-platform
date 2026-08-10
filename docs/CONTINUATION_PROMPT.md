@@ -5,7 +5,7 @@ You are the principal engineer continuing implementation of the AI Website Engin
 `C:\Users\HP\Desktop\ai-website-engineering-platform`
 
 Current branch: `codex/m01-foundation`  
-Latest recorded commit: `ea2e2e5ba744bbdd9cc9021a712db47a20bf963b` (`Initial commit`; M01 work is uncommitted)  
+Latest recorded commit: `8064bd6c2017386404ac6a7818828629c1471dd6` (`feat(M01): initialize platform foundation [codex]`)
 Completed milestones: none  
 Current milestone: **M01 Foundation - in progress**
 
@@ -23,7 +23,7 @@ Then inspect Git state before editing. Preserve all useful or concurrent work.
 
 ## Current exact checkpoint
 
-M01 foundation implementation exists in the worktree but is not committed. Do not repeat bootstrap work. Local M01 validation is stable: high dependency audit, runtime health, production build, browser checks, accessibility checks, tests, secret scan, and whitespace checks pass. M01 is not marked complete because live PostgreSQL migration validation is skipped locally and GitHub CI has not run.
+M01 foundation implementation is committed locally. Do not repeat bootstrap work. Local M01 validation is stable: high dependency audit, runtime health, production build, browser checks, accessibility checks, tests, secret scan, and whitespace checks pass. M01 is not marked complete because live PostgreSQL migration validation is skipped locally and GitHub CI has not run.
 
 ## Implemented M01 capabilities
 
@@ -69,7 +69,7 @@ M01 foundation implementation exists in the worktree but is not committed. Do no
 ## Known failures and limitations
 
 - Live PostgreSQL migration validation is skipped until a safe disposable endpoint is available. Required env: `DATABASE_MIGRATION_TEST_URL` and `DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE=1`.
-- GitHub CI has not run because M01 has not been committed/pushed.
+- GitHub CI has not run because M01 has not been pushed. `gh auth status` reports an invalid token for `karthik18mohan`.
 - Do not run `npm audit fix --force`; it proposes a breaking `drizzle-kit` downgrade for moderate `esbuild` advisories.
 - Vercel preview is not attempted; M12 has not been reached and production deployment is not authorized.
 
