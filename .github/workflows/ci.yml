@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'codex/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: platform_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d platform_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: 'true'
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres@127.0.0.1:5432/platform_test
+      DATABASE_REQUIRED: 'true'
+      DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE: '1'
+      DATABASE_MIGRATION_TEST_URL: postgresql://postgres@127.0.0.1:5432/platform_test
+      AUTH_MODE: test
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install browser test runtime
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate formatting, types, tests, migrations, build, and scans
+        run: npm run validate
+
+      - name: Apply migrations to ephemeral PostgreSQL
+        run: npm run db:migrate:integration

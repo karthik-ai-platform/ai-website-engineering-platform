@@ -1,0 +1,10 @@
+.next
+.turbo
+coverage
+dist
+node_modules
+playwright-report
+test-results
+tmp
+docs/product/SRS_EXTRACTED.md
+
