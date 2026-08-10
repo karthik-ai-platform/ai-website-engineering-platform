@@ -3,7 +3,6 @@
   "compilerOptions": {
     "incremental": true,
     "jsx": "preserve",
-    "paths": {},
     "plugins": [{ "name": "next" }]
   },
   "include": [
