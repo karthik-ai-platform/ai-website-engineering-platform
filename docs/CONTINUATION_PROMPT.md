@@ -5,7 +5,8 @@ You are the principal engineer continuing implementation of the AI Website Engin
 `C:\Users\HP\Desktop\ai-website-engineering-platform`
 
 Current branch: `codex/m01-foundation`  
-Latest recorded commit: `8064bd6c2017386404ac6a7818828629c1471dd6` (`feat(M01): initialize platform foundation [codex]`)
+Latest recorded commit: `2ce9ac91af855d3ee7017f4aa9a004ace0e1d679` (`docs(M01): record foundation checkpoint evidence [codex]`)
+Draft PR: [#1](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/1)
 Completed milestones: none  
 Current milestone: **M01 Foundation - in progress**
 
@@ -69,7 +70,7 @@ M01 foundation implementation is committed locally. Do not repeat bootstrap work
 ## Known failures and limitations
 
 - Live PostgreSQL migration validation is skipped until a safe disposable endpoint is available. Required env: `DATABASE_MIGRATION_TEST_URL` and `DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE=1`.
-- GitHub CI has not run because M01 has not been pushed. `gh auth status` reports an invalid token for `karthik18mohan`.
+- GitHub CI has not yet been recorded for draft PR [#1](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/1). `gh auth status` reports an invalid token for `karthik18mohan`, but SSH push and GitHub connector PR creation succeeded.
 - Do not run `npm audit fix --force`; it proposes a breaking `drizzle-kit` downgrade for moderate `esbuild` advisories.
 - Vercel preview is not attempted; M12 has not been reached and production deployment is not authorized.
 
@@ -78,9 +79,9 @@ M01 foundation implementation is committed locally. Do not repeat bootstrap work
 1. Re-run `git status --short --branch` and verify no concurrent work appeared.
 2. If a safe disposable PostgreSQL URL is available, run `npm run db:migrate:integration` with `DATABASE_MIGRATION_TEST_URL` and `DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE=1`.
 3. If any files change, re-run final validation: `npm ci`, `npm ls --omit=dev --all`, `npm run validate`, `npm run db:migrate:integration`, and `git diff --check`.
-4. Read the `github:yeet` skill before committing/pushing.
-5. If the local PostgreSQL skip is accepted as a local-session limitation or live PostgreSQL passes, commit with `feat(M01): initialize platform foundation [codex]`, push `codex/m01-foundation`, and capture GitHub CI.
-6. Do not mark M01 complete until live PostgreSQL evidence or accepted limitation and GitHub CI evidence are recorded in `docs/IMPLEMENTATION_STATUS.md`.
+4. Capture GitHub CI for draft PR [#1](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/1).
+5. Do not mark M01 complete until live PostgreSQL evidence or accepted limitation and GitHub CI evidence are recorded in `docs/IMPLEMENTATION_STATUS.md`.
+6. If M01 is completed, proceed to M02 Projects and RBAC in milestone order.
 
 ## Restrictions
 

@@ -3,7 +3,7 @@
 **Checkpoint:** 2026-08-10 22:50:30 +05:30 (Asia/Calcutta)  
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m01-foundation`  
-**Latest recorded commit:** `8064bd6c2017386404ac6a7818828629c1471dd6` (`feat(M01): initialize platform foundation [codex]`)
+**Latest recorded commit:** `2ce9ac91af855d3ee7017f4aa9a004ace0e1d679` (`docs(M01): record foundation checkpoint evidence [codex]`)
 **Active milestone:** M01 Foundation - in progress  
 **Completed milestones:** None
 
@@ -52,14 +52,14 @@ Implemented work includes the strict npm workspace monorepo; Next.js 16.3.0 web 
 - Runtime verification required PowerShell jobs because `Start-Process` hit duplicate `Path/PATH` in this environment.
 - The environment `agent-browser` CLI was unavailable, so the repository now owns browser/accessibility verification through Playwright and axe.
 - Live PostgreSQL validation is skipped until `DATABASE_MIGRATION_TEST_URL` and `DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE=1` point to a safe disposable endpoint.
-- No push, PR, GitHub CI run, or Vercel preview exists. Push is currently blocked because `gh auth status` reports an invalid GitHub token for `karthik18mohan`.
+- Branch `codex/m01-foundation` is pushed to `origin`; draft PR [#1](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/1) is open against `main`. GitHub CI has not yet been recorded. GitHub CLI auth is invalid for `karthik18mohan`, but SSH push and GitHub connector PR creation succeeded. No Vercel preview exists.
 
 ## Next exact work
 
 1. Re-run `git status --short --branch` and verify no concurrent work appeared.
 2. If a safe disposable PostgreSQL URL is available, run `npm run db:migrate:integration` with `DATABASE_MIGRATION_TEST_URL` and `DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE=1`.
 3. Re-run final validation if any files change: `npm ci`, `npm ls --omit=dev --all`, `npm run validate`, `npm run db:migrate:integration`, and `git diff --check`.
-4. If the local PostgreSQL skip is accepted as a local-session limitation or live PostgreSQL passes, commit with `feat(M01): initialize platform foundation [codex]`, push `codex/m01-foundation`, and capture GitHub CI. If a recovery commit is unavoidable before all gates pass, prefix it `wip:` and document exact failures.
+4. Capture GitHub CI for draft PR [#1](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/1). If CI passes or only the documented live PostgreSQL/local limitations remain, update `docs/IMPLEMENTATION_STATUS.md` and decide whether M01 can be marked complete before starting M02.
 
 ## Required safety reminders
 
