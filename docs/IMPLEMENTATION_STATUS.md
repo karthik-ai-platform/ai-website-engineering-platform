@@ -1,10 +1,10 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 10:05:21 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 11:08:39 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
-**Working branch:** `codex/m03-provider-framework`
-**Latest recorded checkpoint commit:** `cd3e43fd632b49c5a9bd696a994afa023a56af78` (`docs(M03): record provider framework checkpoint [codex]`)
-**Pull request:** Draft PR [#3](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/3), stacked on completed M02 branch; prior draft PR #2 remains unmerged
+**Working branch:** `codex/m04-github-onboarding`
+**Latest recorded checkpoint commit:** `b15a2c3` (`feat(M04): implement GitHub App onboarding [codex]`)
+**Pull request:** M04 draft PR pending; prior draft PRs #2 and #3 remain unmerged
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
@@ -13,8 +13,8 @@
 | ---------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | M01 Foundation                           | **completed** | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
 | M02 Projects and RBAC                    | **completed** | Implementation `46b6d23`; completion record `b7203a6`; GitHub CI run 31456298365 passed, including ephemeral PostgreSQL migration.                                                     |
-| M03 Provider framework                   | **completed** | Implementation `7a61fa0`; local gates passed; GitHub CI run 31458789345 passed, including ephemeral PostgreSQL migration.                                                              |
-| M04 GitHub onboarding                    | not started   | None.                                                                                                                                                                                  |
+| M03 Provider framework                   | **completed** | Completion record `917d1f3`; final GitHub CI run 31459194718 passed, including ephemeral PostgreSQL migration.                                                                         |
+| M04 GitHub onboarding                    | in progress   | Implementation `b15a2c3`; all applicable local gates and mock/contract evidence passed; push, draft PR, and GitHub CI pending.                                                         |
 | M05 Repository intelligence              | not started   | None.                                                                                                                                                                                  |
 | M06 Prompt and requirements              | not started   | None.                                                                                                                                                                                  |
 | M07 Planner and policy                   | not started   | None.                                                                                                                                                                                  |
@@ -75,6 +75,19 @@
 - **GitHub/Vercel:** `codex/m03-provider-framework` is pushed and draft PR [#3](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/3) is stacked on `codex/m02-projects-rbac` for a focused M03 diff. GitHub CI run 31458789345, job 93677970681, passed the main validation and ephemeral PostgreSQL migration steps. No Vercel action was attempted; production deployment remains unauthorized.
 - **Next task:** commit and push this completion record, confirm the resulting branch CI remains green, then begin M04 GitHub onboarding in milestone order. Never merge PR #3 autonomously.
 
+## M04 checkpoint detail
+
+- **Status:** in progress. Validated implementation commit `b15a2c3` exists locally; push, draft PR, and GitHub CI evidence are pending.
+- **Implemented capabilities:** versioned GitHub initiation, installation-selection, repository metadata, permission, connection, and public readiness schemas; distinct `repository:connect` authorization; active-project and delayed-completion reauthorization; expiring one-time setup state persisted only as a SHA-256 digest; GitHub App installation URL adapter; installation-client seam that never exposes tokens; fixture repository verification at an immutable commit/default branch; read-only readiness and access-loss refresh; typed API initiation/completion/refresh routes; PostgreSQL onboarding store; raw-body HMAC webhook handler for installation/repository/push events with trusted context resolution and deduplication; additive migration `0003_m04_github_onboarding`; database and GitHub setup runbooks.
+- **Acceptance evidence:** the permitted fixture project connects repository `202` through installation `101`, reports default branch `main` at the reviewed 40-character fixture commit, and retains `mutationEnabled=false`; viewer initiation, expired/replayed state, inconsistent or lost access, and insufficient Contents scope are rejected or surfaced safely; API responses omit the credential reference; database checks reject mutation enablement and plaintext-style credential fields; invalid HMAC, duplicate delivery IDs, and out-of-order sequences are rejected; installation/repository/push fixtures resolve tenant/project only after signature verification.
+- **Validation passed:** formatting, lint, 9/9 typecheck, 11 files / 44 unit tests, 3 files / 23 contract tests, 7 files / 23 integration tests with 1 file / 1 live PostgreSQL test skipped, 3 files / 11 migration tests, 9/9 build, 3 browser/accessibility tests, 136-file secret scan, approved-network dependency audit, dependency tree, and `git diff --check`.
+- **Validation notes:** the first M04 migration compatibility run failed because the SQL lacked Drizzle statement breakpoints and PGlite treated multiple statements as one prepared statement; breakpoints and the migration safety header were added, and the 3-file / 11-test migration suite passed. A later full validation stopped at one type-only-import lint finding in the webhook handler; it was corrected. The clean full rerun passed every offline gate and stopped only when sandboxed `npm audit` could not reach the registry; approved-network `npm run security:deps` exited 0.
+- **Security:** no GitHub credential, real installation, provider call, or unrestricted webhook payload was added. State is hashed, short-lived, actor/tenant/project-bound, and single-use. API readiness omits the internal secret reference. Database JSON rejects `value`, `token`, `secret`, and `privateKey` fields. Raw webhook bytes are HMAC-authenticated before trusted context lookup or callback processing. The unchanged 4 moderate `esbuild` advisories through `drizzle-kit` remain; no breaking forced audit fix was applied.
+- **Provider scope review:** onboarding requires Metadata read and Contents read only; Pull requests may remain disabled. Repository selection is installation-scoped, mutation is prohibited, and later M11 requires a separate write-scope decision. ADR-013 records the design.
+- **External owner action:** follow `docs/runbooks/github-app-onboarding.md` to create/configure an organization-owned non-production GitHub App, store the private key/webhook secret in an approved secrets manager, select repositories, and record live evidence. Until performed, evidence is explicitly mock/contract only.
+- **GitHub/Vercel:** no M04 PR or remote CI evidence yet. No Vercel action was attempted; production deployment remains unauthorized.
+- **Next task:** commit this checkpoint record, push `codex/m04-github-onboarding`, open a draft PR stacked on the completed M03 branch, and require its CI including ephemeral PostgreSQL migration before marking M04 complete.
+
 ## Validation ledger
 
 | Check                                | Outcome                                                                                                                                         |
@@ -84,19 +97,19 @@
 | Dependency tree                      | `npm ls --omit=dev --all` exited 0 but reported extraneous WASM helper packages.                                                                |
 | Formatting                           | `npm run format:check` passed.                                                                                                                  |
 | Lint                                 | `npm run lint` passed; Next App Router pages-directory notice printed.                                                                          |
-| Type checking                        | M03 worktree: `npm run typecheck` passed 8/8 packages.                                                                                          |
-| Unit tests                           | Current M02 worktree: `npm run test:unit` passed 11 files / 42 tests.                                                                           |
-| Contract tests                       | M03 worktree: `npm run test:contract` passed 2 files / 13 tests.                                                                                |
-| Integration tests                    | M03 worktree: 5 files / 19 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                           |
-| Database migration validation        | M03 worktree: 2 files / 8 PGlite tests passed; local live PostgreSQL skipped; M02 CI previously passed PostgreSQL.                              |
-| Production build                     | M03 worktree: `npm run build` passed 8/8 packages after the documented configuration correction.                                                |
-| Secret scanning                      | M03 worktree: `npm run security:secrets` passed; 121 text files scanned.                                                                        |
+| Type checking                        | M04 worktree: `npm run typecheck` passed 9/9 packages.                                                                                          |
+| Unit tests                           | M04 worktree: `npm run test:unit` passed 11 files / 44 tests.                                                                                   |
+| Contract tests                       | M04 worktree: `npm run test:contract` passed 3 files / 23 tests.                                                                                |
+| Integration tests                    | M04 worktree: 7 files / 23 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                           |
+| Database migration validation        | M04 worktree: 3 files / 11 PGlite tests passed; local live PostgreSQL skipped; remote M04 evidence pending.                                     |
+| Production build                     | M04 worktree: `npm run build` passed 9/9 packages.                                                                                              |
+| Secret scanning                      | M04 worktree: `npm run security:secrets` passed; 136 text files scanned.                                                                        |
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 3 Playwright tests, including content/no-overlay checks, health contract, and axe WCAG A/AA scan.                 |
-| GitHub CI                            | M03 run 31458789345, job 93677970681, passed for PR #3, including main validation and ephemeral PostgreSQL migration.                           |
+| GitHub CI                            | M03 final run 31459194718, job 93679135438, passed; M04 remote CI pending.                                                                      |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
 
-M03 is complete. Commit and push this completion record, confirm the branch remains green, then begin M04 GitHub onboarding in milestone order. Never merge PR #3 autonomously.
+Commit and push the M04 checkpoint record, open a stacked draft PR, and confirm its CI including ephemeral PostgreSQL migration. Mark M04 complete only after that evidence is observed. Never merge a PR autonomously.

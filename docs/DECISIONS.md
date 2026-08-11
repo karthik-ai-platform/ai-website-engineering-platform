@@ -123,6 +123,16 @@ Status values: **Accepted**, **Proposed**, **Deferred**, **Superseded**, **Rejec
 - **Alternatives considered:** Exposing raw model providers to application code; allowing vendor SDK types across domain boundaries; storing plaintext provider tokens; accepting unauthenticated callbacks; choosing production vendors before contract conformance exists.
 - **Consequences:** M03 conformance remains deterministic and credential-free, provider outages are represented as typed results, and no live model invocation is possible through the public framework. Production adapters and the complete M17 controller remain later work; the minimum controller path must precede M06's first model-assisted behavior.
 
+## ADR-013 - M04 installation-first GitHub onboarding remains read-only
+
+- **Status:** Accepted
+- **Date:** 2026-08-11
+- **Milestone:** M04
+- **Context:** GitHub onboarding must prove current project authority, selected-installation repository access, least privilege, exact repository identity/default branch/commit, credential non-disclosure, and authenticated replay-safe webhooks without prematurely authorizing the later Git write path.
+- **Decision:** Introduce `repository:connect` as a distinct Owner-by-default permission rather than reusing `git:merge`. Initiation requires an active project, a current authorization decision, and an existing GitHub App credential reference. Persist only a ten-minute SHA-256 state digest bound to actor/tenant/project; consume it once and reauthorize completion. Mark readiness `ready` only when the selected installation reports matching IDs plus Metadata and Contents read access at an exact 40-character commit. Persist the opaque credential reference internally but omit it from API readiness responses. Keep `mutationEnabled=false` in contracts and database constraints. Authenticate GitHub raw webhook bytes with HMAC before resolving installation/repository identity to trusted tenant/project context; deduplicate deliveries before an application-owned refresh callback.
+- **Alternatives considered:** Personal access tokens; user OAuth as repository authority; all-repository installations by default; trusting callback tenant/project parameters; storing raw setup state; returning secret references to clients; enabling pull-request or content mutation during onboarding.
+- **Consequences:** Deterministic fixture onboarding can satisfy M04 contract evidence without credentials, while live-provider evidence requires the explicit owner setup in `docs/runbooks/github-app-onboarding.md`. M11 must perform a separate least-privilege review before any Git write scope is enabled. Lost access remains visible as `access_lost`; the platform never falls back to broader credentials.
+
 ## Open production decisions
 
 These are not blockers to contract-first/local implementation but must be resolved before their production acceptance gates:
