@@ -33,6 +33,7 @@ import {
   type AttachmentScannerPort,
   type ChangeRequestStore,
   type PlannerRolePort,
+  type PlanAnalysisRolePort,
   type PlanningStore,
   type ProjectStore,
   type RequirementRolePort,
@@ -64,6 +65,7 @@ export interface BuildApiOptions {
   readonly attachmentScanner?: AttachmentScannerPort
   readonly requirementRole?: RequirementRolePort
   readonly plannerRole?: PlannerRolePort
+  readonly planAnalysisRole?: PlanAnalysisRolePort
   readonly planningService?: PlanningService
   readonly planningStore?: PlanningStore
   readonly readinessProbe?: ReadinessProbe
@@ -111,9 +113,15 @@ export function buildApi(options: BuildApiOptions) {
       : new PostgresPlanningStore(projectConnection.database))
   const planningService =
     options.planningService ??
-    (planningStore === undefined || options.plannerRole === undefined
+    (planningStore === undefined ||
+    options.plannerRole === undefined ||
+    options.planAnalysisRole === undefined
       ? undefined
-      : new PlanningService({ store: planningStore, planner: options.plannerRole }))
+      : new PlanningService({
+          store: planningStore,
+          planner: options.plannerRole,
+          analysisRole: options.planAnalysisRole,
+        }))
   const app = Fastify({
     genReqId: (request) => resolveCorrelationId(singleHeader(request.headers['x-correlation-id'])),
     logController: new LogController({ disableRequestLogging: true }),

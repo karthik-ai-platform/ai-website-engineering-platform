@@ -82,6 +82,43 @@ export const plannerCandidateV1Schema = z
   })
   .strict()
 
+const completedAnalysisBindingV1Schema = z.object({
+  schemaVersion: schemaVersionV1,
+  status: z.literal('completed'),
+  requirementId: opaqueIdSchema,
+  baseCommit: gitCommitSchema,
+  policySnapshotDigest: sha256DigestSchema,
+  summary: boundedStatementSchema,
+  evidenceRefs: z.array(z.string().trim().min(1).max(1024)).min(1).max(40),
+})
+
+export const planAnalysisEvidenceV1Schema = z.discriminatedUnion('analysis', [
+  completedAnalysisBindingV1Schema
+    .extend({
+      analysis: z.literal('architecture'),
+      boundaryImpacts: z.array(boundedStatementSchema).min(1).max(40),
+      dependencyImpacts: z.array(boundedStatementSchema).max(40),
+      dataImpacts: z.array(boundedStatementSchema).max(40),
+      apiImpacts: z.array(boundedStatementSchema).max(40),
+    })
+    .strict(),
+  completedAnalysisBindingV1Schema
+    .extend({
+      analysis: z.literal('ui_ux'),
+      interactionChanges: z.array(boundedStatementSchema).min(1).max(40),
+      responsiveBehavior: z.array(boundedStatementSchema).min(1).max(40),
+      accessibilityBehavior: z.array(boundedStatementSchema).min(1).max(40),
+    })
+    .strict(),
+  completedAnalysisBindingV1Schema
+    .extend({
+      analysis: z.literal('security'),
+      threatFindings: z.array(boundedStatementSchema).min(1).max(40),
+      requiredControls: z.array(boundedStatementSchema).min(1).max(40),
+    })
+    .strict(),
+])
+
 export const createExecutionPlanRequestV1Schema = z
   .object({
     schemaVersion: schemaVersionV1,
@@ -108,6 +145,7 @@ export const executionPlanV1Schema = z
     riskSignals: z.array(riskSignalCodeV1Schema).max(40),
     expectedImpact: z.array(boundedStatementSchema).min(1).max(60),
     requiredAnalyses: z.array(planAnalysisV1Schema).max(3),
+    analyses: z.array(planAnalysisEvidenceV1Schema).max(3),
     tasks: z.array(planTaskV1Schema).min(1).max(100),
     requestedApprovals: z.array(approvalGateV1Schema).max(3),
     rollbackConsiderations: z.array(boundedStatementSchema).min(1).max(40),
@@ -116,6 +154,27 @@ export const executionPlanV1Schema = z
     createdAt: isoTimestampSchema,
   })
   .strict()
+  .superRefine((plan, context) => {
+    const complete =
+      plan.analyses.length === plan.requiredAnalyses.length &&
+      plan.requiredAnalyses.every(
+        (required) =>
+          plan.analyses.filter(
+            (analysis) =>
+              analysis.analysis === required &&
+              analysis.requirementId === plan.requirementId &&
+              analysis.baseCommit === plan.baseCommit &&
+              analysis.policySnapshotDigest === plan.policySnapshot.digest,
+          ).length === 1,
+      )
+    if (!complete) {
+      context.addIssue({
+        code: 'custom',
+        path: ['analyses'],
+        message: 'Every required analysis must have one current completed evidence record.',
+      })
+    }
+  })
 
 export const approvalRecordV1Schema = z
   .object({
@@ -220,6 +279,7 @@ export type CreateExecutionPlanRequestV1 = z.infer<typeof createExecutionPlanReq
 export type DecideApprovalRequestV1 = z.infer<typeof decideApprovalRequestV1Schema>
 export type ExecutionPlanV1 = z.infer<typeof executionPlanV1Schema>
 export type PlanAnalysisV1 = z.infer<typeof planAnalysisV1Schema>
+export type PlanAnalysisEvidenceV1 = z.infer<typeof planAnalysisEvidenceV1Schema>
 export type PlannerCandidateV1 = z.infer<typeof plannerCandidateV1Schema>
 export type PlanningResultV1 = z.infer<typeof planningResultV1Schema>
 export type PlanTaskV1 = z.infer<typeof planTaskV1Schema>

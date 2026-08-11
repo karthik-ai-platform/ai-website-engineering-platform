@@ -28,6 +28,36 @@ const policySnapshot: ExecutionPlanV1['policySnapshot'] = {
 }
 
 function plan(riskClass: ExecutionPlanV1['riskClass']): ExecutionPlanV1 {
+  const analysis: ExecutionPlanV1['analyses'][number] | undefined =
+    riskClass === 'high'
+      ? {
+          schemaVersion: '1',
+          analysis: 'architecture',
+          status: 'completed',
+          requirementId: id('5'),
+          baseCommit: 'b'.repeat(40),
+          policySnapshotDigest: policySnapshot.digest,
+          summary: 'Reviewed architecture impact.',
+          evidenceRefs: ['fixture://architecture/1'],
+          boundaryImpacts: ['Domain boundary remains isolated.'],
+          dependencyImpacts: [],
+          dataImpacts: ['Migration changes persisted data.'],
+          apiImpacts: [],
+        }
+      : riskClass === 'blocked'
+        ? {
+            schemaVersion: '1',
+            analysis: 'security',
+            status: 'completed',
+            requirementId: id('5'),
+            baseCommit: 'b'.repeat(40),
+            policySnapshotDigest: policySnapshot.digest,
+            summary: 'Reviewed prohibited security impact.',
+            evidenceRefs: ['fixture://security/1'],
+            threatFindings: ['The request attempts to bypass policy.'],
+            requiredControls: ['Reject the request without mutation.'],
+          }
+        : undefined
   return {
     schemaVersion: '1',
     id: id('3'),
@@ -40,7 +70,9 @@ function plan(riskClass: ExecutionPlanV1['riskClass']): ExecutionPlanV1 {
     riskClass,
     riskSignals: riskClass === 'high' ? ['database_migration'] : [],
     expectedImpact: ['Fixture impact.'],
-    requiredAnalyses: riskClass === 'high' ? ['architecture'] : [],
+    requiredAnalyses:
+      riskClass === 'high' ? ['architecture'] : riskClass === 'blocked' ? ['security'] : [],
+    analyses: analysis === undefined ? [] : [analysis],
     tasks: [
       {
         id: 'task-1',
@@ -127,6 +159,21 @@ describe('M07 deterministic planning policy', () => {
         mutateWorkspace,
       }),
     ).resolves.toBe('AWAITING_APPROVAL')
+    expect(mutateWorkspace).not.toHaveBeenCalled()
+  })
+
+  it('keeps a plan in planning when required analysis evidence is absent', async () => {
+    const mutateWorkspace = vi.fn<() => Promise<void>>().mockResolvedValue(undefined)
+    const incomplete = { ...plan('high'), analyses: [] }
+
+    await expect(
+      orchestrateExecutionGate({
+        authority: 'orchestrator',
+        plan: incomplete,
+        approvals: [{ ...pendingApproval(), decision: 'approved' }],
+        mutateWorkspace,
+      }),
+    ).resolves.toBe('PLANNING')
     expect(mutateWorkspace).not.toHaveBeenCalled()
   })
 

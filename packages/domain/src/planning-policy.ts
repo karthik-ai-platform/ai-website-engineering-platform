@@ -104,6 +104,7 @@ export function executionGateState(input: {
   readonly plan: ExecutionPlanV1
   readonly approvals?: readonly ApprovalRecordV1[]
 }): RunStateV1 {
+  if (!hasCompletedRequiredAnalyses(input.plan)) return 'PLANNING'
   if (input.plan.riskClass === 'blocked') return 'REJECTED'
   if (input.plan.requestedApprovals.length === 0) return 'QUEUED'
   const decisions = input.plan.requestedApprovals.map((gate) =>
@@ -120,6 +121,23 @@ export function executionGateState(input: {
     return 'AWAITING_APPROVAL'
   }
   return 'QUEUED'
+}
+
+export function hasCompletedRequiredAnalyses(plan: ExecutionPlanV1): boolean {
+  return (
+    plan.analyses.length === plan.requiredAnalyses.length &&
+    plan.requiredAnalyses.every(
+      (required) =>
+        plan.analyses.filter(
+          (analysis) =>
+            analysis.analysis === required &&
+            analysis.status === 'completed' &&
+            analysis.requirementId === plan.requirementId &&
+            analysis.baseCommit === plan.baseCommit &&
+            analysis.policySnapshotDigest === plan.policySnapshot.digest,
+        ).length === 1,
+    )
+  )
 }
 
 export function decideApproval(input: {

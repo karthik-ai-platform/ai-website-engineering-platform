@@ -10,6 +10,7 @@ import {
   type HumanMembership,
   type PlannerEvidence,
   type PlannerRolePort,
+  type PlanAnalysisRolePort,
   type PlanningAuditEvent,
   type PlanningContext,
   type PlanningStore,
@@ -129,9 +130,17 @@ function plannerCandidate() {
   }
 }
 
-function fixture(options: { outputs?: unknown[]; evidence?: PlannerEvidence } = {}) {
+function fixture(
+  options: {
+    outputs?: unknown[]
+    evidence?: PlannerEvidence
+    analysisOutputs?: unknown[]
+    analysisEvidence?: PlannerEvidence
+  } = {},
+) {
   const store = new MemoryPlanningStore()
   let roleCalls = 0
+  let analysisCalls = 0
   let sequence = 420
   const planner: PlannerRolePort = {
     plan() {
@@ -145,9 +154,33 @@ function fixture(options: { outputs?: unknown[]; evidence?: PlannerEvidence } = 
       })
     },
   }
+  const analysisRole: PlanAnalysisRolePort = {
+    analyze(input) {
+      analysisCalls += 1
+      return Promise.resolve({
+        evidence: options.analysisEvidence ?? { source: 'fixture' },
+        output:
+          options.analysisOutputs !== undefined && options.analysisOutputs.length > 0
+            ? options.analysisOutputs.shift()
+            : {
+                schemaVersion: '1',
+                analysis: 'security',
+                status: 'completed',
+                requirementId: input.request.requirementId,
+                baseCommit: input.request.baseCommit,
+                policySnapshotDigest: input.policySnapshot.digest,
+                summary: 'Reviewed authentication security impact.',
+                evidenceRefs: ['fixture://security/authentication'],
+                threatFindings: ['Authentication changes can weaken identity verification.'],
+                requiredControls: ['Retain authorization and tenant isolation checks.'],
+              },
+      })
+    },
+  }
   const service = new PlanningService({
     store,
     planner,
+    analysisRole,
     clock: () => new Date('2026-08-11T09:30:00.000Z'),
     idFactory: () => `00000000-0000-4000-8000-${String(sequence++).padStart(12, '0')}`,
   })
@@ -156,7 +189,7 @@ function fixture(options: { outputs?: unknown[]; evidence?: PlannerEvidence } = 
     planningService: service,
   })
   apps.push(api)
-  return { api, store, roleCalls: () => roleCalls }
+  return { api, store, roleCalls: () => roleCalls, analysisCalls: () => analysisCalls }
 }
 
 function planPayload(idempotencyKey = 'plan-fixture-1') {
@@ -325,5 +358,63 @@ describe('M07 planning and approval API', () => {
     })
     expect(evidenceResponse.statusCode).toBe(400)
     expect(incomplete.roleCalls()).toBe(1)
+  })
+
+  it('stops before persistence when required analysis evidence is missing, mismatched, or stale', async () => {
+    const invalidFixtures = [
+      {},
+      {
+        schemaVersion: '1',
+        analysis: 'architecture',
+        status: 'completed',
+        requirementId,
+        baseCommit: 'a'.repeat(40),
+        policySnapshotDigest: 'b'.repeat(64),
+        summary: 'Wrong analysis kind.',
+        evidenceRefs: ['fixture://architecture/wrong'],
+        boundaryImpacts: ['Wrong role output.'],
+        dependencyImpacts: [],
+        dataImpacts: [],
+        apiImpacts: [],
+      },
+      {
+        schemaVersion: '1',
+        analysis: 'security',
+        status: 'completed',
+        requirementId,
+        baseCommit: 'a'.repeat(40),
+        policySnapshotDigest: 'b'.repeat(64),
+        summary: 'Stale security analysis.',
+        evidenceRefs: ['fixture://security/stale'],
+        threatFindings: ['Authentication change risk.'],
+        requiredControls: ['Retain tenant isolation.'],
+      },
+    ]
+
+    for (const [index, output] of invalidFixtures.entries()) {
+      const current = fixture({ analysisOutputs: [output, output] })
+      const response = await current.api.inject({
+        method: 'POST',
+        url: `/v1/projects/${projectId}/plans`,
+        headers: { 'x-platform-actor-id': requesterId },
+        payload: planPayload(`invalid-analysis-${index}`),
+      })
+      expect(response.statusCode).toBe(400)
+      expect(current.analysisCalls()).toBe(2)
+      expect(current.store.results.size).toBe(0)
+    }
+  })
+
+  it('does not retry incomplete controller evidence for a required analysis', async () => {
+    const current = fixture({ analysisEvidence: { source: 'ai-cost-controller' } })
+    const response = await current.api.inject({
+      method: 'POST',
+      url: `/v1/projects/${projectId}/plans`,
+      headers: { 'x-platform-actor-id': requesterId },
+      payload: planPayload('invalid-analysis-controller-evidence'),
+    })
+    expect(response.statusCode).toBe(400)
+    expect(current.analysisCalls()).toBe(1)
+    expect(current.store.results.size).toBe(0)
   })
 })

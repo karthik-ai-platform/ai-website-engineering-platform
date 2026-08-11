@@ -2,11 +2,15 @@ import { createHash, randomUUID } from 'node:crypto'
 
 import {
   plannerCandidateV1Schema,
+  planAnalysisEvidenceV1Schema,
   type ActorContextV1,
   type ApprovalRecordV1,
   type CreateExecutionPlanRequestV1,
   type DecideApprovalRequestV1,
   type ExecutionPlanV1,
+  type PlanAnalysisEvidenceV1,
+  type PlanAnalysisV1,
+  type PolicySnapshotV1,
   type PlannerCandidateV1,
   type PlanningResultV1,
   type ProjectPermissionV1,
@@ -32,6 +36,15 @@ export interface PlannerRolePort {
     readonly actor: ActorContextV1
     readonly request: CreateExecutionPlanRequestV1
     readonly requirementRiskSignals: readonly string[]
+  }): Promise<{ readonly output: unknown; readonly evidence: PlannerEvidence }>
+}
+
+export interface PlanAnalysisRolePort {
+  analyze(input: {
+    readonly actor: ActorContextV1
+    readonly request: CreateExecutionPlanRequestV1
+    readonly analysis: PlanAnalysisV1
+    readonly policySnapshot: PolicySnapshotV1
   }): Promise<{ readonly output: unknown; readonly evidence: PlannerEvidence }>
 }
 
@@ -99,17 +112,20 @@ export interface PlanningStore {
 export class PlanningService {
   readonly #clock: () => Date
   readonly #idFactory: () => string
+  readonly #analysisRole: PlanAnalysisRolePort
   readonly #planner: PlannerRolePort
   readonly #store: PlanningStore
 
   constructor(options: {
     readonly clock?: () => Date
     readonly idFactory?: () => string
+    readonly analysisRole: PlanAnalysisRolePort
     readonly planner: PlannerRolePort
     readonly store: PlanningStore
   }) {
     this.#clock = options.clock ?? (() => new Date())
     this.#idFactory = options.idFactory ?? randomUUID
+    this.#analysisRole = options.analysisRole
     this.#planner = options.planner
     this.#store = options.store
   }
@@ -178,6 +194,11 @@ export class PlanningService {
       capturedAt: now.toISOString(),
       digest: policyDigest(context, request.organizationId, request.projectId),
     }
+    const analyses = await Promise.all(
+      assessment.requiredAnalyses.map((analysis) =>
+        this.#analyzeWithOneRetry(actor, request, analysis, policySnapshot),
+      ),
+    )
     const plan: ExecutionPlanV1 = {
       schemaVersion: '1',
       id: this.#idFactory(),
@@ -191,6 +212,7 @@ export class PlanningService {
       riskSignals: [...assessment.riskSignals],
       expectedImpact: candidate.expectedImpact,
       requiredAnalyses: [...assessment.requiredAnalyses],
+      analyses,
       tasks: candidate.tasks,
       requestedApprovals: [...new Set(requestedApprovals)],
       rollbackConsiderations: candidate.rollbackConsiderations,
@@ -374,6 +396,44 @@ export class PlanningService {
       }
     }
     throw this.#error(actor, 'VALIDATION_FAILED', 'The planner output is not a valid ordered plan.')
+  }
+
+  async #analyzeWithOneRetry(
+    actor: ActorContextV1,
+    request: CreateExecutionPlanRequestV1,
+    analysis: PlanAnalysisV1,
+    policySnapshot: PolicySnapshotV1,
+  ): Promise<PlanAnalysisEvidenceV1> {
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const result = await this.#analysisRole.analyze({
+        actor,
+        request,
+        analysis,
+        policySnapshot,
+      })
+      if (!validPlannerEvidence(result.evidence)) {
+        throw this.#error(
+          actor,
+          'VALIDATION_FAILED',
+          'Model-backed analysis evidence is incomplete.',
+        )
+      }
+      const parsed = planAnalysisEvidenceV1Schema.safeParse(result.output)
+      if (
+        parsed.success &&
+        parsed.data.analysis === analysis &&
+        parsed.data.requirementId === request.requirementId &&
+        parsed.data.baseCommit === request.baseCommit &&
+        parsed.data.policySnapshotDigest === policySnapshot.digest
+      ) {
+        return parsed.data
+      }
+    }
+    throw this.#error(
+      actor,
+      'VALIDATION_FAILED',
+      'The required analysis is missing, mismatched, or stale.',
+    )
   }
 
   async #requirePermission(

@@ -24,6 +24,34 @@ describe('M07 planning and policy contracts', () => {
       riskSignals: ['database_migration'],
       expectedImpact: ['Changes the tenant data schema.'],
       requiredAnalyses: ['architecture', 'security'],
+      analyses: [
+        {
+          schemaVersion: '1',
+          analysis: 'architecture',
+          status: 'completed',
+          requirementId: id('5'),
+          baseCommit: 'a'.repeat(40),
+          policySnapshotDigest: 'b'.repeat(64),
+          summary: 'Reviewed architecture impact.',
+          evidenceRefs: ['fixture://architecture/1'],
+          boundaryImpacts: ['Database boundary changes.'],
+          dependencyImpacts: [],
+          dataImpacts: ['Tenant schema changes.'],
+          apiImpacts: [],
+        },
+        {
+          schemaVersion: '1',
+          analysis: 'security',
+          status: 'completed',
+          requirementId: id('5'),
+          baseCommit: 'a'.repeat(40),
+          policySnapshotDigest: 'b'.repeat(64),
+          summary: 'Reviewed migration security.',
+          evidenceRefs: ['fixture://security/1'],
+          threatFindings: ['Cross-tenant migration risk.'],
+          requiredControls: ['Preserve tenant constraints.'],
+        },
+      ],
       tasks: [
         {
           id: 'migration',
@@ -64,6 +92,8 @@ describe('M07 planning and policy contracts', () => {
     })
 
     expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(executionPlanV1Schema.safeParse({ ...result.data, analyses: [] }).success).toBe(false)
   })
 
   it('rejects an approval decision without decision attribution', () => {
