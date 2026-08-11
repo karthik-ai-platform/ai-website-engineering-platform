@@ -20,6 +20,21 @@ export {
   type ProjectStore,
 } from './project-service.js'
 export {
+  type AiCostControllerPort,
+  type ArtifactStorePort,
+  type DeploymentProviderPort,
+  type GitProviderPort,
+  type OrchestrationProviderPort,
+  type RunnerProviderPort,
+  type SecretsPort,
+} from './provider-ports.js'
+export {
+  ProviderCallbackProcessor,
+  type ProviderCallbackRecord,
+  type ProviderCallbackStore,
+  type ProviderCallbackVerifier,
+} from './provider-callback.js'
+export {
   canTransitionRun,
   isTerminalRunState,
   transitionRun,
