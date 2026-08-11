@@ -87,10 +87,11 @@ or pass it as a command-line argument.
 
 After application, verify through a protected database session:
 
-1. The Drizzle migration ledger contains `0001_m01_foundation`.
-2. `users`, `organizations`, `memberships`, `projects`, and `audit_events`
+1. The Drizzle migration ledger contains `0001_m01_foundation` and `0002_m02_projects_rbac`.
+2. `users`, `organizations`, `memberships`, `projects`, `policy_profiles`,
+   `service_identities`, `service_identity_permissions`, and `audit_events`
    exist in the expected schema.
-3. Foreign keys and tenant-consistency constraints are valid.
+3. Foreign keys, membership/grant checks, and tenant-consistency constraints are valid.
 4. `audit_events_reject_update_or_delete` and
    `audit_events_reject_truncate` are enabled.
 5. The application health check succeeds with the migrated schema.

@@ -103,6 +103,16 @@ Status values: **Accepted**, **Proposed**, **Deferred**, **Superseded**, **Rejec
 - **Alternatives considered:** `npm audit fix --force`, which proposed breaking downgrades; a direct `sharp` override, which did not remove the nested vulnerable Next dependency; relying on the unavailable environment `agent-browser` CLI; recording a permanent audit exception.
 - **Consequences:** `npm run security:deps` now exits 0 with only moderate `esbuild` advisories through `drizzle-kit`; browser/accessibility validation is reproducible locally and in CI. CI installs Chromium with `npx playwright install --with-deps chromium`.
 
+## ADR-011 - M02 deny-by-default RBAC and retention-aware project lifecycle
+
+- **Status:** Accepted
+- **Date:** 2026-08-11
+- **Milestone:** M02
+- **Context:** The SRS requires explicit human roles, separately scoped service identities, distinct privileged permissions, tenant isolation, authorization at issue and delayed execution, append-only audit, and project deletion subject to retention. Delegated approvals and environment-specific production authority remain open production-policy decisions.
+- **Decision:** Keep authorization and lifecycle rules in the framework-independent domain. Human role defaults are conservative: Owner receives all M02 permissions; Developer and Designer can read/request changes; Reviewer can read/approve; Viewer is read-only. Merge, promotion, secret, policy, member, and lifecycle permissions default to Owner until a later versioned policy explicitly delegates them. Service identities never inherit human roles and receive enumerated organization/project-scoped grants. Every project command appends an allowed or denied authorization event; successful mutations append a second event atomically with the project write. Delete becomes `deletion_pending` until the referenced policy retention window expires, or `deleted` immediately only when that window is zero. Delayed lifecycle commands re-read current membership/grants and may use `expectedUpdatedAt` to reject stale project state.
+- **Alternatives considered:** Broad role defaults based on informal persona descriptions; treating service identities as users; immediate hard deletion; UI-only permission enforcement; coupling policy logic to Fastify or Drizzle.
+- **Consequences:** Least privilege is the default and delegation must be explicit. M02 APIs remain provider-neutral and storage-independent at the domain boundary. Physical deletion processing after retention is deferred to later durable workflow/retention work and cannot erase audit history.
+
 ## Open production decisions
 
 These are not blockers to contract-first/local implementation but must be resolved before their production acceptance gates:

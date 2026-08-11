@@ -1,66 +1,38 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-10 22:50:30 +05:30 (Asia/Calcutta)  
+**Checkpoint:** 2026-08-11 09:01:46 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
-**Branch:** `codex/m01-foundation`  
-**Latest recorded commit:** `2ce9ac91af855d3ee7017f4aa9a004ace0e1d679` (`docs(M01): record foundation checkpoint evidence [codex]`)
-**Active milestone:** M01 Foundation - in progress  
-**Completed milestones:** None
+**Branch:** `codex/m02-projects-rbac`
+**Implementation commit:** `46b6d23` (`feat(M02): implement projects and RBAC [codex]`)
+**Active milestone:** M02 Projects and RBAC - in progress
+**Completed milestones:** M01
 
 ## Exact state
 
-The M01 foundation implementation is committed locally. Do not repeat the bootstrap work. M01 local validation is stable, including high dependency audit, runtime health, browser checks, and accessibility checks. M01 is not complete because live PostgreSQL validation is skipped locally and GitHub CI has not run.
+M02 implementation and local validation are stable and committed locally at `46b6d23`. The checkpoint documentation remains to be committed separately so it can reference that observed hash. Preserve the M01 completion evidence. Do not repeat M01 or start M03.
 
-Implemented work includes the strict npm workspace monorepo; Next.js 16.3.0 web app; Fastify API; worker process boundary; versioned contracts; domain error/auth/run-state rules; observability logging; PostgreSQL/Drizzle schema and migration; migration runbook; CI/dependabot; Playwright/axe browser and accessibility gate; secret scanner; and local tests.
+Implemented M02 work includes versioned project/RBAC schemas; conservative role permissions; tenant and separately scoped service-identity authorization; audited allowed/denied decisions; stale membership/grant reauthorization; retention-aware create/archive/restore/delete behavior; typed Fastify project routes; PostgreSQL storage adapter; and additive migration `0002_m02_projects_rbac` with policy profiles, membership status, service identities/grants, tenant foreign keys, and lifecycle timestamps. ADR-011 records the policy choices.
 
-## Accepted architecture direction
+## Validation evidence
 
-- Strict TypeScript with npm workspaces.
-- Next.js App Router management application.
-- Fastify TypeScript control-plane API.
-- Modular control-plane monolith with a separately deployable worker/runtime boundary.
-- PostgreSQL-compatible persistence using Drizzle migrations and domain-facing repository ports.
-- Provider-neutral versioned ports for Git, deployment, model, secret, artifact, runner, and orchestration adapters.
-- Every model invocation must pass through the AI Cost Controller; no live model-backed feature may precede its minimum estimate/budget/routing/usage path.
-- Durable workflow engine/topology remains deferred pending ADR-007.
-- Next production build uses `next build --webpack` for M01 per ADR-009 because Turbopack failed to resolve TS source aliases with ESM `.js` specifiers.
-- Next.js 16.3.0 is used for the web workspace per ADR-010 to resolve high audit findings in Next's optional dependency metadata.
-- Browser/accessibility validation uses `npm run test:browser`, backed by Playwright and axe, per ADR-010.
+- Second full `npm run validate` passed formatting, lint, 7/7 typecheck, 11 files / 42 unit tests, 1 file / 8 contract tests, 5 files / 19 integration tests with 1 file / 1 live PostgreSQL test skipped, 2 files / 8 migration tests, 7/7 build, 3 browser/accessibility tests, and a 110-file secret scan.
+- The full command then failed only because sandboxed `npm audit` could not reach the registry. Approved-network `npm run security:deps` subsequently exited 0 and reported the known 4 moderate `esbuild` advisories through `drizzle-kit`.
+- `npm ls --omit=dev --all` exited 0 with the previously documented optional dependency gaps/extraneous WASM helpers.
+- Explicit `npm run db:migrate:integration` skipped 1 file / 1 test because the disposable PostgreSQL variables are unset locally.
+- `git diff --check` must be rerun after final documentation formatting.
 
-## Commands/evidence already obtained
+## Known limitations and safety
 
-- `npm ci` -> passed; npm reported 4 moderate vulnerabilities.
-- `npm ls --omit=dev --all` -> exited 0, with extraneous WASM helper packages reported.
-- `npm run format:check` -> passed.
-- `npm run lint` -> passed; Next App Router pages-directory notice printed.
-- `npm run typecheck` -> passed 7/7 packages.
-- `npm run test:unit` -> passed 9 files / 28 tests.
-- `npm run test:contract` -> passed 1 file / 6 tests.
-- `npm run test:integration` -> passed 3 files / 13 tests; 1 file / 1 live PostgreSQL test skipped.
-- `npm run db:migrate:check` -> passed 1 file / 5 tests.
-- `npm run db:migrate:integration` -> skipped 1 live PostgreSQL test because disposable PostgreSQL env vars are unset.
-- `npm run build` -> passed 7/7 packages.
-- `npm run test:browser` -> passed 3 Playwright tests, including content/no-overlay checks, health contract, and axe WCAG A/AA scan.
-- `npm run security:secrets` -> passed, 101 text files scanned.
-- `npm run security:deps` -> passed at high threshold; 4 moderate `esbuild` advisories remain through `drizzle-kit`.
-- Runtime health check -> passed: API `/health/live`, API `/health/ready`, worker `/health/live`, and web `/api/health` returned 200 locally.
-- `git diff --check` -> passed.
-
-## Known failures and blockers
-
-- The dependency audit no longer blocks M01 at high threshold after upgrading `@platform/web` to Next.js 16.3.0. Do not apply `npm audit fix --force`; it proposes a breaking `drizzle-kit` downgrade for moderate `esbuild` advisories.
-- Runtime verification required PowerShell jobs because `Start-Process` hit duplicate `Path/PATH` in this environment.
-- The environment `agent-browser` CLI was unavailable, so the repository now owns browser/accessibility verification through Playwright and axe.
-- Live PostgreSQL validation is skipped until `DATABASE_MIGRATION_TEST_URL` and `DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE=1` point to a safe disposable endpoint.
-- Branch `codex/m01-foundation` is pushed to `origin`; draft PR [#1](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/1) is open against `main`. GitHub CI has not yet been recorded. GitHub CLI auth is invalid for `karthik18mohan`, but SSH push and GitHub connector PR creation succeeded. No Vercel preview exists.
+- M02 is not complete until a stable commit is pushed and CI, including disposable PostgreSQL migration, is observed and recorded.
+- `gh auth status` reports the active `karthik18mohan` token is invalid. The GitHub publishing workflow requires `gh auth login -h github.com` and a successful `gh auth status` before staging/commit/push.
+- Physical project deletion after retention expiry is deferred to later durable workflow/retention implementation; it may never erase audit history.
+- Delegated visual approval and environment-specific separation of duties remain future versioned policy; default privileged permissions are conservative.
+- No model/provider call, production deployment, production domain/secret change, merge, or database reset is authorized.
+- Do not run `npm audit fix --force`; it proposes a breaking `drizzle-kit` downgrade.
 
 ## Next exact work
 
-1. Re-run `git status --short --branch` and verify no concurrent work appeared.
-2. If a safe disposable PostgreSQL URL is available, run `npm run db:migrate:integration` with `DATABASE_MIGRATION_TEST_URL` and `DATABASE_MIGRATION_TEST_ACKNOWLEDGE_DISPOSABLE=1`.
-3. Re-run final validation if any files change: `npm ci`, `npm ls --omit=dev --all`, `npm run validate`, `npm run db:migrate:integration`, and `git diff --check`.
-4. Capture GitHub CI for draft PR [#1](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/1). If CI passes or only the documented live PostgreSQL/local limitations remain, update `docs/IMPLEMENTATION_STATUS.md` and decide whether M01 can be marked complete before starting M02.
-
-## Required safety reminders
-
-Do not expose secrets; do not let model prose change state; do not call an LLM outside the controller; keep every data access tenant-scoped; audit mutations append-only; production promotion remains disabled; do not reset a non-local database; do not deploy production or merge a PR autonomously.
+1. Format/check and commit the checkpoint documentation with an M02-scoped `[codex]` message.
+2. Push `codex/m02-projects-rbac`, create/update a reviewable draft PR, and observe CI without merging.
+3. If CI passes, update `docs/IMPLEMENTATION_STATUS.md`, this handoff, and `docs/CONTINUATION_PROMPT.md` with PR/run evidence; then decide whether M02 meets completion.
+4. Do not start M03 until M02 is explicitly recorded complete.

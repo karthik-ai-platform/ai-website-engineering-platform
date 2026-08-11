@@ -21,14 +21,14 @@ M01 -> M02 -> M03 -> M04 -> M05 -> M06 -> M07 -> M08 -> M09 -> M10 -> M11 -> M12
 
 Cross-cutting constraints apply throughout: tenant scoping begins in M01/M02; provider neutrality begins in M03; the mandatory AI Cost Controller gate precedes the first model call; deterministic state and policy precede mutation; append-only audit begins in M02; immutable commit/evidence linkage begins in M11; production promotion remains disabled until M15/M18/M20 gates and explicit human authorization are satisfied.
 
-## M01 - Foundation (in progress)
+## M01 - Foundation (completed)
 
 - **Tasks:** Bootstrap pinned npm workspaces for `apps/web`, `apps/api`, `apps/worker`, SRS-aligned packages, and shared test/config packages; enable strict TypeScript and consistent format/lint/test/build scripts; create Next.js App Router web and Fastify API health surfaces; define configuration parsing with safe environment separation; create the authentication/session port and deny-by-default skeleton without claiming a production identity provider; define PostgreSQL/Drizzle schema foundation, forward migrations, tenant identifiers, append-only audit conventions, migration purpose/recovery notes, and local/test seed guard; create CI gates for formatting, lint, typecheck, unit/contract tests, build, migration validation, dependency/secret scanning; establish typed errors, structured/redacted logging, correlation IDs, and initial orchestration/state-machine seams.
 - **Dependencies:** Node.js/npm (available per audit); a PostgreSQL endpoint/toolchain is required for live migration integration but was not found; auth provider selection/credentials are not required for the port and local test identity.
 - **Tests/checks:** Workspace install reproducibility; format/lint/typecheck; unit tests for configuration, health, typed errors/redaction, and foundational state rules; API/web health integration tests; schema/migration static validation and live PostgreSQL apply/rollback-recovery test when a safe local/test endpoint exists; production builds; dependency and secret scans.
 - **Completion evidence:** Pinned lockfile and workspace manifests; passing root CI-equivalent command log; health response evidence from web/API; initial migration files plus recovery notes and migration test output; CI workflow run; no-secret scan result; commit `feat(M01): initialize platform foundation [codex]` (or documented equivalent) and branch/PR reference.
 
-## M02 - Projects and RBAC (not started)
+## M02 - Projects and RBAC (in progress)
 
 - **Tasks:** Implement User, Organization, Membership, Project, Policy reference, and append-only AuditEvent storage/services; define Owner, Developer, Designer, Reviewer, Viewer, and scoped service identities; add organization/project tenant guards and distinct request/approve/merge/promote/secret/policy permissions; create project lifecycle APIs for create/archive/restore/delete subject to retention policy; authorize at command issue and re-check delayed privileged execution; emit audit events for authentication and denied/allowed project actions.
 - **Dependencies:** M01 auth/session port, persistence/migration pattern, error/contract conventions.
