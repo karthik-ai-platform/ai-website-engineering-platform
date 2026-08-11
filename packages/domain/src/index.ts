@@ -1,4 +1,12 @@
 export {
+  ChangeRequestService,
+  type AttachmentScannerPort,
+  type ChangeRequestAuditEvent,
+  type ChangeRequestStore,
+  type RequirementNormalizationEvidence,
+  type RequirementRolePort,
+} from './change-request-service.js'
+export {
   GithubOnboardingService,
   type GithubConnectionAttempt,
   type GithubOnboardingServiceOptions,

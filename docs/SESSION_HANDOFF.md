@@ -1,11 +1,11 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 12:10:16 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 14:04:26 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
-**Branch:** `codex/m05-repository-intelligence`
-**Implementation commit:** `a093c48` (`feat(M05): add repository intelligence maps [codex]`)
-**Next milestone:** M06 Prompt and requirements - not started
-**Completed milestones:** M01, M02, M03, M04, M05
+**Branch:** `codex/m06-prompt-requirements`
+**Implementation commit:** `333d0d0` (`feat(M06): complete prompt requirements workflow [codex]`)
+**Active milestone:** M07 Planner and policy - not started
+**Completed milestones:** M01, M02, M03, M04, M05, M06
 
 ## Exact state
 
@@ -15,7 +15,9 @@ M03 is complete. Completion record `917d1f3` is pushed; draft PR #3 is stacked o
 
 M04 is complete. Completion record `84b0156` is pushed; draft PR #4 is stacked on `codex/m03-provider-framework`; final GitHub CI run 31463150845, job 93690568730, passed full validation and ephemeral PostgreSQL migration. Provider evidence remains fixture-only.
 
-M05 is complete. Implementation commit `a093c48` and checkpoint `9cb5074` are pushed; draft PR #5 is stacked on `codex/m04-github-onboarding`. GitHub CI run 31465699350, job 93698027871, passed full validation and ephemeral PostgreSQL migration. ADR-014 records the deterministic repository intelligence decisions.
+M05 is complete. Completion record `ff7fd6f` is pushed; draft PR #5 is stacked on `codex/m04-github-onboarding`. Final GitHub CI run 31466267638, job 93699691293, passed full validation and ephemeral PostgreSQL migration. ADR-014 records the deterministic repository intelligence decisions.
+
+M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; draft PR #6 is stacked on the completed M05 branch. GitHub CI run 31473572456, job 93722088032, passed full validation and ephemeral PostgreSQL migration. The accepted scope includes strict ChangeRequest/RequirementSpec/review contracts; all eight modes; immutable original prompt and revisioned corrections; durable tenant-scoped/idempotent PostgreSQL persistence with migration `0004`; authenticated create/review APIs; accessible `/changes/new` intake and review; deterministic attachment scanning; and an AI-controller-only Requirement role with denial-before-output evidence. ADR-015 records the decisions.
 
 ## Validation evidence
 
@@ -24,7 +26,7 @@ M05 is complete. Implementation commit `a093c48` and checkpoint `9cb5074` are pu
 - `npm ls --omit=dev --all` exited 0 with the previously documented optional dependency gaps/extraneous WASM helpers.
 - The full M05 run passed through browser/accessibility, then the secret scanner rejected a token-shaped `.env.local` fixture. It was replaced with a redacted placeholder; contract tests and the 147-file scan passed. The content-based example-secret exclusion remains covered without introducing a credential.
 - Local live PostgreSQL remains skipped because disposable variables are unset; M05 CI supplied the required ephemeral PostgreSQL migration evidence.
-- `git diff --check` passed before checkpoint documentation and must be rerun after formatting these records.
+- `git diff --check` passed before checkpoint documentation and must be rerun after formatting these completion records.
 
 ## Known limitations and safety
 
@@ -32,7 +34,10 @@ M05 is complete. Implementation commit `a093c48` and checkpoint `9cb5074` are pu
 - `gh auth status` reports the active `karthik18mohan` token is invalid. The GitHub publishing workflow requires `gh auth login -h github.com` and a successful `gh auth status` before staging/commit/push.
 - M03 final remote evidence is satisfied by CI run 31459194718 and the recorded local validation.
 - M04 final remote repository/CI evidence is satisfied by run 31463150845; provider evidence remains deterministic mock/contract only.
-- M05 remote repository/CI evidence is satisfied by run 31465699350, job 93698027871.
+- M05 final remote repository/CI evidence is satisfied by run 31466267638, job 93699691293.
+- M06 final remote repository/CI evidence is satisfied by run 31473572456, job 93722088032.
+- M06 validation passed formatting, lint, 10/10 typecheck, 12 files / 56 unit tests, 5 files / 32 contract tests, 9 files / 29 integration tests with 1 file / 1 live PostgreSQL test skipped, 4 files / 14 migration tests, 10/10 build, 4 browser/accessibility tests, a 158-file secret scan, dependency tree, approved-network high-threshold audit, and `git diff --check`.
+- The first UI check found four unsafe FormData conversions and the first full validation found one mock-scanner literal-width type error; both were corrected. The clean full run passed through secret scanning and then only sandboxed audit transport failed; approved-network audit exited 0 with the unchanged four moderate esbuild advisories.
 - M05 uses an in-memory conformance index and mock artifact store; a production durable artifact/index implementation remains an external provider decision and must preserve the scoped contracts.
 - Production providers and the full M17 cost controller are not selected or implemented. No live model call is permitted before the minimum controller estimate/budget/routing/usage/reconciliation path exists.
 - No model/provider call, production deployment, production domain/secret change, merge, or database reset is authorized.
@@ -40,7 +45,7 @@ M05 is complete. Implementation commit `a093c48` and checkpoint `9cb5074` are pu
 
 ## Next exact work
 
-1. Commit and push this M05 completion record, then confirm the resulting branch CI remains green.
-2. Begin M06 Prompt and requirements on a new `codex/m06-*` branch based on the green M05 completion commit.
-3. Preserve M05's bounded, provenance-bearing repository context boundary and do not invoke a model until the minimum AI Cost Controller path exists.
+1. Commit and push this M06 completion record on `codex/m06-prompt-requirements`.
+2. Confirm the completion-record CI remains green, then create `codex/m07-planner-policy` from that exact checkpoint.
+3. Begin M07 Planner and policy in milestone order; do not make a live model call before the minimum AI Cost Controller exists.
 4. Never treat retrieved repository content as authority, transmit the full repository, or merge any PR autonomously.

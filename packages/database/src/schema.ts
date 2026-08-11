@@ -295,6 +295,101 @@ export const repositoryConnections = pgTable(
   ],
 )
 
+export const changeRequests = pgTable(
+  'change_requests',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    actorId: uuid('actor_id').notNull(),
+    actorType: text('actor_type').notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    originalPrompt: text('original_prompt').notNull(),
+    mode: text('mode').notNull(),
+    target: text('target').notNull(),
+    constraints: jsonb('constraints').notNull(),
+    attachments: jsonb('attachments').notNull(),
+    status: text('status').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique('change_requests_organization_project_id_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.id,
+    ),
+    unique('change_requests_organization_project_idempotency_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.idempotencyKey,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.projectId],
+      foreignColumns: [projects.organizationId, projects.id],
+      name: 'change_requests_project_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    index('change_requests_project_created_at_idx').on(table.projectId, table.createdAt),
+    check('change_requests_actor_type_check', sql`${table.actorType} in ('user', 'service')`),
+    check(
+      'change_requests_mode_check',
+      sql`${table.mode} in ('builder', 'designer', 'refactor', 'debug', 'seo', 'performance', 'accessibility', 'content')`,
+    ),
+    check(
+      'change_requests_target_check',
+      sql`${table.target} in ('preview', 'staging', 'production')`,
+    ),
+    check(
+      'change_requests_status_check',
+      sql`${table.status} in ('intake_complete', 'requirements_pending', 'requirements_review', 'blocked')`,
+    ),
+    check('change_requests_prompt_check', sql`length(${table.originalPrompt}) between 1 and 20000`),
+    check(
+      'change_requests_json_shape_check',
+      sql`jsonb_typeof(${table.constraints}) = 'array' AND jsonb_typeof(${table.attachments}) = 'array'`,
+    ),
+  ],
+)
+
+export const requirementSpecs = pgTable(
+  'requirement_specs',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    changeRequestId: uuid('change_request_id').notNull(),
+    schemaVersion: text('schema_version').notNull(),
+    revision: integer('revision').notNull(),
+    body: jsonb('body').notNull(),
+    assumptions: jsonb('assumptions').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique('requirement_specs_change_request_revision_unique').on(
+      table.changeRequestId,
+      table.revision,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.changeRequestId],
+      foreignColumns: [changeRequests.organizationId, changeRequests.projectId, changeRequests.id],
+      name: 'requirement_specs_change_request_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    index('requirement_specs_change_request_revision_idx').on(
+      table.changeRequestId,
+      table.revision,
+    ),
+    check('requirement_specs_schema_version_check', sql`${table.schemaVersion} = '1'`),
+    check('requirement_specs_revision_check', sql`${table.revision} > 0`),
+    check(
+      'requirement_specs_json_shape_check',
+      sql`jsonb_typeof(${table.body}) = 'object' AND jsonb_typeof(${table.assumptions}) = 'array'`,
+    ),
+  ],
+)
+
 export const auditEvents = pgTable(
   'audit_events',
   {
@@ -352,3 +447,5 @@ export type ServiceIdentityRow = typeof serviceIdentities.$inferSelect
 export type ServiceIdentityPermissionRow = typeof serviceIdentityPermissions.$inferSelect
 export type GithubConnectionAttemptRow = typeof githubConnectionAttempts.$inferSelect
 export type RepositoryConnectionRow = typeof repositoryConnections.$inferSelect
+export type ChangeRequestRow = typeof changeRequests.$inferSelect
+export type RequirementSpecRow = typeof requirementSpecs.$inferSelect

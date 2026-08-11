@@ -47,6 +47,9 @@ export default function HomePage() {
             planned, isolated, validated, versioned, reviewable, and reversible.
           </p>
           <div className="hero-actions" aria-label="Foundation resources">
+            <a className="primary-action" href="/changes/new">
+              Start change request
+            </a>
             <a className="primary-action" href="/api/health">
               Inspect web health
             </a>
