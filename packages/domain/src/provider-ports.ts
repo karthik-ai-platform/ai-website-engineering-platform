@@ -7,8 +7,13 @@ import type {
   GitRepositoryRefV1,
   GithubRepositoryMetadataV1,
   ProviderRequestContextV1,
-  RunnerCommandV1,
-  RunnerResultV1,
+  RunnerCancellationRequestV1,
+  RunnerCleanupRequestV1,
+  RunnerExecutionCommandV1,
+  RunnerExecutionResultV1,
+  RunnerLifecycleResultV1,
+  RunnerWorkspaceRequestV1,
+  RunnerWorkspaceV1,
   SecretReferenceV1,
 } from '@platform/contracts'
 
@@ -47,7 +52,10 @@ export interface ArtifactStorePort {
 }
 
 export interface RunnerProviderPort {
-  execute(command: RunnerCommandV1): Promise<RunnerResultV1>
+  provision(request: RunnerWorkspaceRequestV1): Promise<RunnerWorkspaceV1>
+  execute(command: RunnerExecutionCommandV1): Promise<RunnerExecutionResultV1>
+  cancel(request: RunnerCancellationRequestV1): Promise<RunnerLifecycleResultV1>
+  destroy(request: RunnerCleanupRequestV1): Promise<RunnerLifecycleResultV1>
 }
 
 export interface OrchestrationProviderPort {

@@ -16,6 +16,11 @@ export {
   type PlanPolicyAssessment,
 } from './planning-policy.js'
 export {
+  evaluateRunnerCommand,
+  runnerProfileDigest,
+  type RunnerCommandPolicyDecision,
+} from './runner-policy.js'
+export {
   ChangeRequestService,
   type AttachmentScannerPort,
   type ChangeRequestAuditEvent,
