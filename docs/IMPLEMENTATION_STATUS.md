@@ -1,36 +1,36 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 18:43:24 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 18:55:50 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
-**Working branch:** `codex/m07-planner-policy`
-**Latest recorded checkpoint commit:** `0c18efd` (`feat(M07): require completed plan analyses [codex]`)
-**Pull request:** Draft PR [#7](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/7), stacked on completed M06 branch
+**Working branch:** `codex/m08-isolated-runner`
+**Latest recorded checkpoint commit:** `7089a1e` (`docs(M07): record planner policy completion [codex]`)
+**Pull request:** None yet for M08; branch is stacked on completed M07. Draft PR [#7](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/7) remains open for M07.
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
 
-| Milestone                                | Status        | Completion evidence                                                                                                                                                                    |
-| ---------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M01 Foundation                           | **completed** | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
-| M02 Projects and RBAC                    | **completed** | Implementation `46b6d23`; completion record `b7203a6`; GitHub CI run 31456298365 passed, including ephemeral PostgreSQL migration.                                                     |
-| M03 Provider framework                   | **completed** | Completion record `917d1f3`; final GitHub CI run 31459194718 passed, including ephemeral PostgreSQL migration.                                                                         |
-| M04 GitHub onboarding                    | **completed** | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
-| M05 Repository intelligence              | **completed** | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
-| M06 Prompt and requirements              | **completed** | Implementation `333d0d0`; checkpoint `c7f5bc0`; GitHub CI run 31473572456 passed full validation and ephemeral PostgreSQL migration.                                                   |
-| M07 Planner and policy                   | **completed** | Implementation `0c18efd`; draft PR #7; GitHub CI run 31494692860 passed full validation and ephemeral PostgreSQL migration.                                                            |
-| M08 Isolated runner                      | not started   | None.                                                                                                                                                                                  |
-| M09 Coding loop                          | not started   | None.                                                                                                                                                                                  |
-| M10 Deterministic validation             | not started   | None.                                                                                                                                                                                  |
-| M11 Git write path                       | not started   | None.                                                                                                                                                                                  |
-| M12 Vercel preview                       | not started   | None.                                                                                                                                                                                  |
-| M13 Browser and visual QA                | not started   | None.                                                                                                                                                                                  |
-| M14 Workspace UX                         | not started   | None.                                                                                                                                                                                  |
-| M15 Versioning and rollback              | not started   | None.                                                                                                                                                                                  |
-| M16 Memory and documentation             | not started   | None.                                                                                                                                                                                  |
-| M17 AI Cost Controller and model routing | not started   | None. Minimum controller enforcement must exist before any earlier live model call.                                                                                                    |
-| M18 Security hardening                   | not started   | None.                                                                                                                                                                                  |
-| M19 Reliability and observability        | not started   | None.                                                                                                                                                                                  |
-| M20 Pilot readiness                      | not started   | None.                                                                                                                                                                                  |
+| Milestone                                | Status          | Completion evidence                                                                                                                                                                    |
+| ---------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M01 Foundation                           | **completed**   | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
+| M02 Projects and RBAC                    | **completed**   | Implementation `46b6d23`; completion record `b7203a6`; GitHub CI run 31456298365 passed, including ephemeral PostgreSQL migration.                                                     |
+| M03 Provider framework                   | **completed**   | Completion record `917d1f3`; final GitHub CI run 31459194718 passed, including ephemeral PostgreSQL migration.                                                                         |
+| M04 GitHub onboarding                    | **completed**   | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
+| M05 Repository intelligence              | **completed**   | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
+| M06 Prompt and requirements              | **completed**   | Implementation `333d0d0`; checkpoint `c7f5bc0`; GitHub CI run 31473572456 passed full validation and ephemeral PostgreSQL migration.                                                   |
+| M07 Planner and policy                   | **completed**   | Implementation `0c18efd`; draft PR #7; GitHub CI run 31494692860 passed full validation and ephemeral PostgreSQL migration.                                                            |
+| M08 Isolated runner                      | **in progress** | Branch `codex/m08-isolated-runner` created from completed M07; implementation not started.                                                                                             |
+| M09 Coding loop                          | not started     | None.                                                                                                                                                                                  |
+| M10 Deterministic validation             | not started     | None.                                                                                                                                                                                  |
+| M11 Git write path                       | not started     | None.                                                                                                                                                                                  |
+| M12 Vercel preview                       | not started     | None.                                                                                                                                                                                  |
+| M13 Browser and visual QA                | not started     | None.                                                                                                                                                                                  |
+| M14 Workspace UX                         | not started     | None.                                                                                                                                                                                  |
+| M15 Versioning and rollback              | not started     | None.                                                                                                                                                                                  |
+| M16 Memory and documentation             | not started     | None.                                                                                                                                                                                  |
+| M17 AI Cost Controller and model routing | not started     | None. Minimum controller enforcement must exist before any earlier live model call.                                                                                                    |
+| M18 Security hardening                   | not started     | None.                                                                                                                                                                                  |
+| M19 Reliability and observability        | not started     | None.                                                                                                                                                                                  |
+| M20 Pilot readiness                      | not started     | None.                                                                                                                                                                                  |
 
 ## M01 checkpoint detail
 
@@ -161,4 +161,4 @@
 
 ## Next checkpoint requirements
 
-Commit and push this M07 completion record, confirm its CI, then begin M08 isolated runner in milestone order. Never merge PR #7 autonomously.
+Read the M08 isolation requirements, then implement only the versioned runner port/profile and immutable execution-command contract foundation. Do not represent a host-process fixture as production isolation or merge PR #7 autonomously.

@@ -1,6 +1,6 @@
 # Continuation Prompt
 
-Continue the AI Website Engineering Platform in `C:\Users\HP\Desktop\ai-website-engineering-platform` from completed branch `codex/m07-planner-policy`.
+Continue the AI Website Engineering Platform in `C:\Users\HP\Desktop\ai-website-engineering-platform` on branch `codex/m08-isolated-runner`.
 
 Read `AGENTS.md`, the authoritative SRS PDF, `docs/IMPLEMENTATION_PLAN.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/DECISIONS.md`, and `docs/SESSION_HANDOFF.md`, then inspect Git state. Preserve concurrent work.
 
@@ -18,6 +18,8 @@ M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; d
 
 M07 is complete. Foundation `5a49f97`, governed API `94d34b7`, and analysis-gate implementation `0c18efd` are pushed; draft PR #7 is stacked on completed M06. Final GitHub CI run 31494692860, job 93789359220, passed full validation and ephemeral PostgreSQL migration. The completed milestone includes versioned execution plan/policy/approval and specialized-analysis contracts; deterministic Low/Medium/High/Blocked classification; tenant-scoped persistence/idempotency/audit; authenticated planning and approval APIs; high-risk pre-mutation pause; current multi-gate approvals; blocked no-relaxation behavior; and typed completed Architecture/UI/Security evidence bound to requirement, base commit, and policy digest. ADR-016 records the decisions.
 
+M07 completion record `7089a1e` is pushed. GitHub CI run 31495684020, job 93792676230, passed full validation and ephemeral PostgreSQL migration. Branch `codex/m08-isolated-runner` starts from that exact checkpoint; M08 implementation has not started.
+
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat them.
 
 Final M07 local evidence: formatting/lint passed; typecheck and build passed 10/10 packages; unit 13 files / 70 tests; contract 6 files / 36 tests; integration 11 files / 40 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 5 files / 17 tests; browser/accessibility 4 tests; secret scan 168 files. Approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. Missing/mismatched/stale analysis fixtures stop before persistence, and incomplete controller evidence stops without retry. The parallel PGlite setup timeouts were infrastructure-only; the serialized rerun and GitHub ephemeral PostgreSQL step passed.
@@ -30,8 +32,8 @@ The local `gh` token remains invalid, but SSH push and the connected GitHub app 
 
 ## Next exact tasks
 
-1. Commit and push the M07 completion record and confirm its resulting CI remains green.
-2. Create `codex/m08-isolated-runner` from completed M07 and begin the M08 runner port/profile contracts in milestone order.
+1. Read the authoritative M08 isolation, security, typed runner, artifact, and acceptance requirements.
+2. Implement only the versioned runner port/profile and immutable execution-command contract foundation before selecting a runtime backend.
 3. Preserve immutable base commit, tenant scope, orchestrator authority, deny-by-default network/secrets/tool access, artifact integrity, and explicit local-mock versus production-isolation labeling.
 4. Do not make a live model call before the minimum AI Cost Controller exists, treat repository content as authority, transmit a full repository, or merge autonomously.
 
