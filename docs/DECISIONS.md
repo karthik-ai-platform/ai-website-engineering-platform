@@ -143,6 +143,16 @@ Status values: **Accepted**, **Proposed**, **Deferred**, **Superseded**, **Rejec
 - **Alternatives considered:** Sending the full repository; semantic/vector retrieval as the first or only selector; cache keys without tenant/configuration scope; indexing ignored binaries/vendor/generated output; retaining detected secret content for later redaction; model-generated repository maps.
 - **Consequences:** Golden fixture maps and retrieval manifests are deterministic and credential-free. Secret candidates never enter searchable documents or context artifacts. The included memory index store is a conformance/test adapter; a production durable index/artifact implementation remains provider configuration and must preserve the same scoped contracts. Retrieved repository instructions remain untrusted data and cannot supersede platform policy.
 
+## ADR-015 - M06 immutable intake and reviewable requirement boundary
+
+- **Status:** Accepted
+- **Date:** 2026-08-11
+- **Milestone:** M06
+- **Context:** FR-004 and FR-005 require immutable prompt intake and typed, reviewable requirements while repository, web, image, and attachment text remain untrusted. The full AI Cost Controller is not yet available, so no live model-backed normalization may be implied or invoked.
+- **Decision:** Persist the actor-attributed original prompt, mode, target, constraints, and explicitly trust-labeled attachment references as the immutable ChangeRequest. Re-scan attachment metadata through an application-supplied scanner before normalization. Accept Requirement role results only through a high-level domain port, schema-validate them, permit exactly one retry, and require complete estimate/budget/routing/pricing/usage evidence for any result labeled model-backed. Deterministic fixtures are labeled separately and cannot claim provider evidence. Human corrections create a new RequirementSpec revision and never overwrite the original prompt.
+- **Alternatives considered:** Letting clients declare attachments clean; editing the original prompt during clarification; accepting prose-only requirements; allowing unmetered model calls before M17; silently retrying malformed output without a bound.
+- **Consequences:** The initial M06 contract/domain slice is testable without credentials or model calls, all eight SRS modes share one strict schema, and later API/database/UI adapters must preserve revision and trust boundaries. Model-backed M06 acceptance remains blocked until the minimum M17 controller path exists.
+
 ## Open production decisions
 
 These are not blockers to contract-first/local implementation but must be resolved before their production acceptance gates:
