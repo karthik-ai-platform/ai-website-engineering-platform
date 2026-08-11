@@ -35,7 +35,7 @@ Cross-cutting constraints apply throughout: tenant scoping begins in M01/M02; pr
 - **Tests/checks:** Role/permission decision table unit tests; cross-organization/project isolation integration tests; unauthorized and stale-membership rejection; append-only audit correction behavior; project lifecycle and retention contract tests; migration validation.
 - **Completion evidence:** Versioned RBAC and project schemas; migration and recovery notes; API contract fixtures; test proving an unauthorized action is rejected **and audited**; cross-tenant negative tests; commit and CI evidence.
 
-## M03 - Provider framework (in progress)
+## M03 - Provider framework (completed)
 
 - **Tasks:** Define versioned ports/contracts for secrets, Git, deployment, model providers, artifacts, runner, and orchestration; keep provider tokens as secret references rather than plaintext tables; implement deterministic mock adapters and common conformance suites; define provider callback verification/deduplication/idempotency envelope; introduce the single AI Cost Controller invocation port so agents/services cannot call a model adapter directly; model capability/pricing/routing values remain configuration/data, never hardcoded business rules.
 - **Dependencies:** M01 contracts/config/logging; M02 actor, tenant, permission, and audit context.

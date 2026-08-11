@@ -1,10 +1,10 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 09:55:33 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 10:05:21 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m03-provider-framework`
-**Latest recorded checkpoint commit:** `7a61fa07e4b2c1fffc345297690f2780b1671e89` (`feat(M03): add provider framework contracts [codex]`)
-**Pull request:** M03 draft PR pending; prior M02 draft PR [#2](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/2) remains unmerged
+**Latest recorded checkpoint commit:** `cd3e43fd632b49c5a9bd696a994afa023a56af78` (`docs(M03): record provider framework checkpoint [codex]`)
+**Pull request:** Draft PR [#3](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/3), stacked on completed M02 branch; prior draft PR #2 remains unmerged
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
@@ -13,7 +13,7 @@
 | ---------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | M01 Foundation                           | **completed** | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
 | M02 Projects and RBAC                    | **completed** | Implementation `46b6d23`; completion record `b7203a6`; GitHub CI run 31456298365 passed, including ephemeral PostgreSQL migration.                                                     |
-| M03 Provider framework                   | in progress   | Implementation `7a61fa0`; all applicable local gates passed; push, draft PR, and GitHub CI evidence pending.                                                                           |
+| M03 Provider framework                   | **completed** | Implementation `7a61fa0`; local gates passed; GitHub CI run 31458789345 passed, including ephemeral PostgreSQL migration.                                                              |
 | M04 GitHub onboarding                    | not started   | None.                                                                                                                                                                                  |
 | M05 Repository intelligence              | not started   | None.                                                                                                                                                                                  |
 | M06 Prompt and requirements              | not started   | None.                                                                                                                                                                                  |
@@ -65,15 +65,15 @@
 
 ## M03 checkpoint detail
 
-- **Status:** in progress. Validated implementation commit `7a61fa0` exists locally; push, draft PR, and GitHub CI evidence are still pending.
+- **Status:** completed. Implementation commit `7a61fa0` and checkpoint commit `cd3e43f` are pushed; draft PR #3 is open; GitHub CI run 31458789345 passed all required steps including ephemeral PostgreSQL migration.
 - **Implemented capabilities:** versioned provider-neutral request, result, error, secret-reference, callback, Git, deployment, artifact, runner, and AI invocation schemas; framework-independent ports for secrets, Git, deployment, artifact storage, runner, orchestration, and the sole application-facing AI Cost Controller boundary; deterministic credential-free mocks; authenticated callback digest/signature verification with deduplication and out-of-order rejection; typed provider-unavailable behavior; and dependency restrictions that keep raw model adapters and SDKs out of application/domain code.
 - **Acceptance evidence:** strict schemas reject plaintext/unknown secret fields; deterministic mocks satisfy the public port contracts; callback processing authenticates before recording, scopes records by provider/project, preserves service actor identity, rejects payload-digest mismatch, deduplicates delivery IDs, and rejects stale sequence numbers; the deployment outage mock returns a typed non-retryable error; the public AI controller denies all invocations until the minimum M17 path exists; the raw model provider interface is internal and absent from package exports.
 - **Validation passed:** formatting, lint, 8/8 typecheck, 11 files / 42 unit tests, 2 files / 13 contract tests, 5 files / 19 integration tests with 1 file / 1 live PostgreSQL test skipped, 2 files / 8 migration tests, 8/8 build, 3 browser/accessibility tests, 121-file secret scan, approved-network dependency audit, dependency tree, focused provider checks, and `git diff --check`.
 - **Validation notes:** the first provider build exposed TypeScript workspace aliases outside the package root and emitted 68 untracked JavaScript/declaration artifacts beside dependency source. The build configuration was corrected to resolve built package declarations, only those untracked generated artifacts were removed, and the 8/8 build rerun passed without source pollution. The full validation later stopped only when sandboxed `npm audit` could not reach the registry; approved-network `npm run security:deps` exited 0. `npm ls --omit=dev --all` exited 0 after materializing the new workspace link and retains the documented optional/extraneous WASM helpers.
 - **Security:** no credentials, real provider calls, or model calls were introduced. Secrets are opaque references, callbacks require verification, model access is denied by default, and production promotion remains disabled. The known 4 moderate `esbuild` advisories through `drizzle-kit` remain; no breaking forced audit fix was applied.
 - **Architecture:** ADR-012 records the provider-neutral port/package boundaries, internal raw-model interface, application dependency restrictions, and mandatory deny-all AI Cost Controller boundary pending minimum M17 behavior.
-- **GitHub/Vercel:** no M03 PR or remote CI evidence yet. No Vercel action was attempted; production deployment remains unauthorized.
-- **Next task:** commit this checkpoint record, push `codex/m03-provider-framework`, open a draft PR, and require its CI (including ephemeral PostgreSQL migration) before marking M03 complete.
+- **GitHub/Vercel:** `codex/m03-provider-framework` is pushed and draft PR [#3](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/3) is stacked on `codex/m02-projects-rbac` for a focused M03 diff. GitHub CI run 31458789345, job 93677970681, passed the main validation and ephemeral PostgreSQL migration steps. No Vercel action was attempted; production deployment remains unauthorized.
+- **Next task:** commit and push this completion record, confirm the resulting branch CI remains green, then begin M04 GitHub onboarding in milestone order. Never merge PR #3 autonomously.
 
 ## Validation ledger
 
@@ -94,9 +94,9 @@
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 3 Playwright tests, including content/no-overlay checks, health contract, and axe WCAG A/AA scan.                 |
-| GitHub CI                            | M02 completion run 31456298365 passed for PR #2, including ephemeral PostgreSQL migration; M03 remote CI pending.                               |
+| GitHub CI                            | M03 run 31458789345, job 93677970681, passed for PR #3, including main validation and ephemeral PostgreSQL migration.                           |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
 
-Commit and push the M03 checkpoint record, open a draft PR, and confirm the branch CI including ephemeral PostgreSQL migration. Mark M03 complete only after that evidence is observed. Never merge a PR autonomously.
+M03 is complete. Commit and push this completion record, confirm the branch remains green, then begin M04 GitHub onboarding in milestone order. Never merge PR #3 autonomously.
