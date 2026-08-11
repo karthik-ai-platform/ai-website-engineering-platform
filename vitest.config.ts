@@ -11,6 +11,7 @@ export const platformAliases = {
   '@platform/github-adapter': fromRoot('./packages/github-adapter/src/index.ts'),
   '@platform/observability': fromRoot('./packages/observability/src/index.ts'),
   '@platform/provider-framework': fromRoot('./packages/provider-framework/src/index.ts'),
+  '@platform/repository-intelligence': fromRoot('./packages/repository-intelligence/src/index.ts'),
 }
 
 export default defineConfig({

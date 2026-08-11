@@ -49,7 +49,7 @@ Cross-cutting constraints apply throughout: tenant scoping begins in M01/M02; pr
 - **Tests/checks:** Mock GitHub contract and fixture onboarding; invalid/expired callback signature; duplicate/out-of-order webhook; lost installation access; repository permission and default-branch verification; no-token response/log tests.
 - **Completion evidence:** A fixture project that verifies permitted repository access and default branch; webhook replay evidence; provider scope review; real GitHub installation evidence when configured, otherwise clearly labeled mock/contract evidence and exact owner setup action.
 
-## M05 - Repository intelligence (not started)
+## M05 - Repository intelligence (completed)
 
 - **Tasks:** Index an immutable commit into a repository map; detect language/framework, package manager, scripts, routes, exports/imports, symbols, components, stories/examples, tests, configuration, architecture instructions, ownership, and recent commit context; exclude generated, vendor, binary, large, and secret-policy files; create lexical/symbol/dependency retrieval first, semantic retrieval behind a port; attach commit/provenance/digest/token metadata to every context item; invalidate commit/config-addressed indexes safely.
 - **Dependencies:** M04 repository access and immutable commit; M03 artifact/search ports; tenant-isolated storage from M01/M02.
