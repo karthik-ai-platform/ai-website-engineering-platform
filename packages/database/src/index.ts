@@ -1,0 +1,30 @@
+export {
+  createLazyPostgresConnection,
+  type LazyPostgresConnection,
+  type PlatformDatabase,
+  type PostgresConnectionOptions,
+} from './client.js'
+export { defaultMigrationsFolder, runMigrations, type MigrationRunnerOptions } from './migrate.js'
+export {
+  auditEvents,
+  memberships,
+  organizations,
+  policyProfiles,
+  projects,
+  serviceIdentities,
+  serviceIdentityPermissions,
+  users,
+  type AuditEventRow,
+  type MembershipRow,
+  type NewAuditEventRow,
+  type NewMembershipRow,
+  type NewOrganizationRow,
+  type NewProjectRow,
+  type NewUserRow,
+  type OrganizationRow,
+  type PolicyProfileRow,
+  type ProjectRow,
+  type ServiceIdentityPermissionRow,
+  type ServiceIdentityRow,
+  type UserRow,
+} from './schema.js'

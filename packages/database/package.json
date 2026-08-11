@@ -1,0 +1,45 @@
+{
+  "name": "@platform/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PostgreSQL schema and forward migration boundary for the AI Website Engineering Platform",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.js"
+    }
+  },
+  "files": [
+    "dist",
+    "migrations"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --root ../.. packages/database/src/client.unit.test.ts packages/database/src/migration.integration.test.ts packages/database/src/m02-migration.integration.test.ts packages/database/src/postgres-migration.integration.test.ts",
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
+    "db:migrate": "node dist/migrate.js",
+    "db:migrate:check": "vitest run --root ../.. packages/database/src/migration.integration.test.ts packages/database/src/m02-migration.integration.test.ts",
+    "db:migrate:integration": "vitest run --root ../.. packages/database/src/postgres-migration.integration.test.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.2",
+    "postgres": "3.4.9"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.4",
+    "@types/node": "22.20.1",
+    "drizzle-kit": "0.31.10",
+    "tsup": "8.5.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  },
+  "engines": {
+    "node": ">=22.13.0 <23"
+  }
+}
