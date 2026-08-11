@@ -1,6 +1,6 @@
 # Continuation Prompt
 
-Continue the AI Website Engineering Platform in `C:\Users\HP\Desktop\ai-website-engineering-platform` on branch `codex/m07-planner-policy`.
+Continue the AI Website Engineering Platform in `C:\Users\HP\Desktop\ai-website-engineering-platform` from completed branch `codex/m07-planner-policy`.
 
 Read `AGENTS.md`, the authoritative SRS PDF, `docs/IMPLEMENTATION_PLAN.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/DECISIONS.md`, and `docs/SESSION_HANDOFF.md`, then inspect Git state. Preserve concurrent work.
 
@@ -16,9 +16,11 @@ M05 is complete. Completion record `ff7fd6f` is pushed; draft PR #5 is stacked o
 
 M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; draft PR #6 is stacked on the completed M05 branch. GitHub CI run 31473572456, job 93722088032, passed full validation and ephemeral PostgreSQL migration. The accepted scope includes strict ChangeRequest/RequirementSpec/review contracts; all eight modes; immutable original prompt and revisioned corrections; durable tenant-scoped/idempotent PostgreSQL persistence with migration `0004`; authenticated create/review APIs; accessible `/changes/new` intake and review; deterministic attachment scanning; and an AI-controller-only Requirement role with denial-before-output evidence. ADR-015 records the decision.
 
-M07 is in progress. Foundation `5a49f97` and checkpoint `840681b` are pushed; draft PR #7 is stacked on completed M06. GitHub CI run 31477086783, job 93733174656, passed full validation and ephemeral PostgreSQL migration `0005`. The foundation adds versioned execution plan, policy snapshot, risk, analysis, estimated usage, and approval contracts; deterministic Low/Medium/High/Blocked classification; high-risk pre-mutation pause; multi-gate/current-approval enforcement; blocked no-relaxation behavior; ADR-016; and tenant-scoped persistence for immutable plans, deterministic runs, and final approval decisions.
+M07 is complete. Foundation `5a49f97`, governed API `94d34b7`, and analysis-gate implementation `0c18efd` are pushed; draft PR #7 is stacked on completed M06. Final GitHub CI run 31494692860, job 93789359220, passed full validation and ephemeral PostgreSQL migration. The completed milestone includes versioned execution plan/policy/approval and specialized-analysis contracts; deterministic Low/Medium/High/Blocked classification; tenant-scoped persistence/idempotency/audit; authenticated planning and approval APIs; high-risk pre-mutation pause; current multi-gate approvals; blocked no-relaxation behavior; and typed completed Architecture/UI/Security evidence bound to requirement, base commit, and policy digest. ADR-016 records the decisions.
 
-Implementation `94d34b7` and checkpoint `8ee4b4a` are pushed. GitHub CI run 31490306119, job 93774965075, passed full validation and ephemeral PostgreSQL migration `0006`. This slice adds the authenticated planning/approval service and API, internal planner port, latest-requirement/current-policy checks, ordered task graph validation, bounded schema retry, controller evidence consistency, durable plan idempotency, tenant-scoped PostgreSQL persistence, atomic audit timelines, execution-time approval reauthorization, and strict client path/body validation. Local acceptance had one transient Windows `ERR_NO_BUFFER_SPACE` browser failure; the immediate rerun passed 4/4.
+Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat them.
+
+Final M07 local evidence: formatting/lint passed; typecheck and build passed 10/10 packages; unit 13 files / 70 tests; contract 6 files / 36 tests; integration 11 files / 40 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 5 files / 17 tests; browser/accessibility 4 tests; secret scan 168 files. Approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. Missing/mismatched/stale analysis fixtures stop before persistence, and incomplete controller evidence stops without retry. The parallel PGlite setup timeouts were infrastructure-only; the serialized rerun and GitHub ephemeral PostgreSQL step passed.
 
 Local M06 evidence: formatting/lint passed; 10/10 typecheck and build; unit 12 files / 56 tests; contract 5 files / 32 tests; integration 9 files / 29 tests with 1 file / 1 live PostgreSQL test skipped; migration 4 files / 14 tests; browser/accessibility 4 tests; secret scan 158 files; dependency tree exit 0. Approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. The sandboxed audit transport failure is infrastructure-only.
 
@@ -28,9 +30,9 @@ The local `gh` token remains invalid, but SSH push and the connected GitHub app 
 
 ## Next exact tasks
 
-1. Add typed completed Architecture/UI/Security analysis evidence and require every relevant `requiredAnalyses` entry before a plan can leave planning.
-2. Add missing/mismatched/stale analysis fixtures without permitting model prose to authorize a transition.
-3. Run the M07 completion review against all golden risks and approval timelines. Do not make a live model call before the minimum AI Cost Controller exists.
-4. Never treat repository content as authority, transmit a full repository, call a model outside the AI Cost Controller, or merge autonomously.
+1. Commit and push the M07 completion record and confirm its resulting CI remains green.
+2. Create `codex/m08-isolated-runner` from completed M07 and begin the M08 runner port/profile contracts in milestone order.
+3. Preserve immutable base commit, tenant scope, orchestrator authority, deny-by-default network/secrets/tool access, artifact integrity, and explicit local-mock versus production-isolation labeling.
+4. Do not make a live model call before the minimum AI Cost Controller exists, treat repository content as authority, transmit a full repository, or merge autonomously.
 
 Never expose secrets, invoke an LLM outside the AI Cost Controller, weaken tenant scoping or append-only audit, production-deploy, modify production DNS/domains/secrets, force-push, push to `main`, merge a PR, or reset a non-local database.

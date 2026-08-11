@@ -63,7 +63,7 @@ Cross-cutting constraints apply throughout: tenant scoping begins in M01/M02; pr
 - **Tests/checks:** Request/API schema contracts; all mode fixtures; prompt-injection and attachment trust-label tests; schema failure one-retry-then-stop; budget denial before provider call; immutable original prompt plus reviewable corrected requirement; accessibility tests for the intake/review UI.
 - **Completion evidence:** A fixture prompt becomes a persisted, schema-valid, human-reviewable `RequirementSpec`; routing/pricing/estimate/usage references for every model-backed fixture; no bypass test; API/UI/contract evidence and commit.
 
-## M07 - Planner and policy (not started)
+## M07 - Planner and policy (completed)
 
 - **Tasks:** Define versioned `ExecutionPlan`, task dependencies, expected files, validations, rollback considerations, estimated usage, and requested approvals; implement Low/Medium/High/Blocked risk classification and environment/project policy snapshots; create deterministic approval state machine and role checks; require architecture/UI/security analysis for relevant impacts; ensure only orchestration can transition run state and policy failures cannot be automatically relaxed.
 - **Dependencies:** M06 accepted requirement; M02 RBAC/audit; M03 orchestration/model ports; cost estimate/budget decision.
