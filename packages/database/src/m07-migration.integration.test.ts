@@ -45,8 +45,8 @@ describe('M07 plan and approval migration', () => {
     await database.query(
       `INSERT INTO execution_plans (
         id, organization_id, project_id, change_request_id, requirement_id, schema_version,
-        revision, base_commit, risk_class, body, policy_snapshot, created_at
-      ) VALUES ($1, $2, $3, $4, $5, '1', 1, $6, 'high', '{}', '{}', now())`,
+        revision, base_commit, risk_class, body, policy_snapshot, idempotency_key, created_at
+      ) VALUES ($1, $2, $3, $4, $5, '1', 1, $6, 'high', '{}', '{}', 'm07-plan-fixture', now())`,
       [planId, organizationId, projectId, changeRequestId, requirementId, 'a'.repeat(40)],
     )
     await database.query(
@@ -81,6 +81,16 @@ describe('M07 plan and approval migration', () => {
           '00000000-0000-4000-8000-000000000397', $1, $2, $3, '1', 2, $4,
           'low', '{}', '{}', now())`,
         [projectId, changeRequestId, requirementId, 'b'.repeat(40)],
+      ),
+    ).rejects.toThrow()
+    await expect(
+      database.query(
+        `INSERT INTO execution_plans (
+          id, organization_id, project_id, change_request_id, requirement_id, schema_version,
+          revision, base_commit, risk_class, body, policy_snapshot, idempotency_key, created_at
+        ) VALUES ('00000000-0000-4000-8000-000000000396', $1, $2, $3, $4,
+          '1', 2, $5, 'high', '{}', '{}', 'm07-plan-fixture', now())`,
+        [organizationId, projectId, changeRequestId, requirementId, 'b'.repeat(40)],
       ),
     ).rejects.toThrow()
   })

@@ -1,4 +1,12 @@
 export {
+  PlanningService,
+  type PlannerEvidence,
+  type PlannerRolePort,
+  type PlanningAuditEvent,
+  type PlanningContext,
+  type PlanningStore,
+} from './planning-service.js'
+export {
   classifyPlanRisk,
   decideApproval,
   executionGateState,

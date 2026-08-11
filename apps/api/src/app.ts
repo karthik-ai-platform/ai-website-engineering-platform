@@ -2,9 +2,12 @@ import {
   actorContextV1Schema,
   apiErrorResponseV1Schema,
   changeRequirementResultV1Schema,
+  approvalDecisionResultV1Schema,
   correlationIdSchema,
   createChangeRequestV1Schema,
+  createExecutionPlanRequestV1Schema,
   createProjectRequestV1Schema,
+  decideApprovalRequestV1Schema,
   healthResponseV1Schema,
   githubConnectionInitiationRequestV1Schema,
   githubConnectionInitiationResultV1Schema,
@@ -12,6 +15,7 @@ import {
   githubRepositoryReadinessV1Schema,
   projectLifecycleRequestV1Schema,
   projectV1Schema,
+  planningResultV1Schema,
   requirementReviewRequestV1Schema,
   requirementSpecV1Schema,
   type DependencyHealthV1,
@@ -20,6 +24,7 @@ import { createLazyPostgresConnection } from '@platform/database'
 import {
   PlatformError,
   ChangeRequestService,
+  PlanningService,
   ProjectService,
   type GithubOnboardingService,
   isPlatformError,
@@ -27,6 +32,8 @@ import {
   type AuthenticationPort,
   type AttachmentScannerPort,
   type ChangeRequestStore,
+  type PlannerRolePort,
+  type PlanningStore,
   type ProjectStore,
   type RequirementRolePort,
 } from '@platform/domain'
@@ -38,6 +45,7 @@ import { LocalAuthenticationAdapter, OidcAuthenticationAdapter } from './authent
 import type { ApiConfig } from './config.js'
 import { PostgresProjectStore } from './postgres-project-store.js'
 import { PostgresChangeRequestStore } from './postgres-change-request-store.js'
+import { PostgresPlanningStore } from './postgres-planning-store.js'
 
 const bearerHeaderSchema = z.string().regex(/^Bearer\s+\S+$/iu)
 
@@ -55,6 +63,9 @@ export interface BuildApiOptions {
   readonly changeRequestStore?: ChangeRequestStore
   readonly attachmentScanner?: AttachmentScannerPort
   readonly requirementRole?: RequirementRolePort
+  readonly plannerRole?: PlannerRolePort
+  readonly planningService?: PlanningService
+  readonly planningStore?: PlanningStore
   readonly readinessProbe?: ReadinessProbe
   readonly projectStore?: ProjectStore
 }
@@ -93,6 +104,16 @@ export function buildApi(options: BuildApiOptions) {
           scanner: options.attachmentScanner,
           requirementRole: options.requirementRole,
         }))
+  const planningStore =
+    options.planningStore ??
+    (projectConnection === undefined
+      ? undefined
+      : new PostgresPlanningStore(projectConnection.database))
+  const planningService =
+    options.planningService ??
+    (planningStore === undefined || options.plannerRole === undefined
+      ? undefined
+      : new PlanningService({ store: planningStore, planner: options.plannerRole }))
   const app = Fastify({
     genReqId: (request) => resolveCorrelationId(singleHeader(request.headers['x-correlation-id'])),
     logController: new LogController({ disableRequestLogging: true }),
@@ -212,6 +233,42 @@ export function buildApi(options: BuildApiOptions) {
     }
     return requirementSpecV1Schema.parse(
       await requireChangeRequestService(changeRequestService, request.id).correct(actor, body),
+    )
+  })
+
+  app.post('/v1/projects/:projectId/plans', async (request, reply) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(createExecutionPlanRequestV1Schema, request.body, request.id)
+    requireMatchingProjectPath(request.params, body.projectId, request.id)
+    void reply.code(201)
+    return planningResultV1Schema.parse(
+      await requirePlanningService(planningService, request.id).create(actor, body),
+    )
+  })
+
+  app.post('/v1/runs/:runId/approvals/:gate', async (request) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(decideApprovalRequestV1Schema, request.body, request.id)
+    const path = z
+      .object({ runId: z.string().uuid(), gate: z.string().min(1) })
+      .safeParse(request.params)
+    if (!path.success || path.data.runId !== body.runId || path.data.gate !== body.gate) {
+      throw validationFailed(request.id)
+    }
+    return approvalDecisionResultV1Schema.parse(
+      await requirePlanningService(planningService, request.id).decide(actor, body),
     )
   })
 
@@ -368,6 +425,19 @@ function requireChangeRequestService(
     correlationId: correlationIdSchema.parse(correlationId),
     retryable: true,
     safeMessage: 'Change request processing is not configured.',
+  })
+}
+
+function requirePlanningService(
+  service: PlanningService | undefined,
+  correlationId: string,
+): PlanningService {
+  if (service !== undefined) return service
+  throw new PlatformError({
+    code: 'DEPENDENCY_UNAVAILABLE',
+    correlationId: correlationIdSchema.parse(correlationId),
+    retryable: true,
+    safeMessage: 'Planning and approval processing is not configured.',
   })
 }
 

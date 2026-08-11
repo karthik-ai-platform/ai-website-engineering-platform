@@ -11,6 +11,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
 
@@ -404,6 +405,7 @@ export const executionPlans = pgTable(
     projectId: uuid('project_id').notNull(),
     changeRequestId: uuid('change_request_id').notNull(),
     requirementId: uuid('requirement_id').notNull(),
+    idempotencyKey: text('idempotency_key'),
     schemaVersion: text('schema_version').notNull(),
     revision: integer('revision').notNull(),
     baseCommit: text('base_commit').notNull(),
@@ -438,6 +440,9 @@ export const executionPlans = pgTable(
       .onDelete('restrict')
       .onUpdate('restrict'),
     index('execution_plans_change_revision_idx').on(table.changeRequestId, table.revision),
+    uniqueIndex('execution_plans_tenant_idempotency_unique')
+      .on(table.organizationId, table.projectId, table.idempotencyKey)
+      .where(sql`${table.idempotencyKey} IS NOT NULL`),
     check('execution_plans_schema_version_check', sql`${table.schemaVersion} = '1'`),
     check('execution_plans_revision_check', sql`${table.revision} > 0`),
     check('execution_plans_base_commit_check', sql`${table.baseCommit} ~ '^[0-9a-f]{40}$'`),

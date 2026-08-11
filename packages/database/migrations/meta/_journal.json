@@ -36,6 +36,13 @@
       "when": 1786438200000,
       "tag": "0005_m07_plans_approvals",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786441200000,
+      "tag": "0006_m07_plan_idempotency",
+      "breakpoints": true
     }
   ]
 }

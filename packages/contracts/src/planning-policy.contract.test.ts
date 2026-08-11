@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { approvalRecordV1Schema, executionPlanV1Schema } from './planning-policy-v1.js'
+import {
+  approvalRecordV1Schema,
+  createExecutionPlanRequestV1Schema,
+  decideApprovalRequestV1Schema,
+  executionPlanV1Schema,
+} from './planning-policy-v1.js'
 
 const id = (suffix: string) => `00000000-0000-4000-8000-${suffix.padStart(12, '0')}`
 
@@ -78,5 +83,42 @@ describe('M07 planning and policy contracts', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('keeps authoritative risk and run state out of create-plan requests', () => {
+    const request = {
+      schemaVersion: '1',
+      organizationId: id('1'),
+      projectId: id('2'),
+      changeRequestId: id('3'),
+      requirementId: id('4'),
+      baseCommit: 'a'.repeat(40),
+      idempotencyKey: 'plan-contract-fixture',
+    }
+    expect(createExecutionPlanRequestV1Schema.safeParse(request).success).toBe(true)
+    expect(
+      createExecutionPlanRequestV1Schema.safeParse({
+        ...request,
+        riskClass: 'low',
+        state: 'QUEUED',
+      }).success,
+    ).toBe(false)
+  })
+
+  it('requires stale-plan and policy evidence on approval decisions', () => {
+    expect(
+      decideApprovalRequestV1Schema.safeParse({
+        schemaVersion: '1',
+        organizationId: id('1'),
+        projectId: id('2'),
+        runId: id('3'),
+        planId: id('4'),
+        planRevision: 1,
+        gate: 'plan_execution',
+        expectedPolicyVersion: 'policy-v1',
+        decision: 'approved',
+        rationale: 'Reviewed current evidence.',
+      }).success,
+    ).toBe(true)
   })
 })
