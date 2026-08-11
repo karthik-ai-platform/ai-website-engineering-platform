@@ -42,7 +42,7 @@ Cross-cutting constraints apply throughout: tenant scoping begins in M01/M02; pr
 - **Tests/checks:** Mock adapter contract suites; compile-time/package-boundary checks against vendor leakage/direct model imports; secret-reference/redaction tests; callback replay/out-of-order tests; provider outage and typed-error tests; audit attribution tests.
 - **Completion evidence:** Versioned adapter schemas; mock conformance report; dependency-rule proof that direct LLM-provider imports are barred outside adapter/controller composition; secret handling evidence; exact test log and commit.
 
-## M04 - GitHub onboarding (in progress)
+## M04 - GitHub onboarding (completed)
 
 - **Tasks:** Implement GitHub App adapter authentication with least-privilege installation scopes; connection initiation/callback with secret references; repository selection and access verification; sync repository ID, permissions, default branch, framework/package/build/test metadata placeholders, and indexed commit; authenticate, deduplicate, and replay-safely process installation/repository/push webhooks; surface readiness without enabling mutation until onboarding checks pass.
 - **Dependencies:** M02 provider permissions/audit; M03 Git/secrets ports and callback envelope; external GitHub App configuration only for real-provider validation.

@@ -1,11 +1,11 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 11:08:39 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 11:19:45 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m04-github-onboarding`
 **Implementation commit:** `b15a2c3` (`feat(M04): implement GitHub App onboarding [codex]`)
-**Active milestone:** M04 GitHub onboarding - in progress pending remote evidence
-**Completed milestones:** M01, M02, M03
+**Next milestone:** M05 Repository intelligence - not started
+**Completed milestones:** M01, M02, M03, M04
 
 ## Exact state
 
@@ -13,7 +13,7 @@ M01 and M02 are complete. M02 completion record `b7203a6` is pushed on `codex/m0
 
 M03 is complete. Completion record `917d1f3` is pushed; draft PR #3 is stacked on `codex/m02-projects-rbac`; final GitHub CI run 31459194718, job 93679135438, passed full validation and ephemeral PostgreSQL migration.
 
-M04 implementation commit `b15a2c3` adds installation-first GitHub App onboarding with a distinct `repository:connect` permission; hashed/expiring/single-use setup state; credential references only; immutable repository/default-branch/permission synchronization; read-only readiness; API and PostgreSQL seams; authenticated raw webhook handling with trusted context resolution and delivery deduplication; migration `0003_m04_github_onboarding`; fixture tests; and owner/database runbooks. ADR-013 records the decisions. The implementation is locally validated but not yet pushed; no M04 PR or remote CI evidence exists at this checkpoint.
+M04 is complete. Implementation commit `b15a2c3` and checkpoint commit `8da6394` are pushed; draft PR #4 is stacked on `codex/m03-provider-framework`. GitHub CI run 31462740132, job 93689360152, passed the full validation and ephemeral PostgreSQL migration steps. M04 adds installation-first GitHub App onboarding with a distinct `repository:connect` permission; hashed/expiring/single-use setup state; credential references only; immutable repository/default-branch/permission synchronization; read-only readiness; API and PostgreSQL seams; authenticated raw webhook handling with trusted context resolution and delivery deduplication; migration `0003_m04_github_onboarding`; fixture tests; and owner/database runbooks. ADR-013 records the decisions.
 
 ## Validation evidence
 
@@ -29,14 +29,14 @@ M04 implementation commit `b15a2c3` adds installation-first GitHub App onboardin
 - M02 completion evidence is satisfied by GitHub CI run 31456298365 and the recorded local validation.
 - `gh auth status` reports the active `karthik18mohan` token is invalid. The GitHub publishing workflow requires `gh auth login -h github.com` and a successful `gh auth status` before staging/commit/push.
 - M03 final remote evidence is satisfied by CI run 31459194718 and the recorded local validation.
-- M04 has deterministic mock/contract evidence only and no real GitHub App installation. The exact authorized owner setup action is in `docs/runbooks/github-app-onboarding.md`.
+- M04 remote repository/CI evidence is satisfied by run 31462740132; provider evidence remains deterministic mock/contract only with no real GitHub App installation. The exact authorized owner setup action is in `docs/runbooks/github-app-onboarding.md`.
 - Production providers and the full M17 cost controller are not selected or implemented. No live model call is permitted before the minimum controller estimate/budget/routing/usage/reconciliation path exists.
 - No model/provider call, production deployment, production domain/secret change, merge, or database reset is authorized.
 - Do not run `npm audit fix --force`; it proposes a breaking `drizzle-kit` downgrade.
 
 ## Next exact work
 
-1. Commit this M04 checkpoint documentation, push `codex/m04-github-onboarding`, and open a draft PR stacked on `codex/m03-provider-framework`.
-2. Observe the PR CI; require all validation and ephemeral PostgreSQL migration steps to pass before marking M04 complete.
-3. If CI passes, record the PR/run/job/final commit evidence, push the completion record, confirm its CI, then begin M05 on a new branch.
+1. Commit and push this M04 completion record, then confirm the resulting branch CI remains green.
+2. Begin M05 Repository intelligence on a new `codex/m05-*` branch based on the green M04 commit.
+3. Index only immutable, authorized, commit-addressed fixture content with deterministic exclusions, provenance, tenant scope, and no secret transmission.
 4. Never claim live GitHub provider evidence without performing the owner runbook, and never merge any PR autonomously.
