@@ -1,42 +1,69 @@
 import {
+  approvalRecordV1Schema,
+  executionPlanV1Schema,
   runnerExecutionResultV1Schema,
   runnerIsolationProfileV1Schema,
   runnerLifecycleResultV1Schema,
   runnerWorkspaceV1Schema,
   runV1Schema,
+  type ProjectPermissionV1,
   type RunnerExecutionResultV1,
 } from '@platform/contracts'
 import {
   auditEvents,
+  approvals,
+  executionPlans,
+  policyProfiles,
+  projects,
   repositoryConnections,
   runnerArtifacts,
   runnerCommands,
   runnerLifecycleRecords,
   runnerWorkspaces,
   runs,
+  serviceIdentities,
+  serviceIdentityPermissions,
   type PlatformDatabase,
 } from '@platform/database'
 import type {
   RunnerAuditEvent,
   RunnerOrchestrationStore,
+  RunnerPreparationContext,
   RunnerWorkspaceContext,
 } from '@platform/domain'
 import { and, eq } from 'drizzle-orm'
 
-import { PostgresPlanningStore } from './postgres-planning-store.js'
-import { PostgresProjectStore } from './postgres-project-store.js'
-
 export class PostgresRunnerOrchestrationStore implements RunnerOrchestrationStore {
-  readonly #planning: PostgresPlanningStore
-  readonly #projects: PostgresProjectStore
+  constructor(private readonly database: PlatformDatabase) {}
 
-  constructor(private readonly database: PlatformDatabase) {
-    this.#planning = new PostgresPlanningStore(database)
-    this.#projects = new PostgresProjectStore(database)
-  }
-
-  findServiceGrant(organizationId: string, actorId: string) {
-    return this.#projects.findServiceGrant(organizationId, actorId)
+  async findServiceGrant(organizationId: string, actorId: string) {
+    const [identity] = await this.database
+      .select()
+      .from(serviceIdentities)
+      .where(
+        and(
+          eq(serviceIdentities.organizationId, organizationId),
+          eq(serviceIdentities.id, actorId),
+        ),
+      )
+      .limit(1)
+    if (identity === undefined) return undefined
+    const permissionRows = await this.database
+      .select({ permission: serviceIdentityPermissions.permission })
+      .from(serviceIdentityPermissions)
+      .where(
+        and(
+          eq(serviceIdentityPermissions.organizationId, organizationId),
+          eq(serviceIdentityPermissions.serviceIdentityId, actorId),
+        ),
+      )
+    return {
+      actorId: identity.id,
+      organizationId: identity.organizationId,
+      ...(identity.projectId === null ? {} : { projectId: identity.projectId }),
+      permissions: permissionRows.map(({ permission }) => permission) as ProjectPermissionV1[],
+      status: identity.status as 'active' | 'suspended' | 'revoked',
+    }
   }
 
   async findPreparationContext(
@@ -44,10 +71,54 @@ export class PostgresRunnerOrchestrationStore implements RunnerOrchestrationStor
     projectId: string,
     runId: string,
     executionPlanId: string,
-  ) {
-    const [planning, currentPolicyVersion, repository] = await Promise.all([
-      this.#planning.findPlanningResult(organizationId, projectId, runId, executionPlanId),
-      this.#planning.findCurrentPolicyVersion(organizationId, projectId),
+  ): Promise<RunnerPreparationContext | undefined> {
+    const [planRows, runRows, approvalRows, policyRows, repository] = await Promise.all([
+      this.database
+        .select({ body: executionPlans.body })
+        .from(executionPlans)
+        .where(
+          and(
+            eq(executionPlans.organizationId, organizationId),
+            eq(executionPlans.projectId, projectId),
+            eq(executionPlans.id, executionPlanId),
+          ),
+        )
+        .limit(1),
+      this.database
+        .select()
+        .from(runs)
+        .where(
+          and(
+            eq(runs.organizationId, organizationId),
+            eq(runs.projectId, projectId),
+            eq(runs.id, runId),
+            eq(runs.executionPlanId, executionPlanId),
+          ),
+        )
+        .limit(1),
+      this.database
+        .select()
+        .from(approvals)
+        .where(
+          and(
+            eq(approvals.organizationId, organizationId),
+            eq(approvals.projectId, projectId),
+            eq(approvals.runId, runId),
+            eq(approvals.planId, executionPlanId),
+          ),
+        ),
+      this.database
+        .select({ updatedAt: policyProfiles.updatedAt })
+        .from(projects)
+        .innerJoin(
+          policyProfiles,
+          and(
+            eq(policyProfiles.organizationId, projects.organizationId),
+            eq(policyProfiles.id, projects.policyId),
+          ),
+        )
+        .where(and(eq(projects.organizationId, organizationId), eq(projects.id, projectId)))
+        .limit(1),
       this.database
         .select({
           provider: repositoryConnections.provider,
@@ -64,17 +135,26 @@ export class PostgresRunnerOrchestrationStore implements RunnerOrchestrationStor
         )
         .limit(1),
     ])
+    const planRow = planRows[0]
+    const runRow = runRows[0]
+    const policyRow = policyRows[0]
     const repositoryRow = repository[0]
     if (
-      planning === undefined ||
-      currentPolicyVersion === undefined ||
+      planRow === undefined ||
+      runRow === undefined ||
+      policyRow === undefined ||
       repositoryRow === undefined
     ) {
       return undefined
     }
     return {
-      planning,
-      currentPolicyVersion,
+      planning: {
+        schemaVersion: '1' as const,
+        plan: executionPlanV1Schema.parse(planRow.body),
+        run: parseRun(runRow),
+        approvals: approvalRows.map(parseApproval),
+      },
+      currentPolicyVersion: `policy:${policyRow.updatedAt.toISOString()}`,
       repository: {
         ...repositoryRow,
         readiness: repositoryRow.readiness as 'ready' | 'insufficient_permissions' | 'access_lost',
@@ -384,6 +464,26 @@ function parseRun(row: typeof runs.$inferSelect) {
     createdAt: row.createdAt.toISOString(),
     ...(row.startedAt === null ? {} : { startedAt: row.startedAt.toISOString() }),
     ...(row.endedAt === null ? {} : { endedAt: row.endedAt.toISOString() }),
+  })
+}
+
+function parseApproval(row: typeof approvals.$inferSelect) {
+  return approvalRecordV1Schema.parse({
+    schemaVersion: '1',
+    id: row.id,
+    organizationId: row.organizationId,
+    projectId: row.projectId,
+    runId: row.runId,
+    planId: row.planId,
+    planRevision: row.planRevision,
+    gate: row.gate,
+    decision: row.decision,
+    requesterId: row.requesterId,
+    policyVersion: row.policyVersion,
+    requestedAt: row.requestedAt.toISOString(),
+    ...(row.approverId === null ? {} : { approverId: row.approverId }),
+    ...(row.rationale === null ? {} : { rationale: row.rationale }),
+    ...(row.decidedAt === null ? {} : { decidedAt: row.decidedAt.toISOString() }),
   })
 }
 
