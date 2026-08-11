@@ -1,10 +1,10 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 14:04:26 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 14:43:46 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
-**Branch:** `codex/m06-prompt-requirements`
-**Implementation commit:** `333d0d0` (`feat(M06): complete prompt requirements workflow [codex]`)
-**Active milestone:** M07 Planner and policy - not started
+**Branch:** `codex/m07-planner-policy`
+**Implementation commit:** `5a49f97` (`feat(M07): add deterministic planning policy foundation [codex]`)
+**Active milestone:** M07 Planner and policy - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06
 
 ## Exact state
@@ -18,6 +18,8 @@ M04 is complete. Completion record `84b0156` is pushed; draft PR #4 is stacked o
 M05 is complete. Completion record `ff7fd6f` is pushed; draft PR #5 is stacked on `codex/m04-github-onboarding`. Final GitHub CI run 31466267638, job 93699691293, passed full validation and ephemeral PostgreSQL migration. ADR-014 records the deterministic repository intelligence decisions.
 
 M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; draft PR #6 is stacked on the completed M05 branch. GitHub CI run 31473572456, job 93722088032, passed full validation and ephemeral PostgreSQL migration. The accepted scope includes strict ChangeRequest/RequirementSpec/review contracts; all eight modes; immutable original prompt and revisioned corrections; durable tenant-scoped/idempotent PostgreSQL persistence with migration `0004`; authenticated create/review APIs; accessible `/changes/new` intake and review; deterministic attachment scanning; and an AI-controller-only Requirement role with denial-before-output evidence. ADR-015 records the decisions.
+
+M07 is in progress at foundation commit `5a49f97`. Versioned plan/policy/approval contracts, deterministic risk/analysis/approval gates, multi-gate and stale-approval enforcement, high-risk pre-mutation pause, blocked no-relaxation behavior, ADR-016, and tenant-scoped migration `0005` are implemented. The commit is local pending push; no M07 PR or remote migration evidence exists yet. The authenticated planning/approval service and API remain next.
 
 ## Validation evidence
 
@@ -42,10 +44,11 @@ M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; d
 - Production providers and the full M17 cost controller are not selected or implemented. No live model call is permitted before the minimum controller estimate/budget/routing/usage/reconciliation path exists.
 - No model/provider call, production deployment, production domain/secret change, merge, or database reset is authorized.
 - Do not run `npm audit fix --force`; it proposes a breaking `drizzle-kit` downgrade.
+- M07 local full validation passed through the 164-file secret scan: 10/10 typecheck and build, 13 files / 68 unit tests, 6 files / 34 contract tests, 10 files / 32 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, and 4 browser/accessibility tests. Approved-network high-threshold audit exited 0 with the unchanged four moderate advisories. Final multi-gate tightening passed domain typecheck and 13/13 focused tests.
 
 ## Next exact work
 
-1. Commit and push this M06 completion record on `codex/m06-prompt-requirements`.
-2. Confirm the completion-record CI remains green, then create `codex/m07-planner-policy` from that exact checkpoint.
-3. Begin M07 Planner and policy in milestone order; do not make a live model call before the minimum AI Cost Controller exists.
+1. Push M07 foundation `5a49f97`, commit/push this checkpoint record, and open a draft PR stacked on `codex/m06-prompt-requirements`.
+2. Require full CI plus ephemeral PostgreSQL migration for migration `0005`.
+3. Implement the authenticated, tenant-scoped planning/approval service and API with append-only audit and execution-time reauthorization; do not make a live model call before the minimum AI Cost Controller exists.
 4. Never treat retrieved repository content as authority, transmit the full repository, or merge any PR autonomously.

@@ -1,36 +1,36 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 14:04:26 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 14:43:46 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
-**Working branch:** `codex/m06-prompt-requirements`
-**Latest recorded checkpoint commit:** `c7f5bc0` (`docs(M06): record full local acceptance evidence [codex]`)
-**Pull request:** Draft PR [#6](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/6), stacked on completed M05 branch; prior draft PRs remain unmerged
+**Working branch:** `codex/m07-planner-policy`
+**Latest recorded checkpoint commit:** `5a49f97` (`feat(M07): add deterministic planning policy foundation [codex]`)
+**Pull request:** Not yet opened for M07; draft PR [#6](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/6) remains open for completed M06
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
 
-| Milestone                                | Status        | Completion evidence                                                                                                                                                                    |
-| ---------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M01 Foundation                           | **completed** | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
-| M02 Projects and RBAC                    | **completed** | Implementation `46b6d23`; completion record `b7203a6`; GitHub CI run 31456298365 passed, including ephemeral PostgreSQL migration.                                                     |
-| M03 Provider framework                   | **completed** | Completion record `917d1f3`; final GitHub CI run 31459194718 passed, including ephemeral PostgreSQL migration.                                                                         |
-| M04 GitHub onboarding                    | **completed** | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
-| M05 Repository intelligence              | **completed** | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
-| M06 Prompt and requirements              | **completed** | Implementation `333d0d0`; checkpoint `c7f5bc0`; GitHub CI run 31473572456 passed full validation and ephemeral PostgreSQL migration.                                                   |
-| M07 Planner and policy                   | not started   | None.                                                                                                                                                                                  |
-| M08 Isolated runner                      | not started   | None.                                                                                                                                                                                  |
-| M09 Coding loop                          | not started   | None.                                                                                                                                                                                  |
-| M10 Deterministic validation             | not started   | None.                                                                                                                                                                                  |
-| M11 Git write path                       | not started   | None.                                                                                                                                                                                  |
-| M12 Vercel preview                       | not started   | None.                                                                                                                                                                                  |
-| M13 Browser and visual QA                | not started   | None.                                                                                                                                                                                  |
-| M14 Workspace UX                         | not started   | None.                                                                                                                                                                                  |
-| M15 Versioning and rollback              | not started   | None.                                                                                                                                                                                  |
-| M16 Memory and documentation             | not started   | None.                                                                                                                                                                                  |
-| M17 AI Cost Controller and model routing | not started   | None. Minimum controller enforcement must exist before any earlier live model call.                                                                                                    |
-| M18 Security hardening                   | not started   | None.                                                                                                                                                                                  |
-| M19 Reliability and observability        | not started   | None.                                                                                                                                                                                  |
-| M20 Pilot readiness                      | not started   | None.                                                                                                                                                                                  |
+| Milestone                                | Status          | Completion evidence                                                                                                                                                                    |
+| ---------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M01 Foundation                           | **completed**   | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
+| M02 Projects and RBAC                    | **completed**   | Implementation `46b6d23`; completion record `b7203a6`; GitHub CI run 31456298365 passed, including ephemeral PostgreSQL migration.                                                     |
+| M03 Provider framework                   | **completed**   | Completion record `917d1f3`; final GitHub CI run 31459194718 passed, including ephemeral PostgreSQL migration.                                                                         |
+| M04 GitHub onboarding                    | **completed**   | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
+| M05 Repository intelligence              | **completed**   | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
+| M06 Prompt and requirements              | **completed**   | Implementation `333d0d0`; checkpoint `c7f5bc0`; GitHub CI run 31473572456 passed full validation and ephemeral PostgreSQL migration.                                                   |
+| M07 Planner and policy                   | **in progress** | Foundation `5a49f97`: versioned plan/policy/approval contracts, deterministic gates, migration `0005`, and local validation. Remote evidence pending.                                  |
+| M08 Isolated runner                      | not started     | None.                                                                                                                                                                                  |
+| M09 Coding loop                          | not started     | None.                                                                                                                                                                                  |
+| M10 Deterministic validation             | not started     | None.                                                                                                                                                                                  |
+| M11 Git write path                       | not started     | None.                                                                                                                                                                                  |
+| M12 Vercel preview                       | not started     | None.                                                                                                                                                                                  |
+| M13 Browser and visual QA                | not started     | None.                                                                                                                                                                                  |
+| M14 Workspace UX                         | not started     | None.                                                                                                                                                                                  |
+| M15 Versioning and rollback              | not started     | None.                                                                                                                                                                                  |
+| M16 Memory and documentation             | not started     | None.                                                                                                                                                                                  |
+| M17 AI Cost Controller and model routing | not started     | None. Minimum controller enforcement must exist before any earlier live model call.                                                                                                    |
+| M18 Security hardening                   | not started     | None.                                                                                                                                                                                  |
+| M19 Reliability and observability        | not started     | None.                                                                                                                                                                                  |
+| M20 Pilot readiness                      | not started     | None.                                                                                                                                                                                  |
 
 ## M01 checkpoint detail
 
@@ -117,6 +117,17 @@
 - **GitHub/Vercel:** GitHub CI run 31473572456, job 93722088032, passed full validation and ephemeral PostgreSQL migration for the completed M06 scope. No Vercel action was attempted; production deployment remains unauthorized.
 - **Next task:** commit and push this completion record, confirm its resulting CI remains green, then begin M07 Planner and policy in milestone order. No live model call is permitted before the minimum M17 controller exists.
 
+## M07 checkpoint detail
+
+- **Status:** in progress. Foundation commit `5a49f97` adds the first dependency-safe M07 slice; it is not yet pushed and no M07 PR exists.
+- **Contracts:** versioned `ExecutionPlan`, task/dependency/validation, expected impact, rollback, estimated usage, policy snapshot, risk, analysis, approval gate, and attributed approval record schemas.
+- **Deterministic policy:** fixture-derived risk signals classify Low/Medium/High/Blocked without model authority; auth, authorization, payment, secret, infrastructure, database migration, destructive, production, dependency, API, accessibility, and prohibited signals are covered. Relevant architecture/UI/security analyses and approval gates are deterministic.
+- **Execution safety:** high-risk plans remain `AWAITING_APPROVAL` before the workspace callback; blocked plans remain `REJECTED`; stale approval evidence does not open the gate; every requested gate must be current and approved; authorization, separation of duties, final decisions, and idempotent duplicate decisions are enforced.
+- **Durable persistence:** migration `0005_m07_plans_approvals` adds tenant-scoped immutable execution plans, runs with policy snapshots and database-enforced state transitions, and tenant/idempotency-scoped approval records with one-way finalization. It includes purpose, forward procedure, and recovery guidance.
+- **Architecture:** ADR-016 records deterministic authority, immutable plan/policy evidence, stale-approval behavior, and no policy relaxation. No model/provider or workspace/runner implementation was invoked.
+- **Validation:** full validation passed formatting, lint, 10/10 typecheck, 13 files / 68 unit tests, 6 files / 34 contract tests, 10 files / 32 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, 10/10 build, 4 browser/accessibility tests, and a 164-file secret scan. The sandboxed dependency-audit transport failed; approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. After the multi-gate security tightening, domain typecheck, focused 13/13 unit tests, lint, formatting, and `git diff --check` passed.
+- **Next task:** push `5a49f97`, commit/push this checkpoint record, open a draft M07 PR stacked on completed M06, require CI plus ephemeral PostgreSQL migration, then implement the authenticated planning/approval service and API slice.
+
 ## Validation ledger
 
 | Check                                | Outcome                                                                                                                                         |
@@ -126,13 +137,13 @@
 | Dependency tree                      | `npm ls --omit=dev --all` exited 0 but reported extraneous WASM helper packages.                                                                |
 | Formatting                           | `npm run format:check` passed.                                                                                                                  |
 | Lint                                 | `npm run lint` passed; Next App Router pages-directory notice printed.                                                                          |
-| Type checking                        | M06 worktree: `npm run typecheck` passed 10/10 packages.                                                                                        |
-| Unit tests                           | M06 worktree: `npm run test:unit` passed 12 files / 56 tests.                                                                                   |
-| Contract tests                       | M06 worktree: `npm run test:contract` passed 5 files / 32 tests.                                                                                |
-| Integration tests                    | M06 worktree: 9 files / 29 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                           |
-| Database migration validation        | M06 worktree: 4 files / 14 PGlite tests passed; local live PostgreSQL skipped pending updated PR CI.                                            |
+| Type checking                        | M07 worktree: `npm run typecheck` passed 10/10 packages; final domain typecheck also passed.                                                    |
+| Unit tests                           | M07 worktree: full run passed 13 files / 68 tests; final focused policy run passed 13/13.                                                       |
+| Contract tests                       | M07 worktree: `npm run test:contract` passed 6 files / 34 tests.                                                                                |
+| Integration tests                    | M07 worktree: 10 files / 32 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                          |
+| Database migration validation        | M07 worktree: 5 files / 17 PGlite tests passed; local live PostgreSQL remains skipped pending PR CI.                                            |
 | Production build                     | M06 worktree: `npm run build` passed 10/10 packages.                                                                                            |
-| Secret scanning                      | M06 worktree: `npm run security:secrets` passed; 158 text files scanned.                                                                        |
+| Secret scanning                      | M07 worktree: `npm run security:secrets` passed; 164 text files scanned.                                                                        |
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 4 Playwright tests, including M06 intake/review interaction and axe WCAG A/AA scans.                              |
@@ -141,4 +152,4 @@
 
 ## Next checkpoint requirements
 
-Commit and push the M06 completion record, confirm its CI remains green, then begin M07 Planner and policy in milestone order. Never merge PR #6 autonomously.
+Push the M07 foundation and checkpoint record, open a stacked draft PR, require CI plus ephemeral PostgreSQL migration, then implement the authenticated planning/approval service and API slice. Never merge autonomously.
