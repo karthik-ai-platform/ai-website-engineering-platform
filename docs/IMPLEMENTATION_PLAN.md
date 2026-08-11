@@ -28,7 +28,7 @@ Cross-cutting constraints apply throughout: tenant scoping begins in M01/M02; pr
 - **Tests/checks:** Workspace install reproducibility; format/lint/typecheck; unit tests for configuration, health, typed errors/redaction, and foundational state rules; API/web health integration tests; schema/migration static validation and live PostgreSQL apply/rollback-recovery test when a safe local/test endpoint exists; production builds; dependency and secret scans.
 - **Completion evidence:** Pinned lockfile and workspace manifests; passing root CI-equivalent command log; health response evidence from web/API; initial migration files plus recovery notes and migration test output; CI workflow run; no-secret scan result; commit `feat(M01): initialize platform foundation [codex]` (or documented equivalent) and branch/PR reference.
 
-## M02 - Projects and RBAC (in progress)
+## M02 - Projects and RBAC (completed)
 
 - **Tasks:** Implement User, Organization, Membership, Project, Policy reference, and append-only AuditEvent storage/services; define Owner, Developer, Designer, Reviewer, Viewer, and scoped service identities; add organization/project tenant guards and distinct request/approve/merge/promote/secret/policy permissions; create project lifecycle APIs for create/archive/restore/delete subject to retention policy; authorize at command issue and re-check delayed privileged execution; emit audit events for authentication and denied/allowed project actions.
 - **Dependencies:** M01 auth/session port, persistence/migration pattern, error/contract conventions.

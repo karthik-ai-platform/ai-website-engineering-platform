@@ -1,15 +1,15 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 09:01:46 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 09:08:48 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m02-projects-rbac`
 **Implementation commit:** `46b6d23` (`feat(M02): implement projects and RBAC [codex]`)
-**Active milestone:** M02 Projects and RBAC - in progress
-**Completed milestones:** M01
+**Next milestone:** M03 Provider framework - not started
+**Completed milestones:** M01, M02
 
 ## Exact state
 
-M02 implementation and local validation are stable and committed locally at `46b6d23`. The checkpoint documentation remains to be committed separately so it can reference that observed hash. Preserve the M01 completion evidence. Do not repeat M01 or start M03.
+M02 is complete. Implementation commit `46b6d23` and checkpoint commit `6d5471b` are pushed on `codex/m02-projects-rbac`; draft PR #2 is open. GitHub CI run 31455861287 passed the `validate` job, including the ephemeral PostgreSQL migration step. Preserve M01/M02 evidence and do not repeat their implementation.
 
 Implemented M02 work includes versioned project/RBAC schemas; conservative role permissions; tenant and separately scoped service-identity authorization; audited allowed/denied decisions; stale membership/grant reauthorization; retention-aware create/archive/restore/delete behavior; typed Fastify project routes; PostgreSQL storage adapter; and additive migration `0002_m02_projects_rbac` with policy profiles, membership status, service identities/grants, tenant foreign keys, and lifecycle timestamps. ADR-011 records the policy choices.
 
@@ -23,7 +23,7 @@ Implemented M02 work includes versioned project/RBAC schemas; conservative role 
 
 ## Known limitations and safety
 
-- M02 is not complete until a stable commit is pushed and CI, including disposable PostgreSQL migration, is observed and recorded.
+- M02 completion evidence is satisfied by GitHub CI run 31455861287 and the recorded local validation.
 - `gh auth status` reports the active `karthik18mohan` token is invalid. The GitHub publishing workflow requires `gh auth login -h github.com` and a successful `gh auth status` before staging/commit/push.
 - Physical project deletion after retention expiry is deferred to later durable workflow/retention implementation; it may never erase audit history.
 - Delegated visual approval and environment-specific separation of duties remain future versioned policy; default privileged permissions are conservative.
@@ -32,7 +32,7 @@ Implemented M02 work includes versioned project/RBAC schemas; conservative role 
 
 ## Next exact work
 
-1. Format/check and commit the checkpoint documentation with an M02-scoped `[codex]` message.
-2. Push `codex/m02-projects-rbac`, create/update a reviewable draft PR, and observe CI without merging.
-3. If CI passes, update `docs/IMPLEMENTATION_STATUS.md`, this handoff, and `docs/CONTINUATION_PROMPT.md` with PR/run evidence; then decide whether M02 meets completion.
-4. Do not start M03 until M02 is explicitly recorded complete.
+1. Commit and push this M02 completion evidence; confirm the resulting branch CI remains green.
+2. Begin M03 Provider framework from its SRS/implementation-plan acceptance criteria.
+3. Keep provider SDKs and vendor types behind adapters, service secrets as references, callbacks authenticated/replay-safe, and all future model access behind the AI Cost Controller invocation port.
+4. Never merge PR #2 autonomously.

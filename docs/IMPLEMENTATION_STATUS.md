@@ -1,36 +1,36 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 09:01:46 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 09:08:48 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m02-projects-rbac`
-**Latest recorded checkpoint commit:** `46b6d23` (`feat(M02): implement projects and RBAC [codex]`)
-**Pull request:** Draft PR [#1](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/1)
+**Latest recorded checkpoint commit:** `6d5471b9e02125a85a084e62ef98f1fceef21b23` (`docs(M02): record projects and RBAC checkpoint [codex]`)
+**Pull request:** Draft PR [#2](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/2)
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
 
-| Milestone                                | Status          | Completion evidence                                                                                                                                                                    |
-| ---------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M01 Foundation                           | **completed**   | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
-| M02 Projects and RBAC                    | **in progress** | Implementation commit `46b6d23` and local validation pass; push, PR/CI, and live PostgreSQL M02 evidence remain open.                                                                  |
-| M03 Provider framework                   | not started     | None.                                                                                                                                                                                  |
-| M04 GitHub onboarding                    | not started     | None.                                                                                                                                                                                  |
-| M05 Repository intelligence              | not started     | None.                                                                                                                                                                                  |
-| M06 Prompt and requirements              | not started     | None.                                                                                                                                                                                  |
-| M07 Planner and policy                   | not started     | None.                                                                                                                                                                                  |
-| M08 Isolated runner                      | not started     | None.                                                                                                                                                                                  |
-| M09 Coding loop                          | not started     | None.                                                                                                                                                                                  |
-| M10 Deterministic validation             | not started     | None.                                                                                                                                                                                  |
-| M11 Git write path                       | not started     | None.                                                                                                                                                                                  |
-| M12 Vercel preview                       | not started     | None.                                                                                                                                                                                  |
-| M13 Browser and visual QA                | not started     | None.                                                                                                                                                                                  |
-| M14 Workspace UX                         | not started     | None.                                                                                                                                                                                  |
-| M15 Versioning and rollback              | not started     | None.                                                                                                                                                                                  |
-| M16 Memory and documentation             | not started     | None.                                                                                                                                                                                  |
-| M17 AI Cost Controller and model routing | not started     | None. Minimum controller enforcement must exist before any earlier live model call.                                                                                                    |
-| M18 Security hardening                   | not started     | None.                                                                                                                                                                                  |
-| M19 Reliability and observability        | not started     | None.                                                                                                                                                                                  |
-| M20 Pilot readiness                      | not started     | None.                                                                                                                                                                                  |
+| Milestone                                | Status        | Completion evidence                                                                                                                                                                    |
+| ---------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M01 Foundation                           | **completed** | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
+| M02 Projects and RBAC                    | **completed** | Implementation `46b6d23`; local gates passed; GitHub CI run 31455861287 passed, including ephemeral PostgreSQL migration.                                                              |
+| M03 Provider framework                   | not started   | Next milestone.                                                                                                                                                                        |
+| M04 GitHub onboarding                    | not started   | None.                                                                                                                                                                                  |
+| M05 Repository intelligence              | not started   | None.                                                                                                                                                                                  |
+| M06 Prompt and requirements              | not started   | None.                                                                                                                                                                                  |
+| M07 Planner and policy                   | not started   | None.                                                                                                                                                                                  |
+| M08 Isolated runner                      | not started   | None.                                                                                                                                                                                  |
+| M09 Coding loop                          | not started   | None.                                                                                                                                                                                  |
+| M10 Deterministic validation             | not started   | None.                                                                                                                                                                                  |
+| M11 Git write path                       | not started   | None.                                                                                                                                                                                  |
+| M12 Vercel preview                       | not started   | None.                                                                                                                                                                                  |
+| M13 Browser and visual QA                | not started   | None.                                                                                                                                                                                  |
+| M14 Workspace UX                         | not started   | None.                                                                                                                                                                                  |
+| M15 Versioning and rollback              | not started   | None.                                                                                                                                                                                  |
+| M16 Memory and documentation             | not started   | None.                                                                                                                                                                                  |
+| M17 AI Cost Controller and model routing | not started   | None. Minimum controller enforcement must exist before any earlier live model call.                                                                                                    |
+| M18 Security hardening                   | not started   | None.                                                                                                                                                                                  |
+| M19 Reliability and observability        | not started   | None.                                                                                                                                                                                  |
+| M20 Pilot readiness                      | not started   | None.                                                                                                                                                                                  |
 
 ## M01 checkpoint detail
 
@@ -50,18 +50,18 @@
 
 ## M02 checkpoint detail
 
-- **Status:** in progress. Implementation is committed locally at `46b6d23`; do not start M03 until the checkpoint is pushed and CI evidence is recorded.
+- **Status:** completed. Implementation commit `46b6d23` and checkpoint commit `6d5471b` are pushed; GitHub CI run 31455861287 passed all required steps, including ephemeral PostgreSQL migration.
 - **Implemented capabilities:** versioned project/RBAC contracts; conservative Owner/Developer/Designer/Reviewer/Viewer permission matrix; organization/project tenant guards; separately scoped service identities with enumerated grants; current-membership/grant reauthorization for delayed lifecycle commands; create/archive/restore/delete service with policy-referenced retention; typed Fastify create/lifecycle routes; PostgreSQL adapter with tenant-scoped reads and transactional project/audit writes; M02 forward migration and recovery guidance.
 - **Acceptance evidence:** unauthorized project creation returns `AUTHORIZATION_DENIED`, leaves project storage unchanged, and appends a denied audit event; stale/revoked membership is rejected on delayed execution; cross-tenant policy and service-project references are rejected; successful mutations are audited; retention-aware delete enters `deletion_pending` for nonzero retention.
 - **Validation passed:** formatting, lint, typecheck, unit, contract, integration, PGlite migration, production build, browser/accessibility, secret scan, approved-network dependency audit, dependency tree, focused tests, and whitespace checks passed as recorded below.
 - **Exact test outcomes:** unit 11 files / 42 tests; contract 1 file / 8 tests; integration 5 files / 19 tests passed with 1 file / 1 live PostgreSQL test skipped; migration compatibility 2 files / 8 tests; browser/accessibility 3 tests; build and typecheck 7/7 packages; secret scan 110 text files.
-- **Validation limitations:** the first full validation stopped at lint for three unused restore destructuring bindings; those bindings were removed. The second run passed through secret scanning, then the sandboxed npm audit request failed at the registry boundary. `npm run security:deps` was rerun with approved registry access and exited 0. Local live PostgreSQL remains skipped because disposable endpoint variables are unset; M02 CI has not run.
+- **Validation limitations:** the first full validation stopped at lint for three unused restore destructuring bindings; those bindings were removed. The second run passed through secret scanning, then the sandboxed npm audit request failed at the registry boundary. `npm run security:deps` was rerun with approved registry access and exited 0. Local live PostgreSQL remains skipped because disposable endpoint variables are unset; GitHub CI supplied the required disposable PostgreSQL evidence.
 - **Security:** no secrets or provider calls were added. Authorization is deny-by-default. Service identities do not inherit human roles. Owner is the only default role with lifecycle, merge, promotion, secret, policy, or membership permissions; future delegation requires versioned policy. Production promotion remains disabled. The known 4 moderate `esbuild` advisories through `drizzle-kit` remain; the breaking forced downgrade was not applied.
-- **Database/migrations:** `0002_m02_projects_rbac` adds membership status, policy profiles, lifecycle retention timestamps, service identities, and enumerated service permissions with tenant-consistent foreign keys. It is additive and forward-only. Local PGlite compatibility passed; live PostgreSQL M02 application remains uncredited until CI or a safe disposable endpoint runs it.
+- **Database/migrations:** `0002_m02_projects_rbac` adds membership status, policy profiles, lifecycle retention timestamps, service identities, and enumerated service permissions with tenant-consistent foreign keys. It is additive and forward-only. Local PGlite compatibility passed, and GitHub CI applied the migration successfully to its disposable PostgreSQL 17 service.
 - **Architecture:** ADR-011 records conservative role defaults, separately scoped service grants, domain-owned policy, transactional success audit writes, and retention-aware deletion. Physical deletion after expiry is deferred to durable workflow/retention work and must preserve audit history.
 - **Commit:** `46b6d23` (`feat(M02): implement projects and RBAC [codex]`) contains the validated implementation, contracts, migration, adapters, and tests. Checkpoint documentation follows separately so it can reference the observed implementation hash.
-- **GitHub/Vercel:** M02 branch and implementation commit exist locally. `gh auth status` on 2026-08-11 still reports the active `karthik18mohan` token is invalid. No M02 push, PR, CI run, or Vercel action has been claimed. Production deployment remains unauthorized.
-- **Next task:** commit this checkpoint evidence, push the M02 branch through an authenticated path, obtain PR/CI evidence, then update records and decide whether M02 can be completed.
+- **GitHub/Vercel:** `codex/m02-projects-rbac` is pushed and draft PR [#2](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/2) is open. GitHub CI run 31455861287, job `validate`, passed the main validation and ephemeral PostgreSQL migration steps. The GitHub connector created/inspected the PR because the local `gh` token remains invalid. No Vercel action was attempted; production deployment remains unauthorized.
+- **Next task:** begin M03 Provider framework in milestone order after this completion record is committed and pushed. Do not merge PR #2 autonomously.
 
 ## Validation ledger
 
@@ -82,9 +82,9 @@
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 3 Playwright tests, including content/no-overlay checks, health contract, and axe WCAG A/AA scan.                 |
-| GitHub CI                            | M01 run 31450683532 passed; M02 CI has not run.                                                                                                 |
+| GitHub CI                            | M02 run 31455861287 passed for PR #2; job `validate` passed, including ephemeral PostgreSQL migration.                                          |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
 
-M02 implementation commit `46b6d23` and local evidence are stable. Commit these evidence records, push the M02 branch, capture PR/CI including ephemeral PostgreSQL migration, and do not start M03 until M02 completion evidence is recorded.
+M02 is complete. Commit and push this completion record, confirm the branch remains green, then begin M03 Provider framework in milestone order. Never merge PR #2 autonomously.
