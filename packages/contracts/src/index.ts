@@ -36,3 +36,21 @@ export {
   type WorkflowCommandV1,
   type WorkflowEventV1,
 } from './orchestration-v1.js'
+export {
+  authorizationDecisionV1Schema,
+  createProjectRequestV1Schema,
+  organizationRoleV1Schema,
+  projectLifecycleActionV1Schema,
+  projectLifecycleRequestV1Schema,
+  projectPermissionV1Schema,
+  projectStatusV1Schema,
+  projectV1Schema,
+  type AuthorizationDecisionV1,
+  type CreateProjectRequestV1,
+  type OrganizationRoleV1,
+  type ProjectLifecycleActionV1,
+  type ProjectLifecycleRequestV1,
+  type ProjectPermissionV1,
+  type ProjectStatusV1,
+  type ProjectV1,
+} from './projects-v1.js'

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   actorContextV1Schema,
+  authorizationDecisionV1Schema,
+  createProjectRequestV1Schema,
   healthResponseV1Schema,
   workflowCommandV1Schema,
   workflowEventV1Schema,
@@ -124,6 +126,43 @@ describe('versioned boundary contracts', () => {
         payload: { reason: 'fixture' },
         runId: '00000000-0000-4000-8000-000000000005',
         toState: 'PLANNING',
+      }),
+    ).toThrow()
+  })
+
+  it('validates a tenant-scoped project creation request', () => {
+    expect(
+      createProjectRequestV1Schema.parse({
+        schemaVersion: '1',
+        organizationId: '00000000-0000-4000-8000-000000000007',
+        name: 'Website',
+        slug: 'website',
+        policyId: '00000000-0000-4000-8000-000000000008',
+      }).slug,
+    ).toBe('website')
+    expect(() =>
+      createProjectRequestV1Schema.parse({
+        schemaVersion: '1',
+        organizationId: '00000000-0000-4000-8000-000000000007',
+        name: 'Website',
+        slug: '../escape',
+        policyId: '00000000-0000-4000-8000-000000000008',
+      }),
+    ).toThrow()
+  })
+
+  it('requires an enumerated reason for authorization evidence', () => {
+    expect(() =>
+      authorizationDecisionV1Schema.parse({
+        schemaVersion: '1',
+        allowed: false,
+        actorId,
+        actorType: 'user',
+        organizationId: '00000000-0000-4000-8000-000000000007',
+        permission: 'project:create',
+        correlationId,
+        reason: 'model says no',
+        decidedAt: '2026-07-21T00:00:00.000Z',
       }),
     ).toThrow()
   })

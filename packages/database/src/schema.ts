@@ -3,6 +3,7 @@ import {
   check,
   foreignKey,
   index,
+  integer,
   primaryKey,
   pgTable,
   text,
@@ -68,6 +69,7 @@ export const memberships = pgTable(
         onUpdate: 'restrict',
       }),
     role: text('role').notNull(),
+    status: text('status').notNull().default('active'),
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   },
@@ -81,6 +83,34 @@ export const memberships = pgTable(
       'memberships_role_check',
       sql`${table.role} in ('owner', 'developer', 'designer', 'reviewer', 'viewer')`,
     ),
+    check('memberships_status_check', sql`${table.status} in ('active', 'suspended', 'revoked')`),
+  ],
+)
+
+export const policyProfiles = pgTable(
+  'policy_profiles',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id, {
+        onDelete: 'restrict',
+        onUpdate: 'restrict',
+      }),
+    name: text('name').notNull(),
+    deletionRetentionDays: integer('deletion_retention_days').notNull().default(30),
+    status: text('status').notNull().default('active'),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique('policy_profiles_organization_id_id_unique').on(table.organizationId, table.id),
+    unique('policy_profiles_organization_id_name_unique').on(table.organizationId, table.name),
+    check(
+      'policy_profiles_retention_days_check',
+      sql`${table.deletionRetentionDays} BETWEEN 0 AND 3650`,
+    ),
+    check('policy_profiles_status_check', sql`${table.status} in ('active', 'retired')`),
   ],
 )
 
@@ -99,6 +129,10 @@ export const projects = pgTable(
     status: text('status').notNull().default('active'),
     pluginType: text('plugin_type').notNull().default('website'),
     policyId: uuid('policy_id'),
+    archivedAt: timestamp('archived_at', { mode: 'date', withTimezone: true }),
+    deletionRequestedAt: timestamp('deletion_requested_at', { mode: 'date', withTimezone: true }),
+    retentionUntil: timestamp('retention_until', { mode: 'date', withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { mode: 'date', withTimezone: true }),
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   },
@@ -109,6 +143,76 @@ export const projects = pgTable(
     check(
       'projects_status_check',
       sql`${table.status} in ('active', 'archived', 'deletion_pending', 'deleted')`,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.policyId],
+      foreignColumns: [policyProfiles.organizationId, policyProfiles.id],
+      name: 'projects_policy_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+  ],
+)
+
+export const serviceIdentities = pgTable(
+  'service_identities',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id, {
+        onDelete: 'restrict',
+        onUpdate: 'restrict',
+      }),
+    projectId: uuid('project_id'),
+    name: text('name').notNull(),
+    status: text('status').notNull().default('active'),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique('service_identities_organization_id_id_unique').on(table.organizationId, table.id),
+    foreignKey({
+      columns: [table.organizationId, table.projectId],
+      foreignColumns: [projects.organizationId, projects.id],
+      name: 'service_identities_project_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    check(
+      'service_identities_status_check',
+      sql`${table.status} in ('active', 'suspended', 'revoked')`,
+    ),
+  ],
+)
+
+export const serviceIdentityPermissions = pgTable(
+  'service_identity_permissions',
+  {
+    organizationId: uuid('organization_id').notNull(),
+    serviceIdentityId: uuid('service_identity_id').notNull(),
+    permission: text('permission').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.organizationId, table.serviceIdentityId, table.permission],
+      name: 'service_identity_permissions_pk',
+    }),
+    foreignKey({
+      columns: [table.organizationId, table.serviceIdentityId],
+      foreignColumns: [serviceIdentities.organizationId, serviceIdentities.id],
+      name: 'service_identity_permissions_identity_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    check(
+      'service_identity_permissions_permission_check',
+      sql`${table.permission} in (
+      'project:read', 'project:create', 'project:archive', 'project:restore', 'project:delete',
+      'change:request', 'change:approve', 'git:merge', 'release:promote', 'secret:manage',
+      'policy:modify', 'member:manage'
+    )`,
     ),
   ],
 )
@@ -165,3 +269,6 @@ export type ProjectRow = typeof projects.$inferSelect
 export type NewProjectRow = typeof projects.$inferInsert
 export type AuditEventRow = typeof auditEvents.$inferSelect
 export type NewAuditEventRow = typeof auditEvents.$inferInsert
+export type PolicyProfileRow = typeof policyProfiles.$inferSelect
+export type ServiceIdentityRow = typeof serviceIdentities.$inferSelect
+export type ServiceIdentityPermissionRow = typeof serviceIdentityPermissions.$inferSelect

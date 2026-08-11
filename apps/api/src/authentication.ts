@@ -17,6 +17,7 @@ import { z } from 'zod'
 const oidcClaimsSchema = z
   .object({
     actor_id: opaqueIdSchema,
+    actor_type: z.enum(['user', 'service']).default('user'),
     exp: z.number().int().positive(),
     iat: z.number().int().positive(),
     organization_id: opaqueIdSchema.optional(),
@@ -107,7 +108,7 @@ function mapVerifiedClaims(payload: JWTPayload, correlationId: string): ActorCon
   return actorContextV1Schema.parse({
     schemaVersion: '1',
     actorId: claims.actor_id,
-    actorType: 'user',
+    actorType: claims.actor_type,
     authenticationMethod: 'oidc',
     correlationId: correlationIdSchema.parse(correlationId),
     expiresAt: new Date(claims.exp * 1000).toISOString(),

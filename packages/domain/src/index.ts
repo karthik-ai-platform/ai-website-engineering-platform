@@ -4,7 +4,21 @@ export {
   type AuthenticationPort,
 } from './authentication.js'
 export { isPlatformError, PlatformError, type PlatformErrorOptions } from './error.js'
+export {
+  authorize,
+  permissionsForRole,
+  type AuthorizationContext,
+  type HumanMembership,
+  type ServiceGrant,
+} from './authorization.js'
 export { type OrchestrationStore, type TransitionRecord } from './orchestration.js'
+export {
+  ProjectService,
+  type ProjectAuditEvent,
+  type ProjectPolicyReference,
+  type ProjectServiceOptions,
+  type ProjectStore,
+} from './project-service.js'
 export {
   canTransitionRun,
   isTerminalRunState,

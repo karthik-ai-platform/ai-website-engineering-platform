@@ -2,15 +2,20 @@ import {
   actorContextV1Schema,
   apiErrorResponseV1Schema,
   correlationIdSchema,
+  createProjectRequestV1Schema,
   healthResponseV1Schema,
+  projectLifecycleRequestV1Schema,
+  projectV1Schema,
   type DependencyHealthV1,
 } from '@platform/contracts'
 import { createLazyPostgresConnection } from '@platform/database'
 import {
   PlatformError,
+  ProjectService,
   isPlatformError,
   type AuthenticationCredential,
   type AuthenticationPort,
+  type ProjectStore,
 } from '@platform/domain'
 import { createPlatformLogger, resolveCorrelationId } from '@platform/observability'
 import Fastify, { LogController } from 'fastify'
@@ -18,6 +23,7 @@ import { z } from 'zod'
 
 import { LocalAuthenticationAdapter, OidcAuthenticationAdapter } from './authentication.js'
 import type { ApiConfig } from './config.js'
+import { PostgresProjectStore } from './postgres-project-store.js'
 
 const bearerHeaderSchema = z.string().regex(/^Bearer\s+\S+$/iu)
 
@@ -31,6 +37,7 @@ export interface BuildApiOptions {
   readonly authentication?: AuthenticationPort
   readonly config: ApiConfig
   readonly readinessProbe?: ReadinessProbe
+  readonly projectStore?: ProjectStore
 }
 
 export function buildApi(options: BuildApiOptions) {
@@ -40,6 +47,17 @@ export function buildApi(options: BuildApiOptions) {
   })
   const authentication = options.authentication ?? createAuthentication(options.config)
   const readinessProbe = options.readinessProbe ?? createDatabaseReadinessProbe(options.config)
+  const projectConnection =
+    options.projectStore === undefined && options.config.databaseUrl !== undefined
+      ? createLazyPostgresConnection({ databaseUrl: options.config.databaseUrl })
+      : undefined
+  const projectStore =
+    options.projectStore ??
+    (projectConnection === undefined
+      ? undefined
+      : new PostgresProjectStore(projectConnection.database))
+  const projectService =
+    projectStore === undefined ? undefined : new ProjectService({ store: projectStore })
   const app = Fastify({
     genReqId: (request) => resolveCorrelationId(singleHeader(request.headers['x-correlation-id'])),
     logController: new LogController({ disableRequestLogging: true }),
@@ -78,14 +96,52 @@ export function buildApi(options: BuildApiOptions) {
   })
 
   app.get('/v1/session', async (request) => {
-    const credential = extractAuthenticationCredential(
+    const actor = await authenticateRequest(
       request.headers,
       request.id,
       request.ip,
       options.config,
+      authentication,
     )
-    const actor = await authentication.authenticate(credential)
     return actorContextV1Schema.parse(actor)
+  })
+
+  app.post('/v1/projects', async (request, reply) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(createProjectRequestV1Schema, request.body, request.id)
+    const service = requireProjectService(projectService, request.id)
+    void reply.code(201)
+    return projectV1Schema.parse(await service.create(actor, body))
+  })
+
+  app.post('/v1/projects/:projectId/lifecycle', async (request) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(projectLifecycleRequestV1Schema, request.body, request.id)
+    const path = z.object({ projectId: z.string().uuid() }).safeParse(request.params)
+    if (!path.success || path.data.projectId !== body.projectId) {
+      throw validationFailed(request.id)
+    }
+    return projectV1Schema.parse(
+      await requireProjectService(projectService, request.id).transition(
+        actor,
+        body.organizationId,
+        body.projectId,
+        body.action,
+        body.expectedUpdatedAt,
+      ),
+    )
   })
 
   app.setErrorHandler(async (error, request, reply) => {
@@ -118,10 +174,54 @@ export function buildApi(options: BuildApiOptions) {
   })
 
   app.addHook('onClose', async () => {
-    await readinessProbe.close?.()
+    await Promise.all([readinessProbe.close?.(), projectConnection?.close()])
   })
 
   return app
+}
+
+async function authenticateRequest(
+  headers: Readonly<Record<string, string | string[] | undefined>>,
+  correlationId: string,
+  requestIp: string,
+  config: ApiConfig,
+  authentication: AuthenticationPort,
+) {
+  return authentication.authenticate(
+    extractAuthenticationCredential(headers, correlationId, requestIp, config),
+  )
+}
+
+function parseBody<T extends z.ZodType>(
+  schema: T,
+  body: unknown,
+  correlationId: string,
+): z.infer<T> {
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) throw validationFailed(correlationId)
+  return parsed.data
+}
+
+function validationFailed(correlationId: string): PlatformError {
+  return new PlatformError({
+    code: 'VALIDATION_FAILED',
+    correlationId: correlationIdSchema.parse(correlationId),
+    retryable: false,
+    safeMessage: 'The request payload is invalid.',
+  })
+}
+
+function requireProjectService(
+  service: ProjectService | undefined,
+  correlationId: string,
+): ProjectService {
+  if (service !== undefined) return service
+  throw new PlatformError({
+    code: 'DEPENDENCY_UNAVAILABLE',
+    correlationId: correlationIdSchema.parse(correlationId),
+    retryable: true,
+    safeMessage: 'Project storage is unavailable in this environment.',
+  })
 }
 
 function createAuthentication(config: ApiConfig): AuthenticationPort {
