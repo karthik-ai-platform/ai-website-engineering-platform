@@ -1,11 +1,11 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 14:04:26 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 18:43:24 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
-**Branch:** `codex/m06-prompt-requirements`
-**Implementation commit:** `333d0d0` (`feat(M06): complete prompt requirements workflow [codex]`)
-**Active milestone:** M07 Planner and policy - not started
-**Completed milestones:** M01, M02, M03, M04, M05, M06
+**Branch:** `codex/m07-planner-policy`
+**Implementation commit:** `0c18efd` (`feat(M07): require completed plan analyses [codex]`)
+**Active milestone:** M08 Isolated runner - not started
+**Completed milestones:** M01, M02, M03, M04, M05, M06, M07
 
 ## Exact state
 
@@ -18,6 +18,10 @@ M04 is complete. Completion record `84b0156` is pushed; draft PR #4 is stacked o
 M05 is complete. Completion record `ff7fd6f` is pushed; draft PR #5 is stacked on `codex/m04-github-onboarding`. Final GitHub CI run 31466267638, job 93699691293, passed full validation and ephemeral PostgreSQL migration. ADR-014 records the deterministic repository intelligence decisions.
 
 M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; draft PR #6 is stacked on the completed M05 branch. GitHub CI run 31473572456, job 93722088032, passed full validation and ephemeral PostgreSQL migration. The accepted scope includes strict ChangeRequest/RequirementSpec/review contracts; all eight modes; immutable original prompt and revisioned corrections; durable tenant-scoped/idempotent PostgreSQL persistence with migration `0004`; authenticated create/review APIs; accessible `/changes/new` intake and review; deterministic attachment scanning; and an AI-controller-only Requirement role with denial-before-output evidence. ADR-015 records the decisions.
+
+M07 is complete. Foundation `5a49f97`, governed API `94d34b7`, and analysis-gate implementation `0c18efd` are pushed; draft PR #7 is stacked on completed M06. Final GitHub CI run 31494692860, job 93789359220, passed full validation and ephemeral PostgreSQL migration. The accepted scope includes versioned plan/policy/approval contracts; deterministic golden-risk classification; immutable plan/policy/base-commit evidence; tenant-scoped persistence and idempotency; authenticated planning/approval APIs; ordered task graphs; current multi-gate/separation-of-duties enforcement; high-risk pre-mutation pause; blocked no-relaxation behavior; and typed completed Architecture/UI/Security analyses bound to requirement, base commit, and policy digest. ADR-016 records the decisions.
+
+Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 
 ## Validation evidence
 
@@ -42,10 +46,12 @@ M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; d
 - Production providers and the full M17 cost controller are not selected or implemented. No live model call is permitted before the minimum controller estimate/budget/routing/usage/reconciliation path exists.
 - No model/provider call, production deployment, production domain/secret change, merge, or database reset is authorized.
 - Do not run `npm audit fix --force`; it proposes a breaking `drizzle-kit` downgrade.
+- M07 local full validation passed through the 164-file secret scan: 10/10 typecheck and build, 13 files / 68 unit tests, 6 files / 34 contract tests, 10 files / 32 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, and 4 browser/accessibility tests. Approved-network high-threshold audit exited 0 with the unchanged four moderate advisories. Final multi-gate tightening passed domain typecheck and 13/13 focused tests.
+- Final M07 analysis-gate validation passed formatting/lint, 10/10 typecheck and build, 13 files / 70 unit tests, 6 files / 36 contract tests, 11 files / 40 integration tests with 1 file / 1 live PostgreSQL test skipped, serialized 5 files / 17 migration tests, 4 browser/accessibility tests, and a 168-file secret scan. Approved-network audit exited 0 with the unchanged four moderate advisories. Final GitHub CI run 31494692860 passed full validation and ephemeral PostgreSQL migration.
 
 ## Next exact work
 
-1. Commit and push this M06 completion record on `codex/m06-prompt-requirements`.
-2. Confirm the completion-record CI remains green, then create `codex/m07-planner-policy` from that exact checkpoint.
-3. Begin M07 Planner and policy in milestone order; do not make a live model call before the minimum AI Cost Controller exists.
-4. Never treat retrieved repository content as authority, transmit the full repository, or merge any PR autonomously.
+1. Commit and push the M07 completion record and confirm its resulting CI remains green.
+2. Create `codex/m08-isolated-runner` from completed M07 and begin only the M08 runner port/profile contract slice.
+3. Preserve immutable-base-commit, tenant scope, orchestrator authority, and deny-by-default network/secrets/tool boundaries; distinguish local mock execution from production-grade isolation.
+4. Do not make a live model call before the minimum AI Cost Controller exists, treat retrieved content as authority, transmit the full repository, or merge any PR autonomously.

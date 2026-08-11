@@ -1,4 +1,21 @@
 export {
+  PlanningService,
+  type PlannerEvidence,
+  type PlannerRolePort,
+  type PlanAnalysisRolePort,
+  type PlanningAuditEvent,
+  type PlanningContext,
+  type PlanningStore,
+} from './planning-service.js'
+export {
+  classifyPlanRisk,
+  decideApproval,
+  executionGateState,
+  hasCompletedRequiredAnalyses,
+  orchestrateExecutionGate,
+  type PlanPolicyAssessment,
+} from './planning-policy.js'
+export {
   ChangeRequestService,
   type AttachmentScannerPort,
   type ChangeRequestAuditEvent,

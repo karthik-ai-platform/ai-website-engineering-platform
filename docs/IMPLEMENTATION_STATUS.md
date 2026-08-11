@@ -1,10 +1,10 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 14:04:26 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 18:43:24 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
-**Working branch:** `codex/m06-prompt-requirements`
-**Latest recorded checkpoint commit:** `c7f5bc0` (`docs(M06): record full local acceptance evidence [codex]`)
-**Pull request:** Draft PR [#6](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/6), stacked on completed M05 branch; prior draft PRs remain unmerged
+**Working branch:** `codex/m07-planner-policy`
+**Latest recorded checkpoint commit:** `0c18efd` (`feat(M07): require completed plan analyses [codex]`)
+**Pull request:** Draft PR [#7](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/7), stacked on completed M06 branch
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
@@ -17,7 +17,7 @@
 | M04 GitHub onboarding                    | **completed** | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
 | M05 Repository intelligence              | **completed** | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
 | M06 Prompt and requirements              | **completed** | Implementation `333d0d0`; checkpoint `c7f5bc0`; GitHub CI run 31473572456 passed full validation and ephemeral PostgreSQL migration.                                                   |
-| M07 Planner and policy                   | not started   | None.                                                                                                                                                                                  |
+| M07 Planner and policy                   | **completed** | Implementation `0c18efd`; draft PR #7; GitHub CI run 31494692860 passed full validation and ephemeral PostgreSQL migration.                                                            |
 | M08 Isolated runner                      | not started   | None.                                                                                                                                                                                  |
 | M09 Coding loop                          | not started   | None.                                                                                                                                                                                  |
 | M10 Deterministic validation             | not started   | None.                                                                                                                                                                                  |
@@ -117,6 +117,26 @@
 - **GitHub/Vercel:** GitHub CI run 31473572456, job 93722088032, passed full validation and ephemeral PostgreSQL migration for the completed M06 scope. No Vercel action was attempted; production deployment remains unauthorized.
 - **Next task:** commit and push this completion record, confirm its resulting CI remains green, then begin M07 Planner and policy in milestone order. No live model call is permitted before the minimum M17 controller exists.
 
+## M07 checkpoint detail
+
+- **Status:** completed. Foundation `5a49f97`, governed API `94d34b7`, and analysis-gate implementation `0c18efd` are pushed; draft PR #7 is stacked on the completed M06 branch.
+- **Contracts:** versioned `ExecutionPlan`, task/dependency/validation, expected impact, rollback, estimated usage, policy snapshot, risk, analysis, approval gate, and attributed approval record schemas.
+- **Deterministic policy:** fixture-derived risk signals classify Low/Medium/High/Blocked without model authority; auth, authorization, payment, secret, infrastructure, database migration, destructive, production, dependency, API, accessibility, and prohibited signals are covered. Relevant architecture/UI/security analyses and approval gates are deterministic.
+- **Execution safety:** high-risk plans remain `AWAITING_APPROVAL` before the workspace callback; blocked plans remain `REJECTED`; stale approval evidence does not open the gate; every requested gate must be current and approved; authorization, separation of duties, final decisions, and idempotent duplicate decisions are enforced.
+- **Durable persistence:** migration `0005_m07_plans_approvals` adds tenant-scoped immutable execution plans, runs with policy snapshots and database-enforced state transitions, and tenant/idempotency-scoped approval records with one-way finalization. It includes purpose, forward procedure, and recovery guidance.
+- **Architecture:** ADR-016 records deterministic authority, immutable plan/policy evidence, stale-approval behavior, and no policy relaxation. No model/provider or workspace/runner implementation was invoked.
+- **Validation:** full validation passed formatting, lint, 10/10 typecheck, 13 files / 68 unit tests, 6 files / 34 contract tests, 10 files / 32 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, 10/10 build, 4 browser/accessibility tests, and a 164-file secret scan. The sandboxed dependency-audit transport failed; approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. After the multi-gate security tightening, domain typecheck, focused 13/13 unit tests, lint, formatting, and `git diff --check` passed.
+- **GitHub/Vercel:** GitHub CI run 31477086783, job 93733174656, passed full validation and ephemeral PostgreSQL migration `0005`. No Vercel action was attempted; production deployment remains unauthorized.
+- **Governed service/API:** implementation `94d34b7` adds authenticated create-plan and decide-approval APIs, an internal planner port, deterministic risk/state authority, bounded schema retry, controller-evidence consistency, ordered dependency validation, durable plan idempotency migration `0006`, latest-requirement checks, current-policy checks, execution-time approval reauthorization, separation of duties, and atomic plan/run/approval/audit persistence.
+- **Timeline evidence:** API fixtures cover high-risk pause, idempotent replay, conflicting replay denial, authorized approval to `QUEUED`, duplicate decision idempotency, self-approval denial, stale-policy denial, terminal rejection, blocked-request audit, path mismatch, one schema retry, and immediate stop on incomplete controller evidence.
+- **Validation:** formatting, lint, 10/10 typecheck, 13 files / 69 unit tests, 6 files / 36 contract tests, 11 files / 38 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, and 10/10 build passed. The first browser run had one Windows `ERR_NO_BUFFER_SPACE` infrastructure failure while 3 tests passed; immediate rerun passed 4/4. Secret scan passed 168 files; approved-network high-threshold audit exited 0 with the unchanged four moderate `esbuild` advisories; `git diff --check` passed.
+- **GitHub/Vercel:** service/API implementation `94d34b7` and checkpoint `8ee4b4a` are pushed. GitHub CI run 31490306119, job 93774965075, passed full validation and ephemeral PostgreSQL migration `0006`. No Vercel action was attempted; production deployment remains unauthorized.
+- **Analysis evidence gate:** implementation `0c18efd` adds typed completed Architecture/UI/Security evidence, role-specific findings, immutable requirement/base-commit/policy-digest bindings, one bounded schema retry, immediate stop for incomplete controller evidence, and contract/orchestrator enforcement that incomplete plans remain in `PLANNING` without persistence or workspace mutation. Missing, mismatched, stale, and incomplete-controller fixtures pass.
+- **Completion review:** all planned golden risks (authentication, payment, secret, infrastructure, database migration, destructive, and prohibited) and approval timelines (authorization, staleness, blocked audit, deterministic transitions, duplicate idempotency, multi-gate approval, and high-risk no mutation) are covered. No live model/provider call occurred.
+- **Final local validation:** formatting and lint passed; typecheck and build passed 10/10 packages; unit 13 files / 70 tests; contract 6 files / 36 tests; integration 11 files / 40 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 5 files / 17 tests; browser/accessibility 4 tests; secret scan 168 files; approved-network high-threshold audit exited 0 with the unchanged four moderate `esbuild` advisories; `git diff --check` passed. The aggregate wrapper timed out during integration, so the remaining checks were run individually. Two parallel PGlite attempts had uniform setup-hook resource timeouts; the serialized rerun passed 17/17.
+- **Final GitHub evidence:** CI run 31494692860, job 93789359220, passed the full validation step and applied migrations to ephemeral PostgreSQL. No Vercel action was attempted; production deployment remains unauthorized.
+- **Next task:** begin M08 isolated runner on a new `codex/m08-isolated-runner` branch stacked on completed M07; preserve the fixture-only/model-denied boundary.
+
 ## Validation ledger
 
 | Check                                | Outcome                                                                                                                                         |
@@ -126,19 +146,19 @@
 | Dependency tree                      | `npm ls --omit=dev --all` exited 0 but reported extraneous WASM helper packages.                                                                |
 | Formatting                           | `npm run format:check` passed.                                                                                                                  |
 | Lint                                 | `npm run lint` passed; Next App Router pages-directory notice printed.                                                                          |
-| Type checking                        | M06 worktree: `npm run typecheck` passed 10/10 packages.                                                                                        |
-| Unit tests                           | M06 worktree: `npm run test:unit` passed 12 files / 56 tests.                                                                                   |
-| Contract tests                       | M06 worktree: `npm run test:contract` passed 5 files / 32 tests.                                                                                |
-| Integration tests                    | M06 worktree: 9 files / 29 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                           |
-| Database migration validation        | M06 worktree: 4 files / 14 PGlite tests passed; local live PostgreSQL skipped pending updated PR CI.                                            |
-| Production build                     | M06 worktree: `npm run build` passed 10/10 packages.                                                                                            |
-| Secret scanning                      | M06 worktree: `npm run security:secrets` passed; 158 text files scanned.                                                                        |
+| Type checking                        | Final M07 worktree: `npm run typecheck` passed 10/10 packages.                                                                                  |
+| Unit tests                           | Final M07 worktree: 13 files / 70 tests passed.                                                                                                 |
+| Contract tests                       | Final M07 worktree: 6 files / 36 tests passed.                                                                                                  |
+| Integration tests                    | Final M07 worktree: 11 files / 40 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                    |
+| Database migration validation        | Final serialized PGlite run passed 5 files / 17 tests; GitHub CI applied migrations to ephemeral PostgreSQL.                                    |
+| Production build                     | Final M07 worktree: `npm run build` passed 10/10 packages.                                                                                      |
+| Secret scanning                      | Final M07 worktree: `npm run security:secrets` passed; 168 text files scanned.                                                                  |
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 4 Playwright tests, including M06 intake/review interaction and axe WCAG A/AA scans.                              |
-| GitHub CI                            | M06 acceptance run 31473572456, job 93722088032, passed, including ephemeral PostgreSQL migration.                                              |
+| GitHub CI                            | Final M07 run 31494692860, job 93789359220, passed full validation and ephemeral PostgreSQL migration.                                          |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
 
-Commit and push the M06 completion record, confirm its CI remains green, then begin M07 Planner and policy in milestone order. Never merge PR #6 autonomously.
+Commit and push this M07 completion record, confirm its CI, then begin M08 isolated runner in milestone order. Never merge PR #7 autonomously.

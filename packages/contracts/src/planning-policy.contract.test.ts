@@ -1,0 +1,154 @@
+import { describe, expect, it } from 'vitest'
+
+import {
+  approvalRecordV1Schema,
+  createExecutionPlanRequestV1Schema,
+  decideApprovalRequestV1Schema,
+  executionPlanV1Schema,
+} from './planning-policy-v1.js'
+
+const id = (suffix: string) => `00000000-0000-4000-8000-${suffix.padStart(12, '0')}`
+
+describe('M07 planning and policy contracts', () => {
+  it('accepts a versioned high-risk execution plan with a policy snapshot', () => {
+    const result = executionPlanV1Schema.safeParse({
+      schemaVersion: '1',
+      id: id('1'),
+      organizationId: id('2'),
+      projectId: id('3'),
+      changeRequestId: id('4'),
+      requirementId: id('5'),
+      baseCommit: 'a'.repeat(40),
+      revision: 1,
+      riskClass: 'high',
+      riskSignals: ['database_migration'],
+      expectedImpact: ['Changes the tenant data schema.'],
+      requiredAnalyses: ['architecture', 'security'],
+      analyses: [
+        {
+          schemaVersion: '1',
+          analysis: 'architecture',
+          status: 'completed',
+          requirementId: id('5'),
+          baseCommit: 'a'.repeat(40),
+          policySnapshotDigest: 'b'.repeat(64),
+          summary: 'Reviewed architecture impact.',
+          evidenceRefs: ['fixture://architecture/1'],
+          boundaryImpacts: ['Database boundary changes.'],
+          dependencyImpacts: [],
+          dataImpacts: ['Tenant schema changes.'],
+          apiImpacts: [],
+        },
+        {
+          schemaVersion: '1',
+          analysis: 'security',
+          status: 'completed',
+          requirementId: id('5'),
+          baseCommit: 'a'.repeat(40),
+          policySnapshotDigest: 'b'.repeat(64),
+          summary: 'Reviewed migration security.',
+          evidenceRefs: ['fixture://security/1'],
+          threatFindings: ['Cross-tenant migration risk.'],
+          requiredControls: ['Preserve tenant constraints.'],
+        },
+      ],
+      tasks: [
+        {
+          id: 'migration',
+          objective: 'Add the forward-only schema migration.',
+          expectedFiles: ['packages/database/migrations/0005.sql'],
+          dependencies: [],
+          validations: ['Apply the migration to an ephemeral PostgreSQL database.'],
+        },
+      ],
+      requestedApprovals: ['plan_execution'],
+      rollbackConsiderations: ['Use a compensating forward migration.'],
+      estimatedUsage: {
+        estimateId: id('6'),
+        budgetDecisionId: id('7'),
+        source: 'fixture',
+        inputTokens: 100,
+        outputTokens: 200,
+        durationSeconds: 60,
+        costAmount: '0.01000000',
+        currency: 'USD',
+        pricingVersion: 'fixture-v1',
+      },
+      policySnapshot: {
+        schemaVersion: '1',
+        id: id('8'),
+        organizationId: id('2'),
+        projectId: id('3'),
+        policyId: id('9'),
+        policyVersion: 'policy-v1',
+        target: 'preview',
+        productionPromotionEnabled: false,
+        mediumRiskRequiresApproval: false,
+        separationOfDuties: true,
+        capturedAt: '2026-08-11T08:30:00.000Z',
+        digest: 'b'.repeat(64),
+      },
+      createdAt: '2026-08-11T08:30:00.000Z',
+    })
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(executionPlanV1Schema.safeParse({ ...result.data, analyses: [] }).success).toBe(false)
+  })
+
+  it('rejects an approval decision without decision attribution', () => {
+    const result = approvalRecordV1Schema.safeParse({
+      schemaVersion: '1',
+      id: id('1'),
+      organizationId: id('2'),
+      projectId: id('3'),
+      runId: id('4'),
+      planId: id('5'),
+      planRevision: 1,
+      gate: 'plan_execution',
+      decision: 'approved',
+      requesterId: id('6'),
+      policyVersion: 'policy-v1',
+      requestedAt: '2026-08-11T08:30:00.000Z',
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('keeps authoritative risk and run state out of create-plan requests', () => {
+    const request = {
+      schemaVersion: '1',
+      organizationId: id('1'),
+      projectId: id('2'),
+      changeRequestId: id('3'),
+      requirementId: id('4'),
+      baseCommit: 'a'.repeat(40),
+      idempotencyKey: 'plan-contract-fixture',
+    }
+    expect(createExecutionPlanRequestV1Schema.safeParse(request).success).toBe(true)
+    expect(
+      createExecutionPlanRequestV1Schema.safeParse({
+        ...request,
+        riskClass: 'low',
+        state: 'QUEUED',
+      }).success,
+    ).toBe(false)
+  })
+
+  it('requires stale-plan and policy evidence on approval decisions', () => {
+    expect(
+      decideApprovalRequestV1Schema.safeParse({
+        schemaVersion: '1',
+        organizationId: id('1'),
+        projectId: id('2'),
+        runId: id('3'),
+        planId: id('4'),
+        planRevision: 1,
+        gate: 'plan_execution',
+        expectedPolicyVersion: 'policy-v1',
+        decision: 'approved',
+        rationale: 'Reviewed current evidence.',
+      }).success,
+    ).toBe(true)
+  })
+})
