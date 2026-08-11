@@ -1,7 +1,9 @@
 import {
   actorContextV1Schema,
   apiErrorResponseV1Schema,
+  changeRequirementResultV1Schema,
   correlationIdSchema,
+  createChangeRequestV1Schema,
   createProjectRequestV1Schema,
   healthResponseV1Schema,
   githubConnectionInitiationRequestV1Schema,
@@ -10,17 +12,23 @@ import {
   githubRepositoryReadinessV1Schema,
   projectLifecycleRequestV1Schema,
   projectV1Schema,
+  requirementReviewRequestV1Schema,
+  requirementSpecV1Schema,
   type DependencyHealthV1,
 } from '@platform/contracts'
 import { createLazyPostgresConnection } from '@platform/database'
 import {
   PlatformError,
+  ChangeRequestService,
   ProjectService,
   type GithubOnboardingService,
   isPlatformError,
   type AuthenticationCredential,
   type AuthenticationPort,
+  type AttachmentScannerPort,
+  type ChangeRequestStore,
   type ProjectStore,
+  type RequirementRolePort,
 } from '@platform/domain'
 import { createPlatformLogger, resolveCorrelationId } from '@platform/observability'
 import Fastify, { LogController } from 'fastify'
@@ -29,6 +37,7 @@ import { z } from 'zod'
 import { LocalAuthenticationAdapter, OidcAuthenticationAdapter } from './authentication.js'
 import type { ApiConfig } from './config.js'
 import { PostgresProjectStore } from './postgres-project-store.js'
+import { PostgresChangeRequestStore } from './postgres-change-request-store.js'
 
 const bearerHeaderSchema = z.string().regex(/^Bearer\s+\S+$/iu)
 
@@ -42,6 +51,10 @@ export interface BuildApiOptions {
   readonly authentication?: AuthenticationPort
   readonly config: ApiConfig
   readonly githubOnboardingService?: GithubOnboardingService
+  readonly changeRequestService?: ChangeRequestService
+  readonly changeRequestStore?: ChangeRequestStore
+  readonly attachmentScanner?: AttachmentScannerPort
+  readonly requirementRole?: RequirementRolePort
   readonly readinessProbe?: ReadinessProbe
   readonly projectStore?: ProjectStore
 }
@@ -64,6 +77,22 @@ export function buildApi(options: BuildApiOptions) {
       : new PostgresProjectStore(projectConnection.database))
   const projectService =
     projectStore === undefined ? undefined : new ProjectService({ store: projectStore })
+  const changeRequestStore =
+    options.changeRequestStore ??
+    (projectConnection === undefined
+      ? undefined
+      : new PostgresChangeRequestStore(projectConnection.database))
+  const changeRequestService =
+    options.changeRequestService ??
+    (changeRequestStore === undefined ||
+    options.attachmentScanner === undefined ||
+    options.requirementRole === undefined
+      ? undefined
+      : new ChangeRequestService({
+          store: changeRequestStore,
+          scanner: options.attachmentScanner,
+          requirementRole: options.requirementRole,
+        }))
   const app = Fastify({
     genReqId: (request) => resolveCorrelationId(singleHeader(request.headers['x-correlation-id'])),
     logController: new LogController({ disableRequestLogging: true }),
@@ -147,6 +176,42 @@ export function buildApi(options: BuildApiOptions) {
         body.action,
         body.expectedUpdatedAt,
       ),
+    )
+  })
+
+  app.post('/v1/projects/:projectId/changes', async (request, reply) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(createChangeRequestV1Schema, request.body, request.id)
+    requireMatchingProjectPath(request.params, body.projectId, request.id)
+    void reply.code(201)
+    const result = await requireChangeRequestService(changeRequestService, request.id).create(
+      actor,
+      body,
+    )
+    return changeRequirementResultV1Schema.parse({ schemaVersion: '1', ...result })
+  })
+
+  app.post('/v1/changes/:changeRequestId/review', async (request) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(requirementReviewRequestV1Schema, request.body, request.id)
+    const path = z.object({ changeRequestId: z.string().uuid() }).safeParse(request.params)
+    if (!path.success || path.data.changeRequestId !== body.changeRequestId) {
+      throw validationFailed(request.id)
+    }
+    return requirementSpecV1Schema.parse(
+      await requireChangeRequestService(changeRequestService, request.id).correct(actor, body),
     )
   })
 
@@ -290,6 +355,19 @@ function requireProjectService(
     correlationId: correlationIdSchema.parse(correlationId),
     retryable: true,
     safeMessage: 'Project storage is unavailable in this environment.',
+  })
+}
+
+function requireChangeRequestService(
+  service: ChangeRequestService | undefined,
+  correlationId: string,
+): ChangeRequestService {
+  if (service !== undefined) return service
+  throw new PlatformError({
+    code: 'DEPENDENCY_UNAVAILABLE',
+    correlationId: correlationIdSchema.parse(correlationId),
+    retryable: true,
+    safeMessage: 'Change request processing is not configured.',
   })
 }
 

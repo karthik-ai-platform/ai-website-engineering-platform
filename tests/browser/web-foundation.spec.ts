@@ -58,4 +58,24 @@ test.describe('M01 management web foundation', () => {
 
     expect(result.violations).toEqual([])
   })
+
+  test('prepares an accessible M06 requirement review without claiming execution', async ({
+    page,
+  }) => {
+    await page.goto('/changes/new')
+    await page.getByLabel('Original request').fill('Improve keyboard navigation on the home page.')
+    await page.getByLabel('Mode').selectOption('accessibility')
+    await page.getByLabel('Constraints').fill('Preserve existing URLs\nMeet WCAG AA')
+    await page.getByRole('button', { name: 'Prepare requirement review' }).click()
+
+    await expect(page.getByRole('heading', { name: 'Requirement draft' })).toBeVisible()
+    await expect(page.getByText('Improve keyboard navigation on the home page.')).toBeVisible()
+    await expect(page.getByText('accessibility', { exact: true })).toBeVisible()
+    await expect(page.getByText('This browser draft is not execution authority.')).toBeVisible()
+
+    const result = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze()
+    expect(result.violations).toEqual([])
+  })
 })

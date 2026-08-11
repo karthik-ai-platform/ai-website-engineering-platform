@@ -13,6 +13,7 @@ import type {
 } from '@platform/contracts'
 import {
   PlatformError,
+  type AttachmentScannerPort,
   type AiCostControllerPort,
   type ArtifactStorePort,
   type DeploymentProviderPort,
@@ -21,6 +22,18 @@ import {
   type RunnerProviderPort,
   type SecretsPort,
 } from '@platform/domain'
+
+export class MockAttachmentScanner implements AttachmentScannerPort {
+  readonly #rejectedDigests: ReadonlySet<string>
+
+  constructor(rejectedDigests: readonly string[] = []) {
+    this.#rejectedDigests = new Set(rejectedDigests)
+  }
+
+  scan(attachment: Parameters<AttachmentScannerPort['scan']>[0]): Promise<'clean' | 'rejected'> {
+    return Promise.resolve(this.#rejectedDigests.has(attachment.digest) ? 'rejected' : 'clean')
+  }
+}
 
 export class MockSecretsAdapter implements SecretsPort {
   readonly #references = new Set<string>()

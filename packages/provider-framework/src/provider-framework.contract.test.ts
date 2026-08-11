@@ -7,8 +7,10 @@ import {
   type ProviderRequestContextV1,
 } from '@platform/contracts'
 import { DigestCallbackVerifier, MemoryProviderCallbackStore } from './callback-mocks.js'
+import { AiControlledRequirementRole } from './requirement-role.js'
 import {
   DenyAllAiCostController,
+  MockAttachmentScanner,
   MockArtifactStore,
   MockDeploymentAdapter,
   MockGitAdapter,
@@ -141,5 +143,71 @@ describe('M03 callback safety', () => {
     expect(
       (await processor.process(envelope('evt-3', 3, 'invalid-signature'), payload)).status,
     ).toBe('rejected')
+  })
+})
+
+describe('M06 requirement role controller boundary', () => {
+  it('provides deterministic attachment scan contract evidence without reading content', async () => {
+    const digest = 'a'.repeat(64)
+    const attachment = {
+      id: '00000000-0000-4000-8000-000000000011',
+      kind: 'image' as const,
+      displayName: 'reference.png',
+      mediaType: 'image/png',
+      sizeBytes: 120,
+      digest,
+      artifactRef: 'mock-artifact://reference',
+      trust: 'user_supplied_untrusted' as const,
+      scanStatus: 'pending' as const,
+    }
+    expect(await new MockAttachmentScanner().scan(attachment)).toBe('clean')
+    expect(await new MockAttachmentScanner([digest]).scan(attachment)).toBe('rejected')
+  })
+
+  it('denies before any model output can be read when budget policy is unavailable', async () => {
+    let outputReads = 0
+    const role = new AiControlledRequirementRole(
+      new MockArtifactStore(),
+      new DenyAllAiCostController(),
+      {
+        read() {
+          outputReads += 1
+          return Promise.resolve({})
+        },
+      },
+      { currency: 'USD', amount: '0.01' },
+    )
+    await expect(
+      role.normalize({
+        actor: {
+          schemaVersion: '1',
+          actorId: '00000000-0000-4000-8000-000000000003',
+          actorType: 'user',
+          authenticationMethod: 'test',
+          correlationId: context.correlationId,
+          issuedAt: context.requestedAt,
+          organizationId: context.organizationId,
+          sessionId: '00000000-0000-4000-8000-000000000009',
+          subject: 'fixture:user',
+        },
+        changeRequest: {
+          schemaVersion: '1',
+          id: '00000000-0000-4000-8000-000000000010',
+          organizationId: context.organizationId,
+          projectId: context.projectId,
+          actorId: '00000000-0000-4000-8000-000000000003',
+          actorType: 'user',
+          idempotencyKey: 'requirement-fixture-1',
+          originalPrompt: 'Add a clear hero.',
+          mode: 'builder',
+          target: 'preview',
+          constraints: [],
+          attachments: [],
+          status: 'requirements_pending',
+          createdAt: context.requestedAt,
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'AUTHORIZATION_DENIED' })
+    expect(outputReads).toBe(0)
   })
 })

@@ -52,12 +52,21 @@ export interface ChangeRequestStore {
   findHumanMembership(organizationId: string, actorId: string): Promise<HumanMembership | undefined>
   findServiceGrant(organizationId: string, actorId: string): Promise<ServiceGrant | undefined>
   findProjectStatus(organizationId: string, projectId: string): Promise<string | undefined>
+  findByIdempotencyKey(
+    organizationId: string,
+    projectId: string,
+    idempotencyKey: string,
+  ): Promise<ChangeRequestV1 | undefined>
   findChangeRequest(
     organizationId: string,
     projectId: string,
     changeRequestId: string,
   ): Promise<ChangeRequestV1 | undefined>
-  findLatestRequirement(changeRequestId: string): Promise<RequirementSpecV1 | undefined>
+  findLatestRequirement(
+    organizationId: string,
+    projectId: string,
+    changeRequestId: string,
+  ): Promise<RequirementSpecV1 | undefined>
   createChangeRequest(changeRequest: ChangeRequestV1, audit: ChangeRequestAuditEvent): Promise<void>
   saveRequirement(
     changeRequest: ChangeRequestV1,
@@ -104,6 +113,22 @@ export class ChangeRequestService {
       (await this.#store.findProjectStatus(request.organizationId, request.projectId)) !== 'active'
     ) {
       throw this.#error(actor, 'NOT_FOUND', 'The active project was not found.')
+    }
+    const existing = await this.#store.findByIdempotencyKey(
+      request.organizationId,
+      request.projectId,
+      request.idempotencyKey,
+    )
+    if (existing !== undefined) {
+      const requirement = await this.#store.findLatestRequirement(
+        existing.organizationId,
+        existing.projectId,
+        existing.id,
+      )
+      if (requirement === undefined) {
+        throw this.#error(actor, 'CONFLICT', 'The existing change request is not ready for review.')
+      }
+      return { changeRequest: existing, requirement }
     }
 
     const attachments = await Promise.all(
@@ -185,7 +210,11 @@ export class ChangeRequestService {
     )
     if (changeRequest === undefined)
       throw this.#error(actor, 'NOT_FOUND', 'The change request was not found.')
-    const current = await this.#store.findLatestRequirement(changeRequest.id)
+    const current = await this.#store.findLatestRequirement(
+      changeRequest.organizationId,
+      changeRequest.projectId,
+      changeRequest.id,
+    )
     if (current === undefined)
       throw this.#error(actor, 'NOT_FOUND', 'The requirement was not found.')
     if (current.revision !== request.expectedRevision) {

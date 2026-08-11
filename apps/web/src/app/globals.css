@@ -314,6 +314,168 @@ h1 {
   line-height: 1.6;
 }
 
+.change-shell {
+  padding-top: 4.5rem;
+}
+
+.change-intro {
+  max-width: 760px;
+}
+
+.change-intro h1 {
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+}
+
+.change-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+  gap: 1.5rem;
+  align-items: start;
+  margin-top: 4rem;
+}
+
+.change-form,
+.review-panel {
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+}
+
+.change-form {
+  display: grid;
+  gap: 1.5rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field-group {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.field-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.field-group textarea,
+.field-group select,
+.field-group input[type='file'] {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.65rem;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.field-group textarea,
+.field-group select {
+  padding: 0.8rem 0.9rem;
+}
+
+.field-group textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field-group input[type='file'] {
+  padding: 0.65rem;
+}
+
+.field-group textarea:focus-visible,
+.field-group select:focus-visible,
+.field-group input:focus-visible,
+.form-action:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.field-help,
+.trust-note,
+.review-empty,
+.review-warning {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.trust-note,
+.review-warning {
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--accent);
+}
+
+.form-action {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.review-panel {
+  position: sticky;
+  top: 1.5rem;
+  min-height: 30rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.review-panel h2 {
+  font-size: 1.65rem;
+  font-weight: 520;
+  letter-spacing: -0.035em;
+}
+
+.review-empty {
+  max-width: 27rem;
+  margin-top: 4rem;
+}
+
+.review-content {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.review-content h3 {
+  margin: 1rem 0 0;
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.review-content p,
+.review-content ul {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.review-content ul {
+  padding-left: 1.15rem;
+}
+
+.review-meta {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.review-meta span {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+}
+
 .site-footer {
   min-height: 5rem;
   border-top: 1px solid rgb(255 255 255 / 8%);
@@ -351,6 +513,16 @@ h1 {
 
   .status-grid {
     grid-template-columns: 1fr;
+  }
+
+  .change-layout,
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .review-panel {
+    position: static;
+    min-height: auto;
   }
 
   .status-card {

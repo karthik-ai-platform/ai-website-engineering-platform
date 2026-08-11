@@ -29,6 +29,7 @@ describe('M06 change request contracts', () => {
       schemaVersion: '1',
       organizationId,
       projectId,
+      idempotencyKey: 'fixture-designer',
       originalPrompt: 'Improve the hero.',
       mode: 'designer',
       target: 'preview',

@@ -44,10 +44,15 @@ class MemoryStore implements ChangeRequestStore {
   findProjectStatus() {
     return Promise.resolve('active')
   }
+  findByIdempotencyKey(_organizationId: string, _projectId: string, idempotencyKey: string) {
+    return Promise.resolve(
+      [...this.requests.values()].find((request) => request.idempotencyKey === idempotencyKey),
+    )
+  }
   findChangeRequest(_organizationId: string, _projectId: string, id: string) {
     return Promise.resolve(this.requests.get(id))
   }
-  findLatestRequirement(id: string) {
+  findLatestRequirement(_organizationId: string, _projectId: string, id: string) {
     return Promise.resolve(this.requirements.get(id)?.at(-1))
   }
   createChangeRequest(value: ChangeRequestV1, event: ChangeRequestAuditEvent) {
@@ -79,6 +84,7 @@ function input(mode: CreateChangeRequestV1['mode'] = 'builder'): CreateChangeReq
     schemaVersion: '1',
     organizationId,
     projectId,
+    idempotencyKey: `fixture-${mode}`,
     originalPrompt: 'Add a clear hero.',
     mode,
     target: 'preview',

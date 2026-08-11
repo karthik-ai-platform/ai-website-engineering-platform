@@ -37,6 +37,7 @@ export const createChangeRequestV1Schema = z
     schemaVersion: schemaVersionV1,
     organizationId: opaqueIdSchema,
     projectId: opaqueIdSchema,
+    idempotencyKey: z.string().trim().min(8).max(256),
     originalPrompt: z.string().trim().min(1).max(20_000),
     mode: changeModeV1Schema,
     target: changeTargetV1Schema,
@@ -95,10 +96,19 @@ export const requirementReviewRequestV1Schema = z
   })
   .strict()
 
+export const changeRequirementResultV1Schema = z
+  .object({
+    schemaVersion: schemaVersionV1,
+    changeRequest: changeRequestV1Schema,
+    requirement: requirementSpecV1Schema,
+  })
+  .strict()
+
 export type ChangeAttachmentV1 = z.infer<typeof changeAttachmentV1Schema>
 export type ChangeModeV1 = z.infer<typeof changeModeV1Schema>
 export type ChangeRequestV1 = z.infer<typeof changeRequestV1Schema>
 export type ChangeRequestStatusV1 = z.infer<typeof changeRequestStatusV1Schema>
+export type ChangeRequirementResultV1 = z.infer<typeof changeRequirementResultV1Schema>
 export type ChangeTargetV1 = z.infer<typeof changeTargetV1Schema>
 export type CreateChangeRequestV1 = z.infer<typeof createChangeRequestV1Schema>
 export type RequirementReviewRequestV1 = z.infer<typeof requirementReviewRequestV1Schema>
