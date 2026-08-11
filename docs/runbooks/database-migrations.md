@@ -87,11 +87,13 @@ or pass it as a command-line argument.
 
 After application, verify through a protected database session:
 
-1. The Drizzle migration ledger contains `0001_m01_foundation` and `0002_m02_projects_rbac`.
+1. The Drizzle migration ledger contains `0001_m01_foundation`, `0002_m02_projects_rbac`, and `0003_m04_github_onboarding`.
 2. `users`, `organizations`, `memberships`, `projects`, `policy_profiles`,
-   `service_identities`, `service_identity_permissions`, and `audit_events`
+   `service_identities`, `service_identity_permissions`, `github_connection_attempts`,
+   `repository_connections`, and `audit_events`
    exist in the expected schema.
-3. Foreign keys, membership/grant checks, and tenant-consistency constraints are valid.
+3. Foreign keys, membership/grant checks, tenant-consistency constraints, GitHub state-digest checks,
+   opaque secret-reference checks, immutable commit shape, and mutation-disabled onboarding checks are valid.
 4. `audit_events_reject_update_or_delete` and
    `audit_events_reject_truncate` are enabled.
 5. The application health check succeeds with the migrated schema.

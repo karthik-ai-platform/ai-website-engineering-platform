@@ -1,4 +1,19 @@
 export {
+  githubConnectionInitiationRequestV1Schema,
+  githubConnectionInitiationResultV1Schema,
+  githubInstallationSelectionV1Schema,
+  githubRepositoryConnectionV1Schema,
+  githubRepositoryMetadataV1Schema,
+  githubRepositoryPermissionsV1Schema,
+  githubRepositoryReadinessV1Schema,
+  type GithubConnectionInitiationRequestV1,
+  type GithubConnectionInitiationResultV1,
+  type GithubInstallationSelectionV1,
+  type GithubRepositoryConnectionV1,
+  type GithubRepositoryMetadataV1,
+  type GithubRepositoryReadinessV1,
+} from './github-onboarding-v1.js'
+export {
   actorContextV1Schema,
   actorTypeV1Schema,
   authenticationMethodV1Schema,

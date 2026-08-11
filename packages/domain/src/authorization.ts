@@ -40,6 +40,7 @@ const rolePermissions = {
     'project:delete',
     'change:request',
     'change:approve',
+    'repository:connect',
     'git:merge',
     'release:promote',
     'secret:manage',
