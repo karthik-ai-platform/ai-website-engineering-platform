@@ -1,9 +1,9 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 18:55:50 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 20:07:54 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
-**Implementation commit:** None for M08; branch starts at M07 completion record `7089a1e`
+**Implementation commit:** `f512045` (`feat(M08): define isolated runner contracts [codex]`)
 **Active milestone:** M08 Isolated runner - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06, M07
 
@@ -22,6 +22,8 @@ M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; d
 M07 is complete. Foundation `5a49f97`, governed API `94d34b7`, and analysis-gate implementation `0c18efd` are pushed; draft PR #7 is stacked on completed M06. Final GitHub CI run 31494692860, job 93789359220, passed full validation and ephemeral PostgreSQL migration. The accepted scope includes versioned plan/policy/approval contracts; deterministic golden-risk classification; immutable plan/policy/base-commit evidence; tenant-scoped persistence and idempotency; authenticated planning/approval APIs; ordered task graphs; current multi-gate/separation-of-duties enforcement; high-risk pre-mutation pause; blocked no-relaxation behavior; and typed completed Architecture/UI/Security analyses bound to requirement, base commit, and policy digest. ADR-016 records the decisions.
 
 M07 completion record `7089a1e` is pushed. GitHub CI run 31495684020, job 93792676230, passed full validation and ephemeral PostgreSQL migration. `codex/m08-isolated-runner` was created from this exact completed checkpoint; no M08 implementation exists yet.
+
+M08 is in progress. Foundation `f512045` is pushed and draft PR #8 is stacked on completed M07. GitHub CI run 31502183703, job 93814733180, passed full validation and ephemeral PostgreSQL migration. The foundation replaces the M03 raw runner command with versioned profile/workspace/argv/result/cancellation/cleanup contracts; deterministic tenant/run/base-commit/profile/allowlist/resource/filesystem/artifact policy; canonical profile digests; and an explicitly non-isolating conformance fixture that never invokes host processes and refuses production-isolation claims. ADR-017 records the boundary.
 
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 
@@ -50,10 +52,11 @@ Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/
 - Do not run `npm audit fix --force`; it proposes a breaking `drizzle-kit` downgrade.
 - M07 local full validation passed through the 164-file secret scan: 10/10 typecheck and build, 13 files / 68 unit tests, 6 files / 34 contract tests, 10 files / 32 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, and 4 browser/accessibility tests. Approved-network high-threshold audit exited 0 with the unchanged four moderate advisories. Final multi-gate tightening passed domain typecheck and 13/13 focused tests.
 - Final M07 analysis-gate validation passed formatting/lint, 10/10 typecheck and build, 13 files / 70 unit tests, 6 files / 36 contract tests, 11 files / 40 integration tests with 1 file / 1 live PostgreSQL test skipped, serialized 5 files / 17 migration tests, 4 browser/accessibility tests, and a 168-file secret scan. Approved-network audit exited 0 with the unchanged four moderate advisories. Final GitHub CI run 31494692860 passed full validation and ephemeral PostgreSQL migration.
+- M08 foundation validation passed formatting/lint, 10/10 typecheck and build, 14 files / 74 unit tests, 7 files / 39 contract tests, 12 files / 45 integration tests with 1 file / 1 live PostgreSQL test skipped, serialized 5 files / 17 migration tests, 4 browser/accessibility tests, and a 173-file secret scan. Approved-network audit exited 0 with the unchanged four moderate advisories. GitHub CI run 31502183703 passed full validation and ephemeral PostgreSQL migration.
 
 ## Next exact work
 
-1. Read the authoritative M08 isolation, security, typed runner, artifact, and acceptance requirements.
-2. Implement only the versioned runner port/profile and immutable execution-command contract foundation before choosing a runtime backend.
-3. Preserve immutable-base-commit, tenant scope, orchestrator authority, and deny-by-default network/secrets/tool boundaries; distinguish local mock execution from production-grade isolation.
-4. Do not make a live model call before the minimum AI Cost Controller exists, treat retrieved content as authority, transmit the full repository, or merge any PR autonomously.
+1. Add an M08 runner application/orchestration service that reauthorizes current approved `QUEUED` runs before provision and records lifecycle/audit evidence.
+2. Add tenant-scoped persistence/idempotency for workspace, command, cancellation, cleanup, and artifact references without storing raw output or secrets.
+3. Preserve immutable-base-commit/profile bindings and the deny-by-default network/secrets/tool boundary; do not treat the conformance fixture as production isolation.
+4. Keep production runtime/image selection and the forbidden-host-resource acceptance suite explicit prerequisites; do not make a live model call or merge any PR autonomously.

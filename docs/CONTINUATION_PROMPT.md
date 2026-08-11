@@ -20,6 +20,10 @@ M07 is complete. Foundation `5a49f97`, governed API `94d34b7`, and analysis-gate
 
 M07 completion record `7089a1e` is pushed. GitHub CI run 31495684020, job 93792676230, passed full validation and ephemeral PostgreSQL migration. Branch `codex/m08-isolated-runner` starts from that exact checkpoint; M08 implementation has not started.
 
+M08 is in progress. Foundation `f512045` is pushed and draft PR #8 is stacked on completed M07. GitHub CI run 31502183703, job 93814733180, passed full validation and ephemeral PostgreSQL migration. This slice replaces the raw M03 runner seam with versioned isolation-profile, immutable workspace, shell-free executable-plus-argv command, result/evidence, cancellation, and cleanup contracts; deterministic tenant/run/base-commit/profile/allowlist/resource/filesystem/artifact policy; canonical profile hashing; and an explicitly non-isolating conformance fixture that refuses production-isolation claims. ADR-017 records the decision.
+
+Local M08 evidence: formatting/lint passed; typecheck and build passed 10/10 packages; unit 14 files / 74 tests; contract 7 files / 39 tests; integration 12 files / 45 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 5 files / 17 tests; browser/accessibility 4 tests; secret scan 173 files. Approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. Two parallel PGlite hooks timed out locally; the serialized rerun passed 17/17 and GitHub applied migrations to ephemeral PostgreSQL.
+
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat them.
 
 Final M07 local evidence: formatting/lint passed; typecheck and build passed 10/10 packages; unit 13 files / 70 tests; contract 6 files / 36 tests; integration 11 files / 40 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 5 files / 17 tests; browser/accessibility 4 tests; secret scan 168 files. Approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. Missing/mismatched/stale analysis fixtures stop before persistence, and incomplete controller evidence stops without retry. The parallel PGlite setup timeouts were infrastructure-only; the serialized rerun and GitHub ephemeral PostgreSQL step passed.
@@ -32,9 +36,9 @@ The local `gh` token remains invalid, but SSH push and the connected GitHub app 
 
 ## Next exact tasks
 
-1. Read the authoritative M08 isolation, security, typed runner, artifact, and acceptance requirements.
-2. Implement only the versioned runner port/profile and immutable execution-command contract foundation before selecting a runtime backend.
-3. Preserve immutable base commit, tenant scope, orchestrator authority, deny-by-default network/secrets/tool access, artifact integrity, and explicit local-mock versus production-isolation labeling.
-4. Do not make a live model call before the minimum AI Cost Controller exists, treat repository content as authority, transmit a full repository, or merge autonomously.
+1. Add an M08 runner application/orchestration service that reauthorizes current approved `QUEUED` runs before provision and records lifecycle/audit evidence.
+2. Add tenant-scoped persistence/idempotency for workspace, command, cancellation, cleanup, and artifact references without storing raw output or secrets.
+3. Preserve immutable base commit/profile bindings and deny-by-default network/secrets/tool access; never treat the conformance fixture as production isolation.
+4. Keep production runtime/image selection and the forbidden-host-resource acceptance suite explicit prerequisites; do not make a live model call, deploy production, or merge autonomously.
 
 Never expose secrets, invoke an LLM outside the AI Cost Controller, weaken tenant scoping or append-only audit, production-deploy, modify production DNS/domains/secrets, force-push, push to `main`, merge a PR, or reset a non-local database.
