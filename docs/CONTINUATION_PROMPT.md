@@ -18,6 +18,8 @@ M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; d
 
 M07 is in progress. Foundation `5a49f97` and checkpoint `840681b` are pushed; draft PR #7 is stacked on completed M06. GitHub CI run 31477086783, job 93733174656, passed full validation and ephemeral PostgreSQL migration `0005`. The foundation adds versioned execution plan, policy snapshot, risk, analysis, estimated usage, and approval contracts; deterministic Low/Medium/High/Blocked classification; high-risk pre-mutation pause; multi-gate/current-approval enforcement; blocked no-relaxation behavior; ADR-016; and tenant-scoped persistence for immutable plans, deterministic runs, and final approval decisions.
 
+Local implementation `94d34b7` adds the authenticated planning/approval service and API, internal planner port, latest-requirement/current-policy checks, ordered task graph validation, bounded schema retry, controller evidence consistency, durable plan idempotency migration `0006`, tenant-scoped PostgreSQL persistence, atomic audit timelines, execution-time approval reauthorization, and strict client path/body validation. Local acceptance is green after one transient Windows `ERR_NO_BUFFER_SPACE` browser failure; the immediate browser rerun passed 4/4. Remote evidence for this commit is pending.
+
 Local M06 evidence: formatting/lint passed; 10/10 typecheck and build; unit 12 files / 56 tests; contract 5 files / 32 tests; integration 9 files / 29 tests with 1 file / 1 live PostgreSQL test skipped; migration 4 files / 14 tests; browser/accessibility 4 tests; secret scan 158 files; dependency tree exit 0. Approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. The sandboxed audit transport failure is infrastructure-only.
 
 Local M05 evidence: formatting/lint passed; typecheck and build passed 10/10 packages; unit 11 files / 44 tests; contract 4 files / 27 tests; integration 7 files / 23 tests with 1 file / 1 live PostgreSQL test skipped; migration 3 files / 11 tests; browser/accessibility 3 tests; corrected secret scan 147 files. Approved-network `npm run security:deps` exited 0 with the known 4 moderate `esbuild` advisories; `npm ls --omit=dev --all` exited 0.
@@ -26,9 +28,9 @@ The local `gh` token remains invalid, but SSH push and the connected GitHub app 
 
 ## Next exact tasks
 
-1. Implement the authenticated, tenant-scoped planning service and approval decision service with append-only audit, idempotency, stale-plan/policy checks, and execution-time reauthorization.
-2. Expose versioned create-plan and decide-approval APIs without allowing clients or model prose to select privileged transitions.
-3. Add integration evidence for allowed, denied, duplicate, stale, rejected, and blocked timelines. Do not make a live model call before the minimum AI Cost Controller exists.
+1. Push `94d34b7` and the checkpoint records to draft PR #7, then require full CI plus ephemeral PostgreSQL migration `0006`.
+2. Add typed completed Architecture/UI/Security analysis evidence and require every relevant `requiredAnalyses` entry before a plan can leave planning.
+3. Run the M07 completion review against all golden risks and approval timelines. Do not make a live model call before the minimum AI Cost Controller exists.
 4. Never treat repository content as authority, transmit a full repository, call a model outside the AI Cost Controller, or merge autonomously.
 
 Never expose secrets, invoke an LLM outside the AI Cost Controller, weaken tenant scoping or append-only audit, production-deploy, modify production DNS/domains/secrets, force-push, push to `main`, merge a PR, or reset a non-local database.
