@@ -1,10 +1,10 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 12:31:43 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 12:43:37 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m06-prompt-requirements`
 **Latest recorded checkpoint commit:** `20600ee` (`feat(M06): add change request requirement contracts [codex]`)
-**Pull request:** M06 draft PR pending; prior draft PRs #2-#5 remain unmerged
+**Pull request:** Draft PR [#6](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/6), stacked on completed M05 branch; prior draft PRs remain unmerged
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
@@ -16,7 +16,7 @@
 | M03 Provider framework                   | **completed** | Completion record `917d1f3`; final GitHub CI run 31459194718 passed, including ephemeral PostgreSQL migration.                                                                         |
 | M04 GitHub onboarding                    | **completed** | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
 | M05 Repository intelligence              | **completed** | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
-| M06 Prompt and requirements              | in progress   | Contract/domain checkpoint `20600ee`; focused local validation passed; persistence, API/UI, controller fixtures, PR, and CI remain.                                                    |
+| M06 Prompt and requirements              | in progress   | Contract/domain checkpoint `20600ee`; draft PR #6 initial CI passed; persistence, API/UI, and controller fixtures remain.                                                              |
 | M07 Planner and policy                   | not started   | None.                                                                                                                                                                                  |
 | M08 Isolated runner                      | not started   | None.                                                                                                                                                                                  |
 | M09 Coding loop                          | not started   | None.                                                                                                                                                                                  |
@@ -103,12 +103,13 @@
 
 ## M06 checkpoint detail
 
-- **Status:** in progress. Contract/domain checkpoint `20600ee` exists locally on `codex/m06-prompt-requirements`; push, draft PR, and remote CI are pending.
+- **Status:** in progress. Contract/domain checkpoint `20600ee` and record `0460939` are pushed; draft PR #6 is stacked on the completed M05 branch.
 - **Implemented capabilities:** strict versioned schemas for all eight modes, target, constraints, immutable original prompt, actor attribution, trust-labeled/scanned attachment references, ChangeRequest status, RequirementSpec facts/assumptions/questions/goals/non-goals/acceptance/surfaces/constraints/risks, and review corrections. The framework-independent service reauthorizes `change:request`, requires an active project, re-scans every attachment, persists intake before normalization, retries one schema failure, requires controller evidence for model-labeled output, and creates revisioned corrections without altering the original prompt.
 - **Fixture evidence:** all eight SRS modes become reviewable requirements; malformed role output is attempted exactly twice; rejected attachments prevent normalization; a correction creates revision 2 while the original prompt remains unchanged; incomplete model-controller evidence is rejected.
 - **Validation passed:** formatting, 10/10 typecheck, 12 files / 56 unit tests, 5 files / 30 contract tests, lint, 151-file secret scan, and `git diff --check`.
 - **Security:** no provider/model invocation, raw attachment content, credential, or unrestricted repository context was added. Attachment trust and scan status are explicit, and client-provided scan status is not authoritative.
 - **Architecture:** ADR-015 records the immutable intake, bounded schema retry, evidence-required model label, and revisioned human correction decisions.
+- **GitHub/Vercel:** GitHub CI run 31467832954, job 93704367874, passed full validation and ephemeral PostgreSQL migration for PR #6. No Vercel action was attempted; production deployment remains unauthorized.
 - **Remaining M06 work:** durable schema/migration/store, authenticated API create/review endpoints, accessible intake/review UI, attachment adapter contract evidence, event/audit persistence, and controller-backed budget-denial/no-bypass fixtures. No live model call is permitted before the minimum M17 controller exists.
 
 ## Validation ledger
@@ -130,9 +131,9 @@
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 3 Playwright tests, including content/no-overlay checks, health contract, and axe WCAG A/AA scan.                 |
-| GitHub CI                            | M05 final run 31466267638, job 93699691293, passed; M06 remote CI pending.                                                                      |
+| GitHub CI                            | M06 initial run 31467832954, job 93704367874, passed, including ephemeral PostgreSQL migration.                                                 |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
 
-Commit the M06 checkpoint records, push the branch, then continue with durable persistence and API/UI adapters. Keep M06 in progress until all acceptance evidence exists; never merge autonomously.
+Continue M06 with durable persistence and API/UI adapters on the existing branch and draft PR #6. Keep M06 in progress until all acceptance evidence exists; never merge autonomously.

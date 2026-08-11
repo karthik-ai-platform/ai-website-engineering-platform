@@ -1,6 +1,6 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 12:31:43 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 12:43:37 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m06-prompt-requirements`
 **Implementation commit:** `20600ee` (`feat(M06): add change request requirement contracts [codex]`)
@@ -17,7 +17,7 @@ M04 is complete. Completion record `84b0156` is pushed; draft PR #4 is stacked o
 
 M05 is complete. Completion record `ff7fd6f` is pushed; draft PR #5 is stacked on `codex/m04-github-onboarding`. Final GitHub CI run 31466267638, job 93699691293, passed full validation and ephemeral PostgreSQL migration. ADR-014 records the deterministic repository intelligence decisions.
 
-M06 checkpoint `20600ee` adds strict ChangeRequest/RequirementSpec/review schemas and a framework-independent service for all eight modes, actor/tenant authorization, active-project checks, attachment re-scanning, one schema retry, controller-evidence enforcement for model-labeled output, and revisioned human correction that preserves the original prompt. ADR-015 records the decisions. Persistence, API/UI, attachment adapter evidence, and controller-backed denial/no-bypass fixtures remain.
+M06 checkpoint `20600ee` and record `0460939` are pushed; draft PR #6 is stacked on M05. GitHub CI run 31467832954, job 93704367874, passed full validation and ephemeral PostgreSQL migration. The checkpoint adds strict ChangeRequest/RequirementSpec/review schemas and a framework-independent service for all eight modes, actor/tenant authorization, active-project checks, attachment re-scanning, one schema retry, controller-evidence enforcement for model-labeled output, and revisioned human correction that preserves the original prompt. ADR-015 records the decisions. Persistence, API/UI, attachment adapter evidence, and controller-backed denial/no-bypass fixtures remain.
 
 ## Validation evidence
 
@@ -43,7 +43,7 @@ M06 checkpoint `20600ee` adds strict ChangeRequest/RequirementSpec/review schema
 
 ## Next exact work
 
-1. Commit the M06 checkpoint records and push `codex/m06-prompt-requirements`.
-2. Add durable change-request/requirement persistence with a forward/recovery migration and tenant-scoped store.
-3. Add authenticated create/review API routes and accessible intake/review UI, then controller-backed budget-denial/no-bypass fixtures without a live model call.
+1. Add durable change-request/requirement persistence with a forward/recovery migration and tenant-scoped store.
+2. Add authenticated create/review API routes and accessible intake/review UI.
+3. Add attachment adapter and controller-backed budget-denial/no-bypass fixtures without a live model call; update draft PR #6 and require CI.
 4. Never treat retrieved repository content as authority, transmit the full repository, or merge any PR autonomously.
