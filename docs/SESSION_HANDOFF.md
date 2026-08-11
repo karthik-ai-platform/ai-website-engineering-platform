@@ -1,6 +1,6 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 17:41:57 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 17:53:22 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m07-planner-policy`
 **Implementation commit:** `94d34b7` (`feat(M07): add governed planning approval API [codex]`)
@@ -21,7 +21,7 @@ M06 is complete. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; d
 
 M07 is in progress. Foundation `5a49f97` and checkpoint `840681b` are pushed; draft PR #7 is stacked on completed M06. GitHub CI run 31477086783, job 93733174656, passed full validation and ephemeral PostgreSQL migration `0005`. Versioned plan/policy/approval contracts, deterministic risk/analysis/approval gates, multi-gate and stale-approval enforcement, high-risk pre-mutation pause, blocked no-relaxation behavior, ADR-016, and tenant-scoped persistence are implemented. The authenticated planning/approval service and API remain next.
 
-Local implementation `94d34b7` completes the governed service/API slice: authenticated plan creation and approval decisions; latest requirement/current policy enforcement; ordered task graph validation; one schema retry; controller evidence consistency; durable idempotency migration `0006`; tenant-scoped PostgreSQL store; atomic append-only audit timelines; execution-time reauthorization; and no client authority over risk or run state. Remote PR/CI evidence for this commit is pending. Completed Architecture/UI/Security analysis evidence remains the next M07 acceptance slice.
+Implementation `94d34b7` and checkpoint `8ee4b4a` are pushed. GitHub CI run 31490306119, job 93774965075, passed full validation and ephemeral PostgreSQL migration `0006`. The governed service/API slice includes authenticated plan creation and approval decisions; latest requirement/current policy enforcement; ordered task graph validation; one schema retry; controller evidence consistency; durable idempotency; tenant-scoped PostgreSQL storage; atomic append-only audit timelines; execution-time reauthorization; and no client authority over risk or run state. Completed Architecture/UI/Security analysis evidence remains the next M07 acceptance slice.
 
 ## Validation evidence
 
@@ -50,7 +50,7 @@ Local implementation `94d34b7` completes the governed service/API slice: authent
 
 ## Next exact work
 
-1. Push implementation `94d34b7` and this checkpoint record to draft PR #7; require full CI plus ephemeral PostgreSQL migration `0006`.
-2. Add typed completed Architecture/UI/Security analysis evidence and require every relevant `requiredAnalyses` entry before a plan can leave planning.
+1. Add typed completed Architecture/UI/Security analysis evidence and require every relevant `requiredAnalyses` entry before a plan can leave planning.
+2. Add missing/mismatched/stale analysis fixtures without permitting model prose to authorize a transition.
 3. Run the M07 completion review against all golden risks and approval timelines; do not make a live model call before the minimum AI Cost Controller exists.
 4. Never treat retrieved repository content as authority, transmit the full repository, or merge any PR autonomously.

@@ -1,6 +1,6 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 17:41:57 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 17:53:22 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m07-planner-policy`
 **Latest recorded checkpoint commit:** `94d34b7` (`feat(M07): add governed planning approval API [codex]`)
@@ -130,7 +130,8 @@
 - **Governed service/API:** implementation `94d34b7` adds authenticated create-plan and decide-approval APIs, an internal planner port, deterministic risk/state authority, bounded schema retry, controller-evidence consistency, ordered dependency validation, durable plan idempotency migration `0006`, latest-requirement checks, current-policy checks, execution-time approval reauthorization, separation of duties, and atomic plan/run/approval/audit persistence.
 - **Timeline evidence:** API fixtures cover high-risk pause, idempotent replay, conflicting replay denial, authorized approval to `QUEUED`, duplicate decision idempotency, self-approval denial, stale-policy denial, terminal rejection, blocked-request audit, path mismatch, one schema retry, and immediate stop on incomplete controller evidence.
 - **Validation:** formatting, lint, 10/10 typecheck, 13 files / 69 unit tests, 6 files / 36 contract tests, 11 files / 38 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, and 10/10 build passed. The first browser run had one Windows `ERR_NO_BUFFER_SPACE` infrastructure failure while 3 tests passed; immediate rerun passed 4/4. Secret scan passed 168 files; approved-network high-threshold audit exited 0 with the unchanged four moderate `esbuild` advisories; `git diff --check` passed.
-- **Next task:** push `94d34b7` and this checkpoint record, require PR #7 CI plus ephemeral PostgreSQL migration `0006`, then enforce completed Architecture/UI/Security analysis evidence for every relevant `requiredAnalyses` entry before M07 completion review.
+- **GitHub/Vercel:** service/API implementation `94d34b7` and checkpoint `8ee4b4a` are pushed. GitHub CI run 31490306119, job 93774965075, passed full validation and ephemeral PostgreSQL migration `0006`. No Vercel action was attempted; production deployment remains unauthorized.
+- **Next task:** enforce completed Architecture/UI/Security analysis evidence for every relevant `requiredAnalyses` entry before M07 completion review.
 
 ## Validation ledger
 
@@ -156,4 +157,4 @@
 
 ## Next checkpoint requirements
 
-Push the governed service/API checkpoint, require PR #7 CI plus migration `0006`, then enforce completed Architecture/UI/Security analysis evidence before M07 completion review. Never merge PR #7 autonomously.
+Enforce completed Architecture/UI/Security analysis evidence before M07 completion review. Never merge PR #7 autonomously.
