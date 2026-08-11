@@ -133,6 +133,16 @@ Status values: **Accepted**, **Proposed**, **Deferred**, **Superseded**, **Rejec
 - **Alternatives considered:** Personal access tokens; user OAuth as repository authority; all-repository installations by default; trusting callback tenant/project parameters; storing raw setup state; returning secret references to clients; enabling pull-request or content mutation during onboarding.
 - **Consequences:** Deterministic fixture onboarding can satisfy M04 contract evidence without credentials, while live-provider evidence requires the explicit owner setup in `docs/runbooks/github-app-onboarding.md`. M11 must perform a separate least-privilege review before any Git write scope is enabled. Lost access remains visible as `access_lost`; the platform never falls back to broader credentials.
 
+## ADR-014 - M05 deterministic repository evidence precedes semantic retrieval
+
+- **Status:** Accepted
+- **Date:** 2026-08-11
+- **Milestone:** M05
+- **Context:** Repository context must be narrow, reproducible, tenant-isolated, commit-addressed, provenance-linked, token-bounded, and secret-safe. Semantic similarity can improve recall but cannot replace current source truth or deterministic dependency/symbol evidence.
+- **Decision:** Key every index by organization, project, repository, immutable commit, and configuration digest. Normalize/sort provider file paths before hashing. Exclude generated, vendor, binary, oversized, policy, filename-secret, and content-secret candidates before metadata extraction. Derive language/category, framework/package manager/scripts, routes, exports/imports, symbols/components/stories/tests, configuration/instructions, ownership, and recent commit summaries deterministically. Use lexical path/content, symbol, dependency, instruction, and test evidence by default; expose semantic search only as an optional provider-neutral score port. Retrieval emits bounded excerpts through the artifact port and a manifest with source path, commit, content/configuration digests, score, and estimated tokens. Invalidation may remove only stale entries in the addressed tenant/project.
+- **Alternatives considered:** Sending the full repository; semantic/vector retrieval as the first or only selector; cache keys without tenant/configuration scope; indexing ignored binaries/vendor/generated output; retaining detected secret content for later redaction; model-generated repository maps.
+- **Consequences:** Golden fixture maps and retrieval manifests are deterministic and credential-free. Secret candidates never enter searchable documents or context artifacts. The included memory index store is a conformance/test adapter; a production durable index/artifact implementation remains provider configuration and must preserve the same scoped contracts. Retrieved repository instructions remain untrusted data and cannot supersede platform policy.
+
 ## Open production decisions
 
 These are not blockers to contract-first/local implementation but must be resolved before their production acceptance gates:

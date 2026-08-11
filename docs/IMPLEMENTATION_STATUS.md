@@ -1,10 +1,10 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 11:19:45 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 11:55:16 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
-**Working branch:** `codex/m04-github-onboarding`
-**Latest recorded checkpoint commit:** `8da6394` (`docs(M04): record GitHub onboarding checkpoint [codex]`)
-**Pull request:** Draft PR [#4](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/4), stacked on completed M03 branch; prior draft PRs remain unmerged
+**Working branch:** `codex/m05-repository-intelligence`
+**Latest recorded checkpoint commit:** `a093c48` (`feat(M05): add repository intelligence maps [codex]`)
+**Pull request:** M05 draft PR pending; prior draft PRs #2-#4 remain unmerged
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
@@ -14,8 +14,8 @@
 | M01 Foundation                           | **completed** | Local validation passed; runtime health passed; browser/accessibility passed; high dependency audit passed; GitHub CI run 31450683532 passed including ephemeral PostgreSQL migration. |
 | M02 Projects and RBAC                    | **completed** | Implementation `46b6d23`; completion record `b7203a6`; GitHub CI run 31456298365 passed, including ephemeral PostgreSQL migration.                                                     |
 | M03 Provider framework                   | **completed** | Completion record `917d1f3`; final GitHub CI run 31459194718 passed, including ephemeral PostgreSQL migration.                                                                         |
-| M04 GitHub onboarding                    | **completed** | Implementation `b15a2c3`; mock/contract evidence passed; GitHub CI run 31462740132 passed, including ephemeral PostgreSQL migration.                                                   |
-| M05 Repository intelligence              | not started   | None.                                                                                                                                                                                  |
+| M04 GitHub onboarding                    | **completed** | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
+| M05 Repository intelligence              | in progress   | Implementation `a093c48`; local golden-map/retrieval gates passed; push, draft PR, and GitHub CI pending.                                                                              |
 | M06 Prompt and requirements              | not started   | None.                                                                                                                                                                                  |
 | M07 Planner and policy                   | not started   | None.                                                                                                                                                                                  |
 | M08 Isolated runner                      | not started   | None.                                                                                                                                                                                  |
@@ -88,6 +88,19 @@
 - **GitHub/Vercel:** `codex/m04-github-onboarding` is pushed and draft PR [#4](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/4) is stacked on `codex/m03-provider-framework` for a focused M04 diff. GitHub CI run 31462740132, job 93689360152, passed the main validation and ephemeral PostgreSQL migration steps. No Vercel action was attempted; production deployment remains unauthorized.
 - **Next task:** commit and push this completion record, confirm the resulting branch CI remains green, then begin M05 Repository intelligence in milestone order. Never merge PR #4 autonomously.
 
+## M05 checkpoint detail
+
+- **Status:** in progress. Validated implementation commit `a093c48` exists locally; push, draft PR, and GitHub CI evidence are pending.
+- **Implemented capabilities:** versioned repository provenance, file, exclusion, evidence, map, retrieval request, context item, and manifest schemas; deterministic immutable-snapshot indexer; normalized/sorted path processing; language/category, framework, package manager, script, route, export/import, symbol, component, story, test, configuration, architecture instruction, ownership, and recent-commit extraction; generated/vendor/binary/large/policy/secret exclusions; tenant/project/repository/commit/configuration-addressed memory store and stale invalidation; lexical/symbol/dependency/instruction/test retrieval; optional semantic-search port; bounded excerpt artifacts and per-item token estimates.
+- **Golden fixture evidence:** the reviewed Next.js/TypeScript fixture at commit `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` detects npm, Next.js/React, build/test scripts, root route, `Hero` component/export/import/test/story, AGENTS instruction, CODEOWNERS entry, configuration, and recent commit context. Reversing provider file order yields the identical map/digest. Retrieval ranks `src/components/Hero.tsx` first for the fixture intent and stays within the requested 250-token budget.
+- **Exclusion/isolation evidence:** `.env.local` and an example credential-shaped source file are excluded before searchable document creation; generated `dist`, vendored `node_modules`, binary PNG, oversized text, and `.git` policy paths are excluded by deterministic reason. Cross-tenant retrieval returns `NOT_FOUND`. Indexing a new commit/config removes only stale indexes within the addressed organization/project; another tenant's matching commit remains present.
+- **Validation passed:** formatting, lint, 10/10 typecheck, 11 files / 44 unit tests, 4 files / 27 contract tests, 7 files / 23 integration tests with 1 file / 1 live PostgreSQL test skipped, 3 files / 11 migration tests, 10/10 build, 3 browser/accessibility tests, corrected 147-file secret scan, approved-network dependency audit, dependency tree, and `git diff --check`.
+- **Validation notes:** the initial focused typecheck found one exact-optional-property declaration for the semantic port; it was corrected and the ten-package typecheck passed. The full validation passed through browser/accessibility, then correctly rejected a token-shaped `.env.local` fixture at secret scanning. The fixture was replaced with a redacted placeholder, and contract plus 147-file secret scanning passed. Approved-network `npm run security:deps` exited 0 after sandboxed audit access was unavailable.
+- **Security:** no repository provider call, model call, vector provider, or secret was added. Secret candidates never become searchable documents or retrieval artifacts. Retrieved repository instructions remain untrusted data. Retrieval produces bounded artifacts rather than transmitting the full repository. The unchanged 4 moderate `esbuild` advisories through `drizzle-kit` remain; no breaking forced audit fix was applied.
+- **Architecture:** ADR-014 records deterministic evidence before semantic retrieval, commit/configuration/tenant cache keys, pre-extraction exclusions, bounded artifact manifests, and the memory store's conformance-only status.
+- **GitHub/Vercel:** no M05 PR or remote CI evidence yet. No live repository/provider or Vercel action was attempted; production deployment remains unauthorized.
+- **Next task:** commit this checkpoint record, push `codex/m05-repository-intelligence`, open a draft PR stacked on the completed M04 branch, and require its CI before marking M05 complete.
+
 ## Validation ledger
 
 | Check                                | Outcome                                                                                                                                         |
@@ -97,19 +110,19 @@
 | Dependency tree                      | `npm ls --omit=dev --all` exited 0 but reported extraneous WASM helper packages.                                                                |
 | Formatting                           | `npm run format:check` passed.                                                                                                                  |
 | Lint                                 | `npm run lint` passed; Next App Router pages-directory notice printed.                                                                          |
-| Type checking                        | M04 worktree: `npm run typecheck` passed 9/9 packages.                                                                                          |
+| Type checking                        | M05 worktree: `npm run typecheck` passed 10/10 packages.                                                                                        |
 | Unit tests                           | M04 worktree: `npm run test:unit` passed 11 files / 44 tests.                                                                                   |
-| Contract tests                       | M04 worktree: `npm run test:contract` passed 3 files / 23 tests.                                                                                |
+| Contract tests                       | M05 worktree: `npm run test:contract` passed 4 files / 27 tests.                                                                                |
 | Integration tests                    | M04 worktree: 7 files / 23 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                           |
 | Database migration validation        | M04 worktree: 3 files / 11 PGlite tests passed; local live PostgreSQL skipped; remote M04 evidence pending.                                     |
-| Production build                     | M04 worktree: `npm run build` passed 9/9 packages.                                                                                              |
-| Secret scanning                      | M04 worktree: `npm run security:secrets` passed; 136 text files scanned.                                                                        |
+| Production build                     | M05 worktree: `npm run build` passed 10/10 packages.                                                                                            |
+| Secret scanning                      | M05 worktree: `npm run security:secrets` passed; 147 text files scanned.                                                                        |
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 3 Playwright tests, including content/no-overlay checks, health contract, and axe WCAG A/AA scan.                 |
-| GitHub CI                            | M04 run 31462740132, job 93689360152, passed for PR #4, including main validation and ephemeral PostgreSQL migration.                           |
+| GitHub CI                            | M04 final run 31463150845, job 93690568730, passed; M05 remote CI pending.                                                                      |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
 
-M04 is complete with mock/contract provider evidence. Commit and push this completion record, confirm the branch remains green, then begin M05 Repository intelligence in milestone order. Never merge PR #4 autonomously.
+Commit and push the M05 checkpoint record, open a stacked draft PR, and confirm its CI. Mark M05 complete only after remote evidence is observed. Never merge a PR autonomously.
