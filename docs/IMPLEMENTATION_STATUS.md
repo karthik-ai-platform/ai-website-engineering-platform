@@ -1,9 +1,9 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 13:57:00 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 14:04:26 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m06-prompt-requirements`
-**Latest recorded checkpoint commit:** `333d0d0` (`feat(M06): complete prompt requirements workflow [codex]`)
+**Latest recorded checkpoint commit:** `c7f5bc0` (`docs(M06): record full local acceptance evidence [codex]`)
 **Pull request:** Draft PR [#6](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/6), stacked on completed M05 branch; prior draft PRs remain unmerged
 **Vercel preview:** None; production deployment is not authorized
 
@@ -16,7 +16,7 @@
 | M03 Provider framework                   | **completed** | Completion record `917d1f3`; final GitHub CI run 31459194718 passed, including ephemeral PostgreSQL migration.                                                                         |
 | M04 GitHub onboarding                    | **completed** | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
 | M05 Repository intelligence              | **completed** | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
-| M06 Prompt and requirements              | in progress   | Implementation `333d0d0`; full local acceptance gates passed; push and updated PR #6 CI remain before completion.                                                                      |
+| M06 Prompt and requirements              | **completed** | Implementation `333d0d0`; checkpoint `c7f5bc0`; GitHub CI run 31473572456 passed full validation and ephemeral PostgreSQL migration.                                                   |
 | M07 Planner and policy                   | not started   | None.                                                                                                                                                                                  |
 | M08 Isolated runner                      | not started   | None.                                                                                                                                                                                  |
 | M09 Coding loop                          | not started   | None.                                                                                                                                                                                  |
@@ -103,10 +103,9 @@
 
 ## M06 checkpoint detail
 
-- **Status:** in progress pending updated remote evidence. Implementation commit `333d0d0` is local; draft PR #6 remains stacked on the completed M05 branch.
+- **Status:** completed. Implementation `333d0d0` and checkpoint `c7f5bc0` are pushed; draft PR #6 remains stacked on the completed M05 branch.
 - **Implemented capabilities:** strict versioned schemas for all eight modes, target, constraints, immutable original prompt, actor attribution, trust-labeled/scanned attachment references, ChangeRequest status, RequirementSpec facts/assumptions/questions/goals/non-goals/acceptance/surfaces/constraints/risks, and review corrections. The framework-independent service reauthorizes `change:request`, requires an active project, re-scans every attachment, persists intake before normalization, retries one schema failure, requires controller evidence for model-labeled output, and creates revisioned corrections without altering the original prompt.
 - **Fixture evidence:** all eight SRS modes become reviewable requirements; malformed role output is attempted exactly twice; rejected attachments prevent normalization; a correction creates revision 2 while the original prompt remains unchanged; incomplete model-controller evidence is rejected.
-- **Validation passed:** formatting, 10/10 typecheck, 12 files / 56 unit tests, 5 files / 30 contract tests, lint, 151-file secret scan, and `git diff --check`.
 - **Security:** no provider/model invocation, raw attachment content, credential, or unrestricted repository context was added. Attachment trust and scan status are explicit, and client-provided scan status is not authoritative.
 - **Durable persistence/API:** migration `0004_m06_change_requests` adds tenant-scoped change requests, append-only requirement revisions, immutable-intake triggers, revision uniqueness, idempotency-key uniqueness, purpose/forward/recovery guidance, and Drizzle schema exports. The PostgreSQL store scopes every read/write by organization/project where applicable and atomically persists change/requirement audit records. Authenticated create/review API routes validate path/body agreement and return versioned schemas; duplicate intake keys return the original review result without a second normalization call.
 - **Accessible UI:** `/changes/new` captures original intent, all eight modes, target, constraints, and attachment references; exposes untrusted-data/scanning guidance; and presents assumptions and acceptance criteria in an ARIA live review region. The UI explicitly states that its browser draft is not execution authority.
@@ -115,7 +114,8 @@
 - **GitHub/Vercel:** GitHub CI run 31467832954, job 93704367874, passed full validation and ephemeral PostgreSQL migration for PR #6. No Vercel action was attempted; production deployment remains unauthorized.
 - **Validation passed:** formatting, lint, 10/10 typecheck, 12 files / 56 unit tests, 5 files / 32 contract tests, 9 files / 29 integration tests with 1 file / 1 live PostgreSQL test skipped, 4 files / 14 migration tests, 10/10 build, 4 browser/accessibility tests, 158-file secret scan, dependency tree, approved-network high-threshold audit, and `git diff --check`.
 - **Validation notes:** the first UI gate found four unsafe `FormData` string conversions; explicit string narrowing fixed them. The first full validation stopped on a mock scanner literal-width type error; it was fixed and the focused contract passed 7/7. The clean full run then passed every gate through secret scanning and failed only because sandboxed npm audit could not reach the registry. Approved-network `npm run security:deps` exited 0 with the unchanged 4 moderate `esbuild` advisories. The aggregate migration command was updated and passed 4 files / 14 tests including M06.
-- **Remaining M06 gate:** push implementation and checkpoint records, observe updated PR #6 CI including ephemeral PostgreSQL migration, then mark M06 complete. No live model call is permitted before the minimum M17 controller exists.
+- **GitHub/Vercel:** GitHub CI run 31473572456, job 93722088032, passed full validation and ephemeral PostgreSQL migration for the completed M06 scope. No Vercel action was attempted; production deployment remains unauthorized.
+- **Next task:** commit and push this completion record, confirm its resulting CI remains green, then begin M07 Planner and policy in milestone order. No live model call is permitted before the minimum M17 controller exists.
 
 ## Validation ledger
 
@@ -136,9 +136,9 @@
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 4 Playwright tests, including M06 intake/review interaction and axe WCAG A/AA scans.                              |
-| GitHub CI                            | M06 initial run 31467832954, job 93704367874, passed, including ephemeral PostgreSQL migration.                                                 |
+| GitHub CI                            | M06 acceptance run 31473572456, job 93722088032, passed, including ephemeral PostgreSQL migration.                                              |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
 
-Commit and push the M06 checkpoint records, observe updated PR #6 CI including ephemeral PostgreSQL migration, then mark M06 complete only if it passes. Never merge autonomously.
+Commit and push the M06 completion record, confirm its CI remains green, then begin M07 Planner and policy in milestone order. Never merge PR #6 autonomously.

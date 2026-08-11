@@ -56,7 +56,7 @@ Cross-cutting constraints apply throughout: tenant scoping begins in M01/M02; pr
 - **Tests/checks:** Golden fixture repositories for supported Next.js/TypeScript profiles; package-manager/command detection; expected route/symbol/import graphs; exclusion/secret-redaction tests; stale index/invalidation; cross-tenant search denial; deterministic-map repeatability.
 - **Completion evidence:** Known fixture repositories produce reviewed golden maps at known commits; retrieval manifests show provenance and exclusions; no-secret/index isolation result; contract/unit/integration report and commit.
 
-## M06 - Prompt and requirements (in progress)
+## M06 - Prompt and requirements (completed)
 
 - **Tasks:** Implement immutable ChangeRequest intake API/UI for original prompt, mode, attachments, target, constraints, and actor; support Builder, Designer, Refactor, Debug, SEO, Performance, Accessibility, and Content modes; validate/malware-scan attachment metadata and treat image/web/repository text as untrusted data; define versioned `RequirementSpec` with goals, non-goals, assumptions, acceptance criteria, impacted surfaces, constraints, risk signals, and attachment references; invoke the Requirement role only through the AI Cost Controller and schema-validate its output; expose assumptions and review/correction before execution.
 - **Dependencies:** M02 authorization/audit; M03 model/cost-controller and artifact ports; M05 context selection; minimum M17 gateway behavior (estimate, budget/policy route, usage/reconciliation) before any live model call.
