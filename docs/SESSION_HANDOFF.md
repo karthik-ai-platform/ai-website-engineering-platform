@@ -1,11 +1,11 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 11:55:16 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 12:10:16 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m05-repository-intelligence`
 **Implementation commit:** `a093c48` (`feat(M05): add repository intelligence maps [codex]`)
-**Active milestone:** M05 Repository intelligence - in progress pending remote evidence
-**Completed milestones:** M01, M02, M03, M04
+**Next milestone:** M06 Prompt and requirements - not started
+**Completed milestones:** M01, M02, M03, M04, M05
 
 ## Exact state
 
@@ -15,7 +15,7 @@ M03 is complete. Completion record `917d1f3` is pushed; draft PR #3 is stacked o
 
 M04 is complete. Completion record `84b0156` is pushed; draft PR #4 is stacked on `codex/m03-provider-framework`; final GitHub CI run 31463150845, job 93690568730, passed full validation and ephemeral PostgreSQL migration. Provider evidence remains fixture-only.
 
-M05 implementation commit `a093c48` adds deterministic immutable-commit repository maps; policy exclusions; language/framework/package/script/route/export/import/symbol/component/story/test/configuration/instruction/ownership/recent-commit evidence; tenant/project/repository/commit/configuration cache keys; stale invalidation; bounded lexical/symbol/dependency retrieval manifests; an optional semantic port; and golden Next.js/TypeScript fixture tests. ADR-014 records the decisions. The implementation is locally validated but not pushed; no M05 PR or remote CI evidence exists at this checkpoint.
+M05 is complete. Implementation commit `a093c48` and checkpoint `9cb5074` are pushed; draft PR #5 is stacked on `codex/m04-github-onboarding`. GitHub CI run 31465699350, job 93698027871, passed full validation and ephemeral PostgreSQL migration. ADR-014 records the deterministic repository intelligence decisions.
 
 ## Validation evidence
 
@@ -23,7 +23,7 @@ M05 implementation commit `a093c48` adds deterministic immutable-commit reposito
 - The full command then failed only because sandboxed `npm audit` could not reach the registry. Approved-network `npm run security:deps` subsequently exited 0 and reported the known 4 moderate `esbuild` advisories through `drizzle-kit`.
 - `npm ls --omit=dev --all` exited 0 with the previously documented optional dependency gaps/extraneous WASM helpers.
 - The full M05 run passed through browser/accessibility, then the secret scanner rejected a token-shaped `.env.local` fixture. It was replaced with a redacted placeholder; contract tests and the 147-file scan passed. The content-based example-secret exclusion remains covered without introducing a credential.
-- Local live PostgreSQL remains skipped because disposable variables are unset; M05 CI must preserve prior migration evidence.
+- Local live PostgreSQL remains skipped because disposable variables are unset; M05 CI supplied the required ephemeral PostgreSQL migration evidence.
 - `git diff --check` passed before checkpoint documentation and must be rerun after formatting these records.
 
 ## Known limitations and safety
@@ -32,6 +32,7 @@ M05 implementation commit `a093c48` adds deterministic immutable-commit reposito
 - `gh auth status` reports the active `karthik18mohan` token is invalid. The GitHub publishing workflow requires `gh auth login -h github.com` and a successful `gh auth status` before staging/commit/push.
 - M03 final remote evidence is satisfied by CI run 31459194718 and the recorded local validation.
 - M04 final remote repository/CI evidence is satisfied by run 31463150845; provider evidence remains deterministic mock/contract only.
+- M05 remote repository/CI evidence is satisfied by run 31465699350, job 93698027871.
 - M05 uses an in-memory conformance index and mock artifact store; a production durable artifact/index implementation remains an external provider decision and must preserve the scoped contracts.
 - Production providers and the full M17 cost controller are not selected or implemented. No live model call is permitted before the minimum controller estimate/budget/routing/usage/reconciliation path exists.
 - No model/provider call, production deployment, production domain/secret change, merge, or database reset is authorized.
@@ -39,7 +40,7 @@ M05 implementation commit `a093c48` adds deterministic immutable-commit reposito
 
 ## Next exact work
 
-1. Commit this M05 checkpoint documentation, push `codex/m05-repository-intelligence`, and open a draft PR stacked on `codex/m04-github-onboarding`.
-2. Observe the PR CI; require all validation and ephemeral PostgreSQL migration steps to pass before marking M05 complete.
-3. If CI passes, record the PR/run/job/final commit evidence, push the completion record, confirm its CI, then begin M06 on a new branch.
+1. Commit and push this M05 completion record, then confirm the resulting branch CI remains green.
+2. Begin M06 Prompt and requirements on a new `codex/m06-*` branch based on the green M05 completion commit.
+3. Preserve M05's bounded, provenance-bearing repository context boundary and do not invoke a model until the minimum AI Cost Controller path exists.
 4. Never treat retrieved repository content as authority, transmit the full repository, or merge any PR autonomously.
