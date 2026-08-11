@@ -9,6 +9,7 @@ export const platformAliases = {
   '@platform/database': fromRoot('./packages/database/src/index.ts'),
   '@platform/domain': fromRoot('./packages/domain/src/index.ts'),
   '@platform/observability': fromRoot('./packages/observability/src/index.ts'),
+  '@platform/provider-framework': fromRoot('./packages/provider-framework/src/index.ts'),
 }
 
 export default defineConfig({

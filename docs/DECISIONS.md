@@ -113,6 +113,16 @@ Status values: **Accepted**, **Proposed**, **Deferred**, **Superseded**, **Rejec
 - **Alternatives considered:** Broad role defaults based on informal persona descriptions; treating service identities as users; immediate hard deletion; UI-only permission enforcement; coupling policy logic to Fastify or Drizzle.
 - **Consequences:** Least privilege is the default and delegation must be explicit. M02 APIs remain provider-neutral and storage-independent at the domain boundary. Physical deletion processing after retention is deferred to later durable workflow/retention work and cannot erase audit history.
 
+## ADR-012 - M03 provider-neutral boundaries and mandatory model gateway
+
+- **Status:** Accepted
+- **Date:** 2026-08-11
+- **Milestone:** M03
+- **Context:** The SRS requires replaceable Git, deployment, secrets, artifact, runner, orchestration, and model integrations; secrets referenced rather than persisted; authenticated, deduplicated, replay-safe callbacks; deterministic test doubles; and an AI Cost Controller decision before every model invocation.
+- **Decision:** Define versioned provider schemas in `@platform/contracts` and framework-independent provider ports in `@platform/domain`. Export deterministic local mocks and callback safety primitives from `@platform/provider-framework`. Application code may invoke models only through `AiCostControllerPort`; the raw model adapter interface remains internal and unexported, with ESLint restrictions preventing application/domain imports of raw model SDKs or that internal module. The initial controller mock denies every request until the minimum M17 estimate, budget, routing, usage, and reconciliation path is implemented.
+- **Alternatives considered:** Exposing raw model providers to application code; allowing vendor SDK types across domain boundaries; storing plaintext provider tokens; accepting unauthenticated callbacks; choosing production vendors before contract conformance exists.
+- **Consequences:** M03 conformance remains deterministic and credential-free, provider outages are represented as typed results, and no live model invocation is possible through the public framework. Production adapters and the complete M17 controller remain later work; the minimum controller path must precede M06's first model-assisted behavior.
+
 ## Open production decisions
 
 These are not blockers to contract-first/local implementation but must be resolved before their production acceptance gates:

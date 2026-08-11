@@ -37,12 +37,33 @@ export default defineConfig([
         {
           patterns: [
             '@octokit/*',
+            '@anthropic-ai/*',
+            '@google/generative-ai',
+            '@platform/provider-framework/internal/*',
             '@vercel/*',
             'drizzle-orm',
             'fastify',
             'next',
             'next/*',
+            'openai',
             'postgres',
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['apps/**/*.ts'],
+    ignores: ['**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            '@anthropic-ai/*',
+            '@google/generative-ai',
+            '@platform/provider-framework/internal/*',
+            'openai',
           ],
         },
       ],

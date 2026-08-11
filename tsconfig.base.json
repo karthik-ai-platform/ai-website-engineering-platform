@@ -28,7 +28,8 @@
       "@platform/contracts": ["./packages/contracts/src/index.ts"],
       "@platform/database": ["./packages/database/src/index.ts"],
       "@platform/domain": ["./packages/domain/src/index.ts"],
-      "@platform/observability": ["./packages/observability/src/index.ts"]
+      "@platform/observability": ["./packages/observability/src/index.ts"],
+      "@platform/provider-framework": ["./packages/provider-framework/src/index.ts"]
     }
   }
 }
