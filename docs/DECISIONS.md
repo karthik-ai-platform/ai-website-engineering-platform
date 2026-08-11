@@ -153,6 +153,16 @@ Status values: **Accepted**, **Proposed**, **Deferred**, **Superseded**, **Rejec
 - **Alternatives considered:** Letting clients declare attachments clean; editing the original prompt during clarification; accepting prose-only requirements; allowing unmetered model calls before M17; silently retrying malformed output without a bound.
 - **Consequences:** The initial M06 contract/domain slice is testable without credentials or model calls, all eight SRS modes share one strict schema, and later API/database/UI adapters must preserve revision and trust boundaries. Model-backed M06 acceptance remains blocked until the minimum M17 controller path exists.
 
+## ADR-016 - M07 deterministic risk and immutable approval evidence
+
+- **Status:** Accepted
+- **Date:** 2026-08-11
+- **Milestone:** M07
+- **Context:** FR-006 and FR-007 require a versioned execution plan, deterministic risk classification, current project/environment policy, and an authorized approval pause before high-risk mutation. The SRS also prohibits model prose from controlling privileged transitions and forbids automatic relaxation after a security or policy failure.
+- **Decision:** Treat planner output as typed advisory data, then derive risk class, required architecture/UI/security analyses, requested approval gates, and the initial execution gate through deterministic domain policy. Persist immutable, revisioned plans with the exact policy snapshot and base commit. Persist runs behind the existing orchestrator-only state machine and enforce the same transition graph in PostgreSQL. Approval requests are tenant-scoped and idempotent; a pending request may receive one attributed approved/rejected decision, after which it is final. Stale plan revision or policy-version evidence never opens the execution gate, separation of duties is explicit in the snapshot, and blocked policy results remain rejected even if supplied approval-shaped input.
+- **Alternatives considered:** Letting a model assign authoritative risk; mutable in-place plans; UI-only approval checks; accepting stale approvals after plan/policy changes; permitting high-risk workspace preparation before approval; retrying or relaxing blocked policy results.
+- **Consequences:** M07 can prove with deterministic fixtures that high-risk work reaches `AWAITING_APPROVAL` before any workspace callback. The initial policy matrix is conservative and provider-neutral; environment-specific production delegation remains an explicit production decision. API/store orchestration must append audit events for requested, allowed, denied, approved, rejected, and blocked outcomes without weakening the database constraints.
+
 ## Open production decisions
 
 These are not blockers to contract-first/local implementation but must be resolved before their production acceptance gates:

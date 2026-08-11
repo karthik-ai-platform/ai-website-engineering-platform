@@ -29,6 +29,13 @@
       "when": 1786432800000,
       "tag": "0004_m06_change_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786438200000,
+      "tag": "0005_m07_plans_approvals",
+      "breakpoints": true
     }
   ]
 }

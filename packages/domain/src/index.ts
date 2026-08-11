@@ -1,4 +1,11 @@
 export {
+  classifyPlanRisk,
+  decideApproval,
+  executionGateState,
+  orchestrateExecutionGate,
+  type PlanPolicyAssessment,
+} from './planning-policy.js'
+export {
   ChangeRequestService,
   type AttachmentScannerPort,
   type ChangeRequestAuditEvent,

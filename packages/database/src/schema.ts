@@ -370,6 +370,12 @@ export const requirementSpecs = pgTable(
       table.changeRequestId,
       table.revision,
     ),
+    unique('requirement_specs_organization_project_change_id_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.changeRequestId,
+      table.id,
+    ),
     foreignKey({
       columns: [table.organizationId, table.projectId, table.changeRequestId],
       foreignColumns: [changeRequests.organizationId, changeRequests.projectId, changeRequests.id],
@@ -386,6 +392,173 @@ export const requirementSpecs = pgTable(
     check(
       'requirement_specs_json_shape_check',
       sql`jsonb_typeof(${table.body}) = 'object' AND jsonb_typeof(${table.assumptions}) = 'array'`,
+    ),
+  ],
+)
+
+export const executionPlans = pgTable(
+  'execution_plans',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    changeRequestId: uuid('change_request_id').notNull(),
+    requirementId: uuid('requirement_id').notNull(),
+    schemaVersion: text('schema_version').notNull(),
+    revision: integer('revision').notNull(),
+    baseCommit: text('base_commit').notNull(),
+    riskClass: text('risk_class').notNull(),
+    body: jsonb('body').notNull(),
+    policySnapshot: jsonb('policy_snapshot').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique('execution_plans_organization_project_change_id_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.changeRequestId,
+      table.id,
+    ),
+    unique('execution_plans_organization_project_id_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.id,
+    ),
+    unique('execution_plans_change_revision_unique').on(table.changeRequestId, table.revision),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.changeRequestId, table.requirementId],
+      foreignColumns: [
+        requirementSpecs.organizationId,
+        requirementSpecs.projectId,
+        requirementSpecs.changeRequestId,
+        requirementSpecs.id,
+      ],
+      name: 'execution_plans_requirement_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    index('execution_plans_change_revision_idx').on(table.changeRequestId, table.revision),
+    check('execution_plans_schema_version_check', sql`${table.schemaVersion} = '1'`),
+    check('execution_plans_revision_check', sql`${table.revision} > 0`),
+    check('execution_plans_base_commit_check', sql`${table.baseCommit} ~ '^[0-9a-f]{40}$'`),
+    check(
+      'execution_plans_risk_class_check',
+      sql`${table.riskClass} in ('low', 'medium', 'high', 'blocked')`,
+    ),
+    check(
+      'execution_plans_json_shape_check',
+      sql`jsonb_typeof(${table.body}) = 'object' AND jsonb_typeof(${table.policySnapshot}) = 'object'`,
+    ),
+  ],
+)
+
+export const runs = pgTable(
+  'runs',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    changeRequestId: uuid('change_request_id').notNull(),
+    executionPlanId: uuid('execution_plan_id').notNull(),
+    baseCommit: text('base_commit').notNull(),
+    state: text('state').notNull(),
+    policySnapshot: jsonb('policy_snapshot').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull(),
+    startedAt: timestamp('started_at', { mode: 'date', withTimezone: true }),
+    endedAt: timestamp('ended_at', { mode: 'date', withTimezone: true }),
+  },
+  (table) => [
+    unique('runs_organization_project_id_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.id,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.changeRequestId],
+      foreignColumns: [changeRequests.organizationId, changeRequests.projectId, changeRequests.id],
+      name: 'runs_change_request_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    foreignKey({
+      columns: [
+        table.organizationId,
+        table.projectId,
+        table.changeRequestId,
+        table.executionPlanId,
+      ],
+      foreignColumns: [
+        executionPlans.organizationId,
+        executionPlans.projectId,
+        executionPlans.changeRequestId,
+        executionPlans.id,
+      ],
+      name: 'runs_execution_plan_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    index('runs_project_created_at_idx').on(table.projectId, table.createdAt),
+    check('runs_base_commit_check', sql`${table.baseCommit} ~ '^[0-9a-f]{40}$'`),
+    check(
+      'runs_state_check',
+      sql`${table.state} in ('DRAFT', 'PLANNING', 'AWAITING_APPROVAL', 'QUEUED', 'PREPARING', 'IMPLEMENTING', 'VALIDATING', 'COMMITTING', 'DEPLOYING_PREVIEW', 'VERIFYING_PREVIEW', 'READY_FOR_REVIEW', 'PROMOTING', 'COMPLETED', 'REJECTED', 'CANCELLED', 'FAILED', 'ROLLED_BACK')`,
+    ),
+    check('runs_policy_snapshot_check', sql`jsonb_typeof(${table.policySnapshot}) = 'object'`),
+  ],
+)
+
+export const approvals = pgTable(
+  'approvals',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    runId: uuid('run_id').notNull(),
+    planId: uuid('plan_id').notNull(),
+    planRevision: integer('plan_revision').notNull(),
+    gate: text('gate').notNull(),
+    decision: text('decision').notNull(),
+    requesterId: uuid('requester_id').notNull(),
+    approverId: uuid('approver_id'),
+    rationale: text('rationale'),
+    policyVersion: text('policy_version').notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestedAt: timestamp('requested_at', { mode: 'date', withTimezone: true }).notNull(),
+    decidedAt: timestamp('decided_at', { mode: 'date', withTimezone: true }),
+  },
+  (table) => [
+    unique('approvals_run_gate_unique').on(table.runId, table.gate),
+    unique('approvals_tenant_idempotency_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.idempotencyKey,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.runId],
+      foreignColumns: [runs.organizationId, runs.projectId, runs.id],
+      name: 'approvals_run_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.planId],
+      foreignColumns: [executionPlans.organizationId, executionPlans.projectId, executionPlans.id],
+      name: 'approvals_plan_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    check('approvals_plan_revision_check', sql`${table.planRevision} > 0`),
+    check(
+      'approvals_gate_check',
+      sql`${table.gate} in ('plan_execution', 'destructive_action', 'production_promotion')`,
+    ),
+    check(
+      'approvals_decision_check',
+      sql`${table.decision} in ('pending', 'approved', 'rejected')`,
+    ),
+    check(
+      'approvals_decision_shape_check',
+      sql`(${table.decision} = 'pending' AND ${table.approverId} IS NULL AND ${table.rationale} IS NULL AND ${table.decidedAt} IS NULL) OR (${table.decision} in ('approved', 'rejected') AND ${table.approverId} IS NOT NULL AND ${table.rationale} IS NOT NULL AND ${table.decidedAt} IS NOT NULL)`,
     ),
   ],
 )
@@ -449,3 +622,6 @@ export type GithubConnectionAttemptRow = typeof githubConnectionAttempts.$inferS
 export type RepositoryConnectionRow = typeof repositoryConnections.$inferSelect
 export type ChangeRequestRow = typeof changeRequests.$inferSelect
 export type RequirementSpecRow = typeof requirementSpecs.$inferSelect
+export type ExecutionPlanRow = typeof executionPlans.$inferSelect
+export type RunRow = typeof runs.$inferSelect
+export type ApprovalRow = typeof approvals.$inferSelect

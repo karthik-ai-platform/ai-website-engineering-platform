@@ -6,8 +6,10 @@ export {
 } from './client.js'
 export { defaultMigrationsFolder, runMigrations, type MigrationRunnerOptions } from './migrate.js'
 export {
+  approvals,
   auditEvents,
   changeRequests,
+  executionPlans,
   githubConnectionAttempts,
   memberships,
   organizations,
@@ -15,11 +17,14 @@ export {
   projects,
   repositoryConnections,
   requirementSpecs,
+  runs,
   serviceIdentities,
   serviceIdentityPermissions,
   users,
+  type ApprovalRow,
   type AuditEventRow,
   type ChangeRequestRow,
+  type ExecutionPlanRow,
   type GithubConnectionAttemptRow,
   type MembershipRow,
   type NewAuditEventRow,
@@ -32,6 +37,7 @@ export {
   type ProjectRow,
   type RepositoryConnectionRow,
   type RequirementSpecRow,
+  type RunRow,
   type ServiceIdentityPermissionRow,
   type ServiceIdentityRow,
   type UserRow,
