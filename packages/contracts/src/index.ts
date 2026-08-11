@@ -1,4 +1,22 @@
 export {
+  repositoryContextItemV1Schema,
+  repositoryEvidenceV1Schema,
+  repositoryExclusionV1Schema,
+  repositoryFileRecordV1Schema,
+  repositoryMapV1Schema,
+  repositoryProvenanceV1Schema,
+  repositoryRetrievalManifestV1Schema,
+  repositoryRetrievalRequestV1Schema,
+  type RepositoryContextItemV1,
+  type RepositoryEvidenceV1,
+  type RepositoryExclusionV1,
+  type RepositoryFileRecordV1,
+  type RepositoryMapV1,
+  type RepositoryProvenanceV1,
+  type RepositoryRetrievalManifestV1,
+  type RepositoryRetrievalRequestV1,
+} from './repository-intelligence-v1.js'
+export {
   githubConnectionInitiationRequestV1Schema,
   githubConnectionInitiationResultV1Schema,
   githubInstallationSelectionV1Schema,

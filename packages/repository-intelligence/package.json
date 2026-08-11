@@ -1,0 +1,30 @@
+{
+  "name": "@platform/repository-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic commit-addressed repository maps and context retrieval",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@platform/contracts": "*",
+    "@platform/domain": "*"
+  },
+  "devDependencies": {
+    "@platform/provider-framework": "*",
+    "@types/node": "22.20.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  },
+  "engines": {
+    "node": ">=22.13.0 <23"
+  }
+}

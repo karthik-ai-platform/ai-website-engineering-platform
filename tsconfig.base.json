@@ -30,7 +30,8 @@
       "@platform/domain": ["./packages/domain/src/index.ts"],
       "@platform/github-adapter": ["./packages/github-adapter/src/index.ts"],
       "@platform/observability": ["./packages/observability/src/index.ts"],
-      "@platform/provider-framework": ["./packages/provider-framework/src/index.ts"]
+      "@platform/provider-framework": ["./packages/provider-framework/src/index.ts"],
+      "@platform/repository-intelligence": ["./packages/repository-intelligence/src/index.ts"]
     }
   }
 }
