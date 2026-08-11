@@ -8,6 +8,7 @@ export const platformAliases = {
   '@platform/contracts': fromRoot('./packages/contracts/src/index.ts'),
   '@platform/database': fromRoot('./packages/database/src/index.ts'),
   '@platform/domain': fromRoot('./packages/domain/src/index.ts'),
+  '@platform/github-adapter': fromRoot('./packages/github-adapter/src/index.ts'),
   '@platform/observability': fromRoot('./packages/observability/src/index.ts'),
   '@platform/provider-framework': fromRoot('./packages/provider-framework/src/index.ts'),
 }

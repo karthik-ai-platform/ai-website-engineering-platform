@@ -1,4 +1,10 @@
 export {
+  GithubOnboardingService,
+  type GithubConnectionAttempt,
+  type GithubOnboardingServiceOptions,
+  type GithubOnboardingStore,
+} from './github-onboarding.js'
+export {
   DenyAllAuthentication,
   type AuthenticationCredential,
   type AuthenticationPort,
@@ -24,6 +30,7 @@ export {
   type ArtifactStorePort,
   type DeploymentProviderPort,
   type GitProviderPort,
+  type GithubAppOnboardingPort,
   type OrchestrationProviderPort,
   type RunnerProviderPort,
   type SecretsPort,

@@ -4,6 +4,10 @@ import {
   correlationIdSchema,
   createProjectRequestV1Schema,
   healthResponseV1Schema,
+  githubConnectionInitiationRequestV1Schema,
+  githubConnectionInitiationResultV1Schema,
+  githubInstallationSelectionV1Schema,
+  githubRepositoryReadinessV1Schema,
   projectLifecycleRequestV1Schema,
   projectV1Schema,
   type DependencyHealthV1,
@@ -12,6 +16,7 @@ import { createLazyPostgresConnection } from '@platform/database'
 import {
   PlatformError,
   ProjectService,
+  type GithubOnboardingService,
   isPlatformError,
   type AuthenticationCredential,
   type AuthenticationPort,
@@ -36,6 +41,7 @@ export interface ReadinessProbe {
 export interface BuildApiOptions {
   readonly authentication?: AuthenticationPort
   readonly config: ApiConfig
+  readonly githubOnboardingService?: GithubOnboardingService
   readonly readinessProbe?: ReadinessProbe
   readonly projectStore?: ProjectStore
 }
@@ -144,6 +150,69 @@ export function buildApi(options: BuildApiOptions) {
     )
   })
 
+  app.post('/v1/projects/:projectId/repository/github/initiate', async (request, reply) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(githubConnectionInitiationRequestV1Schema, request.body, request.id)
+    requireMatchingProjectPath(request.params, body.projectId, request.id)
+    void reply.code(201)
+    return githubConnectionInitiationResultV1Schema.parse(
+      await requireGithubOnboardingService(options.githubOnboardingService, request.id).initiate(
+        actor,
+        body,
+      ),
+    )
+  })
+
+  app.post('/v1/projects/:projectId/repository/github/complete', async (request) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(githubInstallationSelectionV1Schema, request.body, request.id)
+    requireMatchingProjectPath(request.params, body.projectId, request.id)
+    return githubRepositoryReadinessV1Schema.parse(
+      await requireGithubOnboardingService(options.githubOnboardingService, request.id).complete(
+        actor,
+        body,
+      ),
+    )
+  })
+
+  app.post('/v1/projects/:projectId/repository/github/refresh', async (request) => {
+    const actor = await authenticateRequest(
+      request.headers,
+      request.id,
+      request.ip,
+      options.config,
+      authentication,
+    )
+    const body = parseBody(
+      z.object({
+        schemaVersion: z.literal('1'),
+        organizationId: z.string().uuid(),
+        projectId: z.string().uuid(),
+      }),
+      request.body,
+      request.id,
+    )
+    requireMatchingProjectPath(request.params, body.projectId, request.id)
+    return githubRepositoryReadinessV1Schema.parse(
+      await requireGithubOnboardingService(
+        options.githubOnboardingService,
+        request.id,
+      ).refreshAccess(actor, body.organizationId, body.projectId),
+    )
+  })
+
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = correlationIdSchema.parse(request.id)
     const platformError = isPlatformError(error)
@@ -222,6 +291,24 @@ function requireProjectService(
     retryable: true,
     safeMessage: 'Project storage is unavailable in this environment.',
   })
+}
+
+function requireGithubOnboardingService(
+  service: GithubOnboardingService | undefined,
+  correlationId: string,
+): GithubOnboardingService {
+  if (service !== undefined) return service
+  throw new PlatformError({
+    code: 'DEPENDENCY_UNAVAILABLE',
+    correlationId: correlationIdSchema.parse(correlationId),
+    retryable: true,
+    safeMessage: 'GitHub App onboarding is not configured in this environment.',
+  })
+}
+
+function requireMatchingProjectPath(params: unknown, projectId: string, correlationId: string) {
+  const path = z.object({ projectId: z.string().uuid() }).safeParse(params)
+  if (!path.success || path.data.projectId !== projectId) throw validationFailed(correlationId)
 }
 
 function createAuthentication(config: ApiConfig): AuthenticationPort {

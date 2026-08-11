@@ -15,6 +15,13 @@
       "when": 1786415400000,
       "tag": "0002_m02_projects_rbac",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786420800000,
+      "tag": "0003_m04_github_onboarding",
+      "breakpoints": true
     }
   ]
 }

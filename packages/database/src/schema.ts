@@ -1,9 +1,11 @@
 import { sql } from 'drizzle-orm'
 import {
   check,
+  boolean,
   foreignKey,
   index,
   integer,
+  jsonb,
   primaryKey,
   pgTable,
   text,
@@ -210,9 +212,85 @@ export const serviceIdentityPermissions = pgTable(
       'service_identity_permissions_permission_check',
       sql`${table.permission} in (
       'project:read', 'project:create', 'project:archive', 'project:restore', 'project:delete',
-      'change:request', 'change:approve', 'git:merge', 'release:promote', 'secret:manage',
+      'change:request', 'change:approve', 'repository:connect', 'git:merge', 'release:promote', 'secret:manage',
       'policy:modify', 'member:manage'
     )`,
+    ),
+  ],
+)
+
+export const githubConnectionAttempts = pgTable(
+  'github_connection_attempts',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    actorId: uuid('actor_id').notNull(),
+    stateDigest: text('state_digest').notNull(),
+    returnUrl: text('return_url').notNull(),
+    expiresAt: timestamp('expires_at', { mode: 'date', withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { mode: 'date', withTimezone: true }),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId, table.projectId],
+      foreignColumns: [projects.organizationId, projects.id],
+      name: 'github_connection_attempts_project_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    index('github_connection_attempts_project_id_idx').on(table.projectId, table.expiresAt),
+    check('github_connection_attempts_state_digest_check', sql`length(${table.stateDigest}) = 64`),
+  ],
+)
+
+export const repositoryConnections = pgTable(
+  'repository_connections',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    provider: text('provider').notNull(),
+    installationId: text('installation_id').notNull(),
+    repositoryId: text('repository_id').notNull(),
+    owner: text('owner').notNull(),
+    name: text('name').notNull(),
+    permissions: jsonb('permissions').notNull(),
+    defaultBranch: text('default_branch').notNull(),
+    indexedCommit: text('indexed_commit').notNull(),
+    appCredentialRef: jsonb('app_credential_ref').notNull(),
+    readiness: text('readiness').notNull(),
+    mutationEnabled: boolean('mutation_enabled').notNull().default(false),
+    metadata: jsonb('metadata').notNull(),
+    connectedAt: timestamp('connected_at', { mode: 'date', withTimezone: true }).notNull(),
+    verifiedAt: timestamp('verified_at', { mode: 'date', withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique('repository_connections_organization_project_unique').on(
+      table.organizationId,
+      table.projectId,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.projectId],
+      foreignColumns: [projects.organizationId, projects.id],
+      name: 'repository_connections_project_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    check('repository_connections_provider_check', sql`${table.provider} = 'github'`),
+    check(
+      'repository_connections_readiness_check',
+      sql`${table.readiness} in ('ready', 'insufficient_permissions', 'access_lost')`,
+    ),
+    check('repository_connections_mutation_disabled_check', sql`${table.mutationEnabled} = false`),
+    check('repository_connections_commit_check', sql`length(${table.indexedCommit}) = 40`),
+    check(
+      'repository_connections_secret_reference_check',
+      sql`jsonb_typeof(${table.appCredentialRef}) = 'object'
+        AND ${table.appCredentialRef} ? 'provider'
+        AND ${table.appCredentialRef} ? 'key'
+        AND NOT (${table.appCredentialRef} ?| array['value', 'token', 'secret', 'privateKey'])`,
     ),
   ],
 )
@@ -272,3 +350,5 @@ export type NewAuditEventRow = typeof auditEvents.$inferInsert
 export type PolicyProfileRow = typeof policyProfiles.$inferSelect
 export type ServiceIdentityRow = typeof serviceIdentities.$inferSelect
 export type ServiceIdentityPermissionRow = typeof serviceIdentityPermissions.$inferSelect
+export type GithubConnectionAttemptRow = typeof githubConnectionAttempts.$inferSelect
+export type RepositoryConnectionRow = typeof repositoryConnections.$inferSelect

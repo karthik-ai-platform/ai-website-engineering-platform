@@ -5,6 +5,7 @@ import type {
   DeploymentRequestV1,
   DeploymentResultV1,
   GitRepositoryRefV1,
+  GithubRepositoryMetadataV1,
   ProviderRequestContextV1,
   RunnerCommandV1,
   RunnerResultV1,
@@ -20,6 +21,17 @@ export interface GitProviderPort {
     context: ProviderRequestContextV1,
     repository: GitRepositoryRefV1,
   ): Promise<{ readonly accessible: boolean; readonly defaultBranch: string }>
+}
+
+export interface GithubAppOnboardingPort {
+  initiateInstallation(
+    context: ProviderRequestContextV1,
+    request: { readonly returnUrl: string; readonly state: string },
+  ): Promise<{ readonly authorizationUrl: string }>
+  verifyRepository(
+    context: ProviderRequestContextV1,
+    selection: { readonly installationId: string; readonly repositoryId: string },
+  ): Promise<{ readonly accessible: boolean; readonly metadata?: GithubRepositoryMetadataV1 }>
 }
 
 export interface DeploymentProviderPort {
