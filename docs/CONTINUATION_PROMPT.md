@@ -22,7 +22,9 @@ M07 completion record `7089a1e` is pushed. GitHub CI run 31495684020, job 937926
 
 M08 is in progress. Foundation `f512045` is pushed and draft PR #8 is stacked on completed M07. GitHub CI run 31502183703, job 93814733180, passed full validation and ephemeral PostgreSQL migration. This slice replaces the raw M03 runner seam with versioned isolation-profile, immutable workspace, shell-free executable-plus-argv command, result/evidence, cancellation, and cleanup contracts; deterministic tenant/run/base-commit/profile/allowlist/resource/filesystem/artifact policy; canonical profile hashing; and an explicitly non-isolating conformance fixture that refuses production-isolation claims. ADR-017 records the decision.
 
-Local M08 evidence: formatting/lint passed; typecheck and build passed 10/10 packages; unit 14 files / 74 tests; contract 7 files / 39 tests; integration 12 files / 45 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 5 files / 17 tests; browser/accessibility 4 tests; secret scan 173 files. Approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. Two parallel PGlite hooks timed out locally; the serialized rerun passed 17/17 and GitHub applied migrations to ephemeral PostgreSQL.
+M08 orchestration/persistence implementation `2d385f1` and worker-boundary correction `cb28fe6` are committed locally. The service reauthorizes current project-scoped `run:execute` authority, recomputes current approvals, requires current policy/repository/base-commit evidence, validates runner responses, and owns provision/execute/cancel/cleanup transitions. Migration `0007` and the worker-owned PostgreSQL adapter persist tenant-scoped/idempotent workspace, command, artifact-reference, cancellation, cleanup, and append-only audit evidence without argv, environment, raw stdout/stderr, or secret values. ADR-018 records the decision. Push and remote CI are pending.
+
+Local M08 orchestration evidence: formatting/lint passed; typecheck and build passed 10/10 packages; unit 14 files / 75 tests; contract 7 files / 39 tests; integration 14 files / 51 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 6 files / 20 tests; browser/accessibility 4 tests; secret scan 178 files; dependency tree exit 0. Approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. One aggregate migration run had two known 10-second PGlite setup-hook timeouts while 18 tests passed; the no-file-parallelism rerun passed 20/20.
 
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat them.
 
@@ -36,9 +38,9 @@ The local `gh` token remains invalid, but SSH push and the connected GitHub app 
 
 ## Next exact tasks
 
-1. Add an M08 runner application/orchestration service that reauthorizes current approved `QUEUED` runs before provision and records lifecycle/audit evidence.
-2. Add tenant-scoped persistence/idempotency for workspace, command, cancellation, cleanup, and artifact references without storing raw output or secrets.
-3. Preserve immutable base commit/profile bindings and deny-by-default network/secrets/tool access; never treat the conformance fixture as production isolation.
-4. Keep production runtime/image selection and the forbidden-host-resource acceptance suite explicit prerequisites; do not make a live model call, deploy production, or merge autonomously.
+1. Push `2d385f1` and `cb28fe6`, update draft PR #8, and require green CI including the ephemeral PostgreSQL migration before relying on remote evidence.
+2. Select an approved production-isolation runtime and image/profile matrix; implement real immutable checkout, enforced CPU/memory/time/filesystem/process/network controls, cancellation/cleanup, and digest artifact capture behind the existing port.
+3. Add forbidden host filesystem/process/network/credential/production-secret, resource-limit, malicious-install-script, cleanup, and artifact-integrity acceptance evidence. Never cite the conformance fixture as production isolation.
+4. Integrate the production adapter through durable worker dispatch while preserving current approval reauthorization, immutable bindings, deny-by-default network/secrets/tool policy, and append-only evidence. Do not make a live model call, deploy production, or merge autonomously.
 
 Never expose secrets, invoke an LLM outside the AI Cost Controller, weaken tenant scoping or append-only audit, production-deploy, modify production DNS/domains/secrets, force-push, push to `main`, merge a PR, or reset a non-local database.

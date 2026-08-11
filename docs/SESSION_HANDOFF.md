@@ -1,9 +1,9 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 20:07:54 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-11 21:15:00 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
-**Implementation commit:** `f512045` (`feat(M08): define isolated runner contracts [codex]`)
+**Implementation commits:** `2d385f1` (`feat(M08): orchestrate approved runner lifecycle [codex]`) and `cb28fe6` (`refactor(M08): keep runner persistence in worker [codex]`)
 **Active milestone:** M08 Isolated runner - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06, M07
 
@@ -24,6 +24,8 @@ M07 is complete. Foundation `5a49f97`, governed API `94d34b7`, and analysis-gate
 M07 completion record `7089a1e` is pushed. GitHub CI run 31495684020, job 93792676230, passed full validation and ephemeral PostgreSQL migration. `codex/m08-isolated-runner` was created from this exact completed checkpoint; no M08 implementation exists yet.
 
 M08 is in progress. Foundation `f512045` is pushed and draft PR #8 is stacked on completed M07. GitHub CI run 31502183703, job 93814733180, passed full validation and ephemeral PostgreSQL migration. The foundation replaces the M03 raw runner command with versioned profile/workspace/argv/result/cancellation/cleanup contracts; deterministic tenant/run/base-commit/profile/allowlist/resource/filesystem/artifact policy; canonical profile digests; and an explicitly non-isolating conformance fixture that never invokes host processes and refuses production-isolation claims. ADR-017 records the boundary.
+
+M08 orchestration/persistence implementation `2d385f1` and worker-boundary correction `cb28fe6` are committed locally. The service reauthorizes the current project-scoped service grant with service-only `run:execute`, recomputes current approvals, requires current policy/repository/base-commit evidence, schema-validates runner responses, and owns deterministic provision/execute/cancel/cleanup transitions. Migration `0007` and the worker-owned PostgreSQL adapter add tenant-scoped/idempotent workspace, command, artifact-reference, cancellation, cleanup, and append-only audit persistence without storing argv, environment, raw stdout/stderr, or secret values. ADR-018 records the decision. Push and new remote CI evidence are pending.
 
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 
@@ -53,10 +55,11 @@ Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/
 - M07 local full validation passed through the 164-file secret scan: 10/10 typecheck and build, 13 files / 68 unit tests, 6 files / 34 contract tests, 10 files / 32 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, and 4 browser/accessibility tests. Approved-network high-threshold audit exited 0 with the unchanged four moderate advisories. Final multi-gate tightening passed domain typecheck and 13/13 focused tests.
 - Final M07 analysis-gate validation passed formatting/lint, 10/10 typecheck and build, 13 files / 70 unit tests, 6 files / 36 contract tests, 11 files / 40 integration tests with 1 file / 1 live PostgreSQL test skipped, serialized 5 files / 17 migration tests, 4 browser/accessibility tests, and a 168-file secret scan. Approved-network audit exited 0 with the unchanged four moderate advisories. Final GitHub CI run 31494692860 passed full validation and ephemeral PostgreSQL migration.
 - M08 foundation validation passed formatting/lint, 10/10 typecheck and build, 14 files / 74 unit tests, 7 files / 39 contract tests, 12 files / 45 integration tests with 1 file / 1 live PostgreSQL test skipped, serialized 5 files / 17 migration tests, 4 browser/accessibility tests, and a 173-file secret scan. Approved-network audit exited 0 with the unchanged four moderate advisories. GitHub CI run 31502183703 passed full validation and ephemeral PostgreSQL migration.
+- M08 orchestration/persistence validation passed formatting/lint, 10/10 typecheck and build, 14 files / 75 unit tests, 7 files / 39 contract tests, 14 files / 51 integration tests with 1 file / 1 live PostgreSQL test skipped, serialized 6 files / 20 migration tests, 4 browser/accessibility tests, a 178-file secret scan, dependency tree, approved-network high-threshold audit, and `git diff --check`. One aggregate migration run had two known local PGlite setup-hook timeouts while 18 tests passed; the no-file-parallelism rerun passed 20/20.
 
 ## Next exact work
 
-1. Add an M08 runner application/orchestration service that reauthorizes current approved `QUEUED` runs before provision and records lifecycle/audit evidence.
-2. Add tenant-scoped persistence/idempotency for workspace, command, cancellation, cleanup, and artifact references without storing raw output or secrets.
-3. Preserve immutable-base-commit/profile bindings and the deny-by-default network/secrets/tool boundary; do not treat the conformance fixture as production isolation.
-4. Keep production runtime/image selection and the forbidden-host-resource acceptance suite explicit prerequisites; do not make a live model call or merge any PR autonomously.
+1. Push `2d385f1` and `cb28fe6`, update draft PR #8, and require green CI including the ephemeral PostgreSQL migration before relying on remote evidence.
+2. Select an approved production-isolation runtime and runner image/profile matrix; implement real immutable checkout, enforced CPU/memory/time/filesystem/process/network controls, cancellation/cleanup, and digest artifact capture behind the existing port.
+3. Add forbidden host filesystem/process/network/credential/production-secret, resource-limit, malicious-install-script, cleanup, and artifact-integrity acceptance evidence. Never cite the conformance fixture as production isolation.
+4. Integrate the production adapter through durable worker dispatch while preserving current approval reauthorization, immutable bindings, deny-by-default network/secrets/tool policy, and append-only evidence. Do not make a live model call or merge any PR autonomously.

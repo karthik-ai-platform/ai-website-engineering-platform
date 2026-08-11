@@ -1,9 +1,9 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 20:07:54 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 21:15:00 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m08-isolated-runner`
-**Latest recorded checkpoint commit:** `f512045` (`feat(M08): define isolated runner contracts [codex]`)
+**Latest recorded checkpoint commit:** `cb28fe6` (`refactor(M08): keep runner persistence in worker [codex]`)
 **Pull request:** Draft PR [#8](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/8), stacked on completed M07
 **Vercel preview:** None; production deployment is not authorized
 
@@ -18,7 +18,7 @@
 | M05 Repository intelligence              | **completed**   | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
 | M06 Prompt and requirements              | **completed**   | Implementation `333d0d0`; checkpoint `c7f5bc0`; GitHub CI run 31473572456 passed full validation and ephemeral PostgreSQL migration.                                                   |
 | M07 Planner and policy                   | **completed**   | Implementation `0c18efd`; draft PR #7; GitHub CI run 31494692860 passed full validation and ephemeral PostgreSQL migration.                                                            |
-| M08 Isolated runner                      | **in progress** | Contract/policy foundation `f512045`; GitHub CI run 31502183703 passed full validation and ephemeral PostgreSQL migration.                                                             |
+| M08 Isolated runner                      | **in progress** | Contract/policy `f512045`; orchestration/persistence `2d385f1` + worker boundary `cb28fe6`; new remote CI pending.                                                                     |
 | M09 Coding loop                          | not started     | None.                                                                                                                                                                                  |
 | M10 Deterministic validation             | not started     | None.                                                                                                                                                                                  |
 | M11 Git write path                       | not started     | None.                                                                                                                                                                                  |
@@ -143,10 +143,12 @@
 - **Contracts:** versioned isolation profiles snapshot exact image digest, CPU/memory/time/process/file limits, host-filesystem denial and writable roots, network deny/allowlist policy, shell-free command allowlist, registry/install-script policy, production-secret denial, and artifact limits. Workspace, executable-plus-argv command, result/evidence, cancellation, and cleanup schemas bind tenant, run, plan, immutable base commit, and canonical profile digest.
 - **Deterministic policy:** rejects non-ready workspaces, tenant/project/run/workspace/base-commit/profile mismatches, unlisted commands, excessive time, filesystem scope escape, and artifact-policy mismatch. Normalized relative paths reject traversal, backslashes, absolute paths, and Windows drive paths.
 - **Conformance boundary:** `ConformanceRunnerFixture` is explicitly non-isolating and never checks out code, starts a process, or touches host resources. It provides tenant-scoped/idempotent lifecycle and command evidence labeled `conformance_fixture`/`simulated_conformance`, rejects conflicting command replay and expired workspaces, and refuses `production_isolation` profiles.
-- **Architecture:** ADR-017 supersedes the raw M03 runner command/result seam and records the no-false-isolation boundary. A production runtime/image/profile matrix, real immutable checkout, enforced resource/network/filesystem boundary, artifact capture, and host-boundary security suite remain required before M08 completion.
-- **Validation:** formatting and lint passed; typecheck and build passed 10/10 packages; unit 14 files / 74 tests; contract 7 files / 39 tests; integration 12 files / 45 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 5 files / 17 tests; browser/accessibility 4 tests; secret scan 173 files; approved-network high-threshold audit exited 0 with the unchanged four moderate `esbuild` advisories; `git diff --check` passed. The post-tightening aggregate run had two parallel PGlite setup-hook timeouts while 15 tests passed; the unchanged serialized rerun passed 17/17.
-- **GitHub/Vercel:** GitHub CI run 31502183703, job 93814733180, passed full validation and applied migrations to ephemeral PostgreSQL. No Vercel action or production deployment was attempted.
-- **Next task:** add the M08 runner orchestration/persistence slice that reauthorizes and provisions only current approved `QUEUED` runs, records lifecycle/audit evidence, and preserves the provider-neutral port. Production runtime/image selection remains an explicit external prerequisite.
+- **Orchestration:** `RunnerOrchestrationService` reauthorizes a current project-scoped service identity with the new service-only `run:execute` permission immediately before provision. It recomputes the approval gate, requires the current policy version and ready repository at the exact immutable base commit, validates provider evidence, owns run transitions, and provides idempotent execute/cancel/cleanup entry points.
+- **Persistence:** migration `0007_m08_runner_lifecycle` and the worker-owned PostgreSQL adapter persist tenant-scoped workspace, command, artifact-reference, cancellation, cleanup, and append-only audit evidence. Request digests enforce replay consistency. Command rows omit argv, environment, raw stdout/stderr, and secret values; large evidence remains protected artifact references with digests and retention classes.
+- **Architecture:** ADR-017 records the no-false-isolation boundary; ADR-018 records delayed authorization, service-only runner authority, safe evidence retention, and worker ownership. A production runtime/image/profile matrix, real immutable checkout, enforced resource/network/filesystem boundary, artifact provider, durable dispatch engine, and host-boundary security suite remain required before M08 completion.
+- **Validation:** post-boundary formatting/lint passed; typecheck and build passed 10/10 packages; unit 14 files / 75 tests; contract 7 files / 39 tests; integration 14 files / 51 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 6 files / 20 tests; browser/accessibility 4 tests; secret scan 178 files; dependency tree exited 0 with the documented optional/extraneous packages; approved-network high-threshold audit exited 0 with the unchanged four moderate `esbuild` advisories; `git diff --check` passed. One aggregate migration run had two uniform 10-second PGlite setup-hook timeouts while 18 tests passed; the no-file-parallelism rerun passed 20/20.
+- **GitHub/Vercel:** foundation CI run 31502183703 remains green. Remote CI for `2d385f1`/`cb28fe6` is pending push. No Vercel action or production deployment was attempted.
+- **Next task:** select and implement an approved production-isolation runtime/image adapter with real immutable checkout, enforced limits, artifact capture, and forbidden-host-resource acceptance evidence; integrate it through durable worker dispatch without weakening the conformance boundary.
 
 ## Validation ledger
 
@@ -157,13 +159,13 @@
 | Dependency tree                      | `npm ls --omit=dev --all` exited 0 but reported extraneous WASM helper packages.                                                                |
 | Formatting                           | `npm run format:check` passed.                                                                                                                  |
 | Lint                                 | `npm run lint` passed; Next App Router pages-directory notice printed.                                                                          |
-| Type checking                        | M08 foundation: `npm run typecheck` passed 10/10 packages.                                                                                      |
-| Unit tests                           | M08 foundation: 14 files / 74 tests passed.                                                                                                     |
+| Type checking                        | M08 orchestration: `npm run typecheck` passed 10/10 packages.                                                                                   |
+| Unit tests                           | M08 orchestration: 14 files / 75 tests passed.                                                                                                  |
 | Contract tests                       | M08 foundation: 7 files / 39 tests passed.                                                                                                      |
-| Integration tests                    | M08 foundation: 12 files / 45 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                        |
-| Database migration validation        | M08 serialized PGlite run passed 5 files / 17 tests; GitHub CI applied migrations to ephemeral PostgreSQL.                                      |
-| Production build                     | M08 foundation: `npm run build` passed 10/10 packages.                                                                                          |
-| Secret scanning                      | M08 foundation: `npm run security:secrets` passed; 173 text files scanned.                                                                      |
+| Integration tests                    | M08 orchestration: 14 files / 51 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                     |
+| Database migration validation        | M08 serialized PGlite run passed 6 files / 20 tests; remote PostgreSQL validation is pending.                                                   |
+| Production build                     | M08 orchestration: `npm run build` passed 10/10 packages.                                                                                       |
+| Secret scanning                      | M08 orchestration: `npm run security:secrets` passed; 178 text files scanned.                                                                   |
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 4 Playwright tests, including M06 intake/review interaction and axe WCAG A/AA scans.                              |
@@ -172,4 +174,4 @@
 
 ## Next checkpoint requirements
 
-Add the M08 approved-run orchestration/persistence slice without representing the conformance fixture as production isolation. Never merge PR #8 autonomously.
+Add the production-isolation runtime/image and forbidden-host-resource acceptance slice without representing the conformance fixture as production isolation. Never merge PR #8 autonomously.
