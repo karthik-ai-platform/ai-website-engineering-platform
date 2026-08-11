@@ -21,6 +21,16 @@ export {
   type RunnerCommandPolicyDecision,
 } from './runner-policy.js'
 export {
+  RunnerOrchestrationService,
+  type PersistedRunnerCommand,
+  type PersistedRunnerLifecycle,
+  type PersistedRunnerWorkspace,
+  type RunnerAuditEvent,
+  type RunnerOrchestrationStore,
+  type RunnerPreparationContext,
+  type RunnerWorkspaceContext,
+} from './runner-orchestration-service.js'
+export {
   ChangeRequestService,
   type AttachmentScannerPort,
   type ChangeRequestAuditEvent,
