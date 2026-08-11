@@ -1,10 +1,10 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-11 14:43:46 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-11 14:52:12 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m07-planner-policy`
 **Latest recorded checkpoint commit:** `5a49f97` (`feat(M07): add deterministic planning policy foundation [codex]`)
-**Pull request:** Not yet opened for M07; draft PR [#6](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/6) remains open for completed M06
+**Pull request:** Draft PR [#7](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/7), stacked on completed M06 branch
 **Vercel preview:** None; production deployment is not authorized
 
 ## Milestone summary
@@ -17,7 +17,7 @@
 | M04 GitHub onboarding                    | **completed**   | Completion record `84b0156`; final GitHub CI run 31463150845 passed, including ephemeral PostgreSQL migration.                                                                         |
 | M05 Repository intelligence              | **completed**   | Completion record `ff7fd6f`; final GitHub CI run 31466267638 passed full validation and ephemeral PostgreSQL migration.                                                                |
 | M06 Prompt and requirements              | **completed**   | Implementation `333d0d0`; checkpoint `c7f5bc0`; GitHub CI run 31473572456 passed full validation and ephemeral PostgreSQL migration.                                                   |
-| M07 Planner and policy                   | **in progress** | Foundation `5a49f97`: versioned plan/policy/approval contracts, deterministic gates, migration `0005`, and local validation. Remote evidence pending.                                  |
+| M07 Planner and policy                   | **in progress** | Foundation `5a49f97`; draft PR #7; GitHub CI run 31477086783 passed full validation and ephemeral PostgreSQL migration `0005`.                                                         |
 | M08 Isolated runner                      | not started     | None.                                                                                                                                                                                  |
 | M09 Coding loop                          | not started     | None.                                                                                                                                                                                  |
 | M10 Deterministic validation             | not started     | None.                                                                                                                                                                                  |
@@ -119,14 +119,15 @@
 
 ## M07 checkpoint detail
 
-- **Status:** in progress. Foundation commit `5a49f97` adds the first dependency-safe M07 slice; it is not yet pushed and no M07 PR exists.
+- **Status:** in progress. Foundation `5a49f97` and checkpoint `840681b` are pushed; draft PR #7 is stacked on the completed M06 branch.
 - **Contracts:** versioned `ExecutionPlan`, task/dependency/validation, expected impact, rollback, estimated usage, policy snapshot, risk, analysis, approval gate, and attributed approval record schemas.
 - **Deterministic policy:** fixture-derived risk signals classify Low/Medium/High/Blocked without model authority; auth, authorization, payment, secret, infrastructure, database migration, destructive, production, dependency, API, accessibility, and prohibited signals are covered. Relevant architecture/UI/security analyses and approval gates are deterministic.
 - **Execution safety:** high-risk plans remain `AWAITING_APPROVAL` before the workspace callback; blocked plans remain `REJECTED`; stale approval evidence does not open the gate; every requested gate must be current and approved; authorization, separation of duties, final decisions, and idempotent duplicate decisions are enforced.
 - **Durable persistence:** migration `0005_m07_plans_approvals` adds tenant-scoped immutable execution plans, runs with policy snapshots and database-enforced state transitions, and tenant/idempotency-scoped approval records with one-way finalization. It includes purpose, forward procedure, and recovery guidance.
 - **Architecture:** ADR-016 records deterministic authority, immutable plan/policy evidence, stale-approval behavior, and no policy relaxation. No model/provider or workspace/runner implementation was invoked.
 - **Validation:** full validation passed formatting, lint, 10/10 typecheck, 13 files / 68 unit tests, 6 files / 34 contract tests, 10 files / 32 integration tests with 1 file / 1 live PostgreSQL test skipped, 5 files / 17 migration tests, 10/10 build, 4 browser/accessibility tests, and a 164-file secret scan. The sandboxed dependency-audit transport failed; approved-network `npm run security:deps` exited 0 with the unchanged four moderate `esbuild` advisories. After the multi-gate security tightening, domain typecheck, focused 13/13 unit tests, lint, formatting, and `git diff --check` passed.
-- **Next task:** push `5a49f97`, commit/push this checkpoint record, open a draft M07 PR stacked on completed M06, require CI plus ephemeral PostgreSQL migration, then implement the authenticated planning/approval service and API slice.
+- **GitHub/Vercel:** GitHub CI run 31477086783, job 93733174656, passed full validation and ephemeral PostgreSQL migration `0005`. No Vercel action was attempted; production deployment remains unauthorized.
+- **Next task:** implement the authenticated planning/approval service and API slice with append-only audit, idempotency, stale-plan/policy checks, and execution-time reauthorization.
 
 ## Validation ledger
 
@@ -147,9 +148,9 @@
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 4 Playwright tests, including M06 intake/review interaction and axe WCAG A/AA scans.                              |
-| GitHub CI                            | M06 acceptance run 31473572456, job 93722088032, passed, including ephemeral PostgreSQL migration.                                              |
+| GitHub CI                            | M07 foundation run 31477086783, job 93733174656, passed, including ephemeral PostgreSQL migration `0005`.                                       |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
 
-Push the M07 foundation and checkpoint record, open a stacked draft PR, require CI plus ephemeral PostgreSQL migration, then implement the authenticated planning/approval service and API slice. Never merge autonomously.
+Implement the authenticated planning/approval service and API slice with append-only audit, idempotency, stale-plan/policy checks, and execution-time reauthorization. Never merge PR #7 autonomously.
