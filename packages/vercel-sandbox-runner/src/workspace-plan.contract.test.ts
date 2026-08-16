@@ -3,6 +3,7 @@ import { PlatformError } from '@platform/domain'
 import { describe, expect, it } from 'vitest'
 
 import { planVercelSandboxWorkspace, type ApprovedVercelSandboxImageV1 } from './workspace-plan.js'
+import { VERCEL_RUNNER_IMAGE_SPEC_V1, vercelRunnerImageSpecDigest } from './image-policy.js'
 
 const id = (value: string) => `00000000-0000-4000-8000-${value.padStart(12, '0')}`
 const imageDigest = 'a'.repeat(64)
@@ -71,6 +72,8 @@ const approvedImage: ApprovedVercelSandboxImageV1 = {
     productionSecretsAbsent: true,
     sudoRemoved: true,
     commandBrokerPath: '/opt/ai-website-platform/bin/runner-exec',
+    imageSpecDigest: vercelRunnerImageSpecDigest(),
+    commandPaths: [...VERCEL_RUNNER_IMAGE_SPEC_V1.commandPaths],
     maxProcesses: profile.resources.maxProcesses,
     maxFiles: profile.resources.maxFiles,
     maxBytes: profile.resources.maxBytes,
@@ -101,6 +104,19 @@ describe('Vercel Sandbox production profile planning', () => {
   it.each([
     ['mutable image tag', { imageReference: 'team/project/ai-website-runner:latest' }],
     ['resource mismatch', { controls: { ...approvedImage.controls, maxProcesses: 255 } }],
+    [
+      'image specification mismatch',
+      { controls: { ...approvedImage.controls, imageSpecDigest: '0'.repeat(64) } },
+    ],
+    [
+      'command path mismatch',
+      {
+        controls: {
+          ...approvedImage.controls,
+          commandPaths: [{ executable: 'npm', path: '/tmp/npm' }],
+        },
+      },
+    ],
   ])('rejects %s', (_label, override) => {
     const candidate = { ...approvedImage, ...override } as ApprovedVercelSandboxImageV1
     expect(() => planVercelSandboxWorkspace(request, [candidate])).toThrow(PlatformError)

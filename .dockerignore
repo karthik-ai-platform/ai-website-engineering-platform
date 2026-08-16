@@ -1,0 +1,13 @@
+.git
+.github
+.next
+.turbo
+**/dist
+**/node_modules
+docs/product
+node_modules
+output
+playwright-report
+test-results
+tmp
+

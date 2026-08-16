@@ -6,6 +6,7 @@ import type { NetworkPolicy } from '@vercel/sandbox'
 import { z } from 'zod'
 
 import type { VercelSandboxCreateRequest } from './sdk-client.js'
+import { VERCEL_RUNNER_IMAGE_SPEC_V1, vercelRunnerImageSpecDigest } from './image-policy.js'
 
 const SDK_VERSION = '3.0.0'
 const SUPPORTED_VCPUS = new Set([1, 2, 4, 8])
@@ -24,6 +25,18 @@ export const approvedVercelSandboxImageV1Schema = z
         productionSecretsAbsent: z.literal(true),
         sudoRemoved: z.literal(true),
         commandBrokerPath: z.literal('/opt/ai-website-platform/bin/runner-exec'),
+        imageSpecDigest: z.string().regex(/^[a-f0-9]{64}$/u),
+        commandPaths: z
+          .array(
+            z
+              .object({
+                executable: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/u),
+                path: z.string().regex(/^\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/u),
+              })
+              .strict(),
+          )
+          .min(1)
+          .max(100),
         maxProcesses: z.number().int().positive(),
         maxFiles: z.number().int().positive(),
         maxBytes: z.number().int().positive(),
@@ -81,7 +94,17 @@ export function planVercelSandboxWorkspace(
     image.controls.maxProcesses !== profile.resources.maxProcesses ||
     image.controls.maxFiles !== profile.resources.maxFiles ||
     image.controls.maxBytes !== profile.resources.maxBytes ||
-    image.controls.installScripts !== profile.dependencies.installScripts
+    image.controls.installScripts !== profile.dependencies.installScripts ||
+    image.controls.installScripts !== 'denied' ||
+    profile.resources.timeoutMs !== VERCEL_RUNNER_IMAGE_SPEC_V1.controls.maxTimeoutMs ||
+    profile.resources.maxProcesses !== VERCEL_RUNNER_IMAGE_SPEC_V1.controls.maxProcesses ||
+    profile.resources.maxFiles !== VERCEL_RUNNER_IMAGE_SPEC_V1.controls.maxFiles ||
+    profile.resources.maxBytes !== VERCEL_RUNNER_IMAGE_SPEC_V1.controls.maxBytes ||
+    JSON.stringify(profile.dependencies.approvedRegistries) !==
+      JSON.stringify(VERCEL_RUNNER_IMAGE_SPEC_V1.approvedRegistries) ||
+    !profile.processes.allowedCommands.every(({ executable }) =>
+      image.controls.commandPaths.some((candidate) => candidate.executable === executable),
+    )
   ) {
     throw configurationError(
       request,
@@ -139,7 +162,10 @@ function assertApprovedImage(
     !image.controls.hostFilesystemDenied ||
     !image.controls.productionSecretsAbsent ||
     !image.controls.sudoRemoved ||
-    image.controls.commandBrokerPath !== '/opt/ai-website-platform/bin/runner-exec'
+    image.controls.commandBrokerPath !== '/opt/ai-website-platform/bin/runner-exec' ||
+    image.controls.imageSpecDigest !== vercelRunnerImageSpecDigest() ||
+    JSON.stringify(image.controls.commandPaths) !==
+      JSON.stringify(VERCEL_RUNNER_IMAGE_SPEC_V1.commandPaths)
   ) {
     throw configurationError(request, 'The approved Vercel image identity or hardening is invalid.')
   }
