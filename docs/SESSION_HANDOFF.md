@@ -1,9 +1,9 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-16 23:31:38 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-16 23:47:52 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
-**Implementation commits:** `2d385f1`, `cb28fe6`, `835e6d7`, `6e3d4e7`, `0f6ff8d`, `c0cb6d0`, `29842a3`, `281f08c`, `0770d49`, `a77fabe`, and benchmark `3485446`; latest pushed checkpoint `6abd962`
+**Implementation commits:** `2d385f1`, `cb28fe6`, `835e6d7`, `6e3d4e7`, `0f6ff8d`, `c0cb6d0`, `29842a3`, `281f08c`, `0770d49`, `a77fabe`, and benchmark `3485446`; latest pushed checkpoint `1f14088`
 **Active milestone:** M08 Isolated runner - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06, M07
 
@@ -53,6 +53,8 @@ ADR-007 comparative benchmark revision 1 is committed at `3485446`. `docs/ADR_00
 
 Benchmark documentation checkpoint `6abd962` is pushed. Push run 31963152876/job 95204109659 and pull-request run 31963154691/job 95204114236 passed full validation and the ephemeral PostgreSQL migration at that exact head. Draft PR #8 remains open and unmerged.
 
+The 2026-08-16 external-readiness audit was read-only. Vercel CLI 56.4.1 is authenticated, but the repository has no repo/project link, no Vercel/Temporal/artifact environment-variable names, and no identifiable platform project in the accessible account. PR #8 and the matching issue search contain no provider approval. The current GitHub user token cannot enumerate App installations (`/user/installations` returned HTTP 403 because the token is not App-authorized), so installation absence is not claimed. No external resource or credential was changed. M08 cannot safely advance until an organization owner supplies the recorded approvals and non-production scopes.
+
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 
 ## Validation evidence
@@ -93,6 +95,7 @@ Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/
 - M08 protected-dispatch validation passed formatting/lint, 11/11 typecheck and build, 15 files / 82 unit tests, 11 files / 58 contract tests, 18 integration files plus 1 skipped live PostgreSQL file with 74 tests passed and 1 skipped, 6 files / 20 migration tests, 4 browser/accessibility tests, a 209-file secret scan, dependency tree, approved-network high-threshold audit with the unchanged four moderate `esbuild` advisories, and `git diff --check`. Focused handler/config tests passed 9/9, dispatch contracts 2/2, and durable runtime composition 4/4. The first full attempt stopped only on formatting; the corrected clean reruns reached only the sandboxed audit network boundary and the approved-network rerun passed.
 - M08 durability-evidence validation passed focused integration 1 file / 5 tests, formatting/lint, 11/11 typecheck and build, 15 files / 82 unit tests, 11 files / 58 contract tests, 18 integration files plus 1 skipped live PostgreSQL file with 75 tests passed and 1 skipped, direct single-worker 6 files / 20 migration tests, 4 browser/accessibility tests, a 210-file secret scan, dependency tree, approved-network high-threshold audit with the unchanged four moderate `esbuild` advisories, and `git diff --check`. The aggregate migration phase had three known resource-sensitive PGlite setup-hook timeouts while 17/20 passed; the single-worker rerun passed 20/20. The sandboxed audit failed only at the registry boundary.
 - ADR-007 benchmark-record validation passed formatting/lint, 11/11 typecheck and build, 15 files / 82 unit tests, 11 files / 58 contract tests, 18 integration files plus 1 skipped live PostgreSQL file with 75 tests passed and 1 skipped, direct single-worker 6 files / 20 migration tests, 4 browser/accessibility tests, a 211-file secret scan, dependency tree, approved-network high-threshold audit with the unchanged four moderate `esbuild` advisories, and `git diff --check`. The aggregate migration phase had two known PGlite setup-hook timeouts while 18/20 passed; the serialized rerun passed 20/20. The sandboxed audit failed only at the registry boundary.
+- External-readiness record validation passed formatting/lint, 11/11 typecheck and build, 15 files / 82 unit tests, 11 files / 58 contract tests, 18 integration files plus 1 skipped live PostgreSQL file with 75 tests passed and 1 skipped, direct single-worker 6 files / 20 migration tests, 4 browser/accessibility tests, a 211-file secret scan, dependency tree, and approved-network high-threshold audit with the unchanged four moderate `esbuild` advisories. The aggregate migration phase had three known resource-sensitive PGlite setup-hook timeouts while 17/20 passed; the single-worker rerun passed 20/20. The initial validation attempt was terminated by its 60-second local shell ceiling during lint; the longer rerun produced the recorded results and stopped only at the classified aggregate migration issue.
 
 ## Next exact work
 
