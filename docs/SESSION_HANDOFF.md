@@ -1,9 +1,9 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-16 23:18:41 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-16 23:31:38 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
-**Implementation commits:** `2d385f1`, `cb28fe6`, `835e6d7`, `6e3d4e7`, `0f6ff8d`, `c0cb6d0`, `29842a3`, `281f08c`, `0770d49`, and `a77fabe`; latest local benchmark checkpoint `3485446`
+**Implementation commits:** `2d385f1`, `cb28fe6`, `835e6d7`, `6e3d4e7`, `0f6ff8d`, `c0cb6d0`, `29842a3`, `281f08c`, `0770d49`, `a77fabe`, and benchmark `3485446`; latest pushed checkpoint `6abd962`
 **Active milestone:** M08 Isolated runner - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06, M07
 
@@ -50,6 +50,8 @@ M08 protected runner-dispatch composition `0770d49` and documentation checkpoint
 M08 durability failure-injection and recovery-operations implementation `a77fabe` and documentation checkpoint `c72ece2` are pushed. Reconstructed dispatch adapters now have explicit evidence for claiming persisted queued work and preserving a persisted retry timer until due; the existing uncertain expired-lease path remains terminal without handler replay. `docs/runbooks/m08-runner-dispatch-recovery.md` requires tenant/project-scoped diagnostics, provider/session and artifact-digest reconciliation, current authorization for any replacement command, and no manual ledger mutation. ADR-007 remains deferred; this is evidence for the PostgreSQL candidate, not a production engine selection or live crash/recovery claim. Push run 31956425194/job 95187651199 and pull-request run 31956426895/job 95187655653 passed full validation and ephemeral PostgreSQL migration at `c72ece2`.
 
 ADR-007 comparative benchmark revision 1 is committed at `3485446`. `docs/ADR_007_DURABILITY_BENCHMARK.md` maps every mandatory gate across the existing PostgreSQL ledger, Temporal, and Vercel Workflow, then defines one common versioned live workload with timer/approval, typed retry, cancellation, compensation, code upgrade, duplicate/out-of-order delivery, process/service/database failure, and cost/operations measurements. The existing ledger remains the M08 privileged-dispatch component but is not eligible as the complete engine in its current shape. Temporal and Vercel Workflow remain unselected finalists. Workflow SDK 5 durable in-flight cancellation remains beta while the observed stable package is 4.6.0. No dependency or provider was activated, and ADR-007 remains deferred pending organization-approved live evidence and terms.
+
+Benchmark documentation checkpoint `6abd962` is pushed. Push run 31963152876/job 95204109659 and pull-request run 31963154691/job 95204114236 passed full validation and the ephemeral PostgreSQL migration at that exact head. Draft PR #8 remains open and unmerged.
 
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 
