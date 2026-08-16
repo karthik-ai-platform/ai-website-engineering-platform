@@ -92,6 +92,37 @@ describe('M08 durable runner state', () => {
     ).rejects.toThrow(/append-only/u)
   })
 
+  it('claims queued work through a reconstructed dispatch adapter after worker restart', async () => {
+    const enqueue = new PostgresDurableDispatch(database, { idFactory: () => id('810') })
+    const context = fixtureContext('dispatch-queued-restart')
+    const reference = fixtureReference('c')
+    const { dispatchId } = await enqueue.dispatch(context, reference)
+
+    const recovered = new PostgresDurableDispatch(database, { idFactory: () => id('811') })
+    const handled: Array<{ dispatchId: string; attempt: number }> = []
+    expect(
+      await recovered.runOne('worker-after-restart', {
+        handle(work) {
+          handled.push({ dispatchId: work.dispatchId, attempt: work.attempt })
+          expect(work.context).toEqual(context)
+          expect(work.commandRef).toEqual(reference)
+          return Promise.resolve()
+        },
+      }),
+    ).toBe(true)
+
+    expect(handled).toEqual([{ dispatchId, attempt: 1 }])
+    const [row] = await database.select().from(workerDispatches)
+    expect(row).toMatchObject({ status: 'succeeded', attemptCount: 1 })
+    const [attempt] = await database.select().from(workerDispatchAttempts)
+    expect(attempt).toMatchObject({
+      dispatchId,
+      attemptNumber: 1,
+      outcome: 'succeeded',
+      workerId: 'worker-after-restart',
+    })
+  })
+
   it('deduplicates dispatch, retries only observed typed failures, and records attempts', async () => {
     let now = new Date(nowIso)
     const ids = [id('810'), id('811'), id('812'), id('813'), id('814')]
@@ -126,9 +157,25 @@ describe('M08 durable runner state', () => {
     let [row] = await database.select().from(workerDispatches)
     expect(row).toMatchObject({ status: 'retry_wait', attemptCount: 1 })
 
+    const recovered = new PostgresDurableDispatch(database, {
+      clock: () => now,
+      idFactory: () => ids.shift()!,
+      maxAttempts: 2,
+      retryBaseMs: 100,
+    })
+    expect(
+      await recovered.runOne('worker-before-retry-timer', {
+        handle: () => {
+          calls += 1
+          return Promise.resolve()
+        },
+      }),
+    ).toBe(false)
+    expect(calls).toBe(1)
+
     now = new Date(now.getTime() + 100)
     expect(
-      await dispatch.runOne('worker-b', {
+      await recovered.runOne('worker-b', {
         handle: () => {
           calls += 1
           return Promise.resolve()
