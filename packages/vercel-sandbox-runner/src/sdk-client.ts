@@ -26,6 +26,10 @@ export interface VercelSandboxHandle {
     options?: { signal?: AbortSignal },
   ): Promise<void>
   runCommand(request: VercelSandboxRunCommandRequest): Promise<VercelSandboxCommandResult>
+  readFileToBuffer(
+    request: { path: string },
+    options?: { signal?: AbortSignal },
+  ): Promise<Buffer | null>
   stop(options?: { signal?: AbortSignal }): Promise<unknown>
 }
 

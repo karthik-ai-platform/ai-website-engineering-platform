@@ -43,6 +43,16 @@ export const runnerBrokerExecuteRequestV1Schema = brokerEnvelopeV1Schema.extend(
       maxBytes: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
     })
     .strict(),
+  artifacts: z
+    .object({
+      expectedPaths: z
+        .array(relativePathSchema.refine((path) => path !== '.'))
+        .max(100)
+        .refine((paths) => new Set(paths).size === paths.length, 'Artifact paths must be unique.'),
+      maxCount: z.number().int().min(1).max(10_000),
+      maxBytes: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+    })
+    .strict(),
   installScripts: z.literal('denied'),
 })
 
@@ -67,6 +77,7 @@ const brokerResultV1Schema = z
         'OUTPUT_LIMIT_EXCEEDED',
         'TIME_LIMIT_EXCEEDED',
         'COMMAND_FAILED',
+        'ARTIFACT_CAPTURE_FAILED',
       ])
       .optional(),
   })
@@ -88,6 +99,18 @@ export const runnerBrokerExecuteResultV1Schema = brokerResultV1Schema.extend({
   stderrDigest: sha256DigestSchema.optional(),
   stdoutBytes: z.number().int().nonnegative().optional(),
   stderrBytes: z.number().int().nonnegative().optional(),
+  artifacts: z
+    .array(
+      z
+        .object({
+          path: relativePathSchema.refine((path) => path !== '.'),
+          digest: sha256DigestSchema,
+          sizeBytes: z.number().int().nonnegative(),
+        })
+        .strict(),
+    )
+    .max(100)
+    .optional(),
 })
 
 export const runnerBrokerResultV1Schema = z
@@ -131,6 +154,12 @@ export const runnerBrokerResultV1Schema = z
       context.addIssue({
         code: 'custom',
         message: 'Accepted execution requires complete bounded-output evidence.',
+      })
+    }
+    if (result.status !== 'rejected' && result.artifacts === undefined) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Accepted execution requires artifact capture evidence.',
       })
     }
   })

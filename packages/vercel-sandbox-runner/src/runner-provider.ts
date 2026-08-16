@@ -1,6 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto'
 
 import {
+  artifactReferenceV1Schema,
+  runnerArtifactEvidenceV1Schema,
   runnerCancellationRequestV1Schema,
   runnerCheckoutBundleV1Schema,
   runnerCleanupRequestV1Schema,
@@ -19,12 +21,14 @@ import {
 import {
   evaluateRunnerCommand,
   PlatformError,
+  type ArtifactStorePort,
   type RunnerCheckoutBundleSourcePort,
   type RunnerProviderPort,
 } from '@platform/domain'
 
 import { VercelSandboxBrokerClient, type VercelBrokerExecutionInput } from './broker-client.js'
 import type { RunnerBrokerExecuteResultV1 } from './broker-protocol.js'
+import { VERCEL_RUNNER_IMAGE_SPEC_V1 } from './image-policy.js'
 import type { VercelSandboxFactory, VercelSandboxHandle } from './sdk-client.js'
 import { createVerifiedVercelSandboxSession } from './verified-session.js'
 import { planVercelSandboxWorkspace, type ApprovedVercelSandboxImageV1 } from './workspace-plan.js'
@@ -90,6 +94,7 @@ export class MemoryVercelRunnerSessionStore implements VercelRunnerSessionStore 
 
 export interface VercelSandboxRunnerProviderOptions {
   readonly approvedImages: readonly ApprovedVercelSandboxImageV1[]
+  readonly artifactStore?: ArtifactStorePort
   readonly broker?: VercelSandboxBrokerClient
   readonly bundleSource: RunnerCheckoutBundleSourcePort
   readonly clock?: () => Date
@@ -100,6 +105,7 @@ export interface VercelSandboxRunnerProviderOptions {
 
 export class VercelSandboxRunnerProvider implements RunnerProviderPort {
   readonly #approvedImages: readonly ApprovedVercelSandboxImageV1[]
+  readonly #artifactStore: ArtifactStorePort | undefined
   readonly #broker: VercelSandboxBrokerClient
   readonly #bundleSource: RunnerCheckoutBundleSourcePort
   readonly #clock: () => Date
@@ -109,6 +115,7 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
 
   constructor(options: VercelSandboxRunnerProviderOptions) {
     this.#approvedImages = options.approvedImages
+    this.#artifactStore = options.artifactStore
     this.#broker =
       options.broker ??
       new VercelSandboxBrokerClient(options.clock === undefined ? {} : { clock: options.clock })
@@ -292,11 +299,11 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
       await this.#sessions.save(session)
       return result
     }
-    if (command.expectedArtifacts.length > 0) {
+    if (command.expectedArtifacts.length > 0 && this.#artifactStore === undefined) {
       throw this.#error(
         command.context.correlationId,
         'CONFIGURATION_INVALID',
-        'Artifact capture is not composed for this runner provider.',
+        'Artifact storage is not composed for this runner provider.',
       )
     }
 
@@ -314,11 +321,16 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
           controller.signal,
         )
         const completedAt = this.#clock()
-        const result = mapExecutionResult(command, broker, startedAt, completedAt)
+        const artifacts =
+          broker.status === 'succeeded'
+            ? await this.#captureArtifacts(session, command, broker, controller.signal)
+            : []
+        const result = mapExecutionResult(command, broker, artifacts, startedAt, completedAt)
         session.commands.set(command.id, { fingerprint, result })
         await this.#sessions.save(session)
         return result
       } catch (cause) {
+        await safeStop(session.handle)
         session.workspace = { ...session.workspace, state: 'destroyed' }
         await this.#sessions.save(session).catch(() => undefined)
         if (cause instanceof PlatformError) throw cause
@@ -437,6 +449,70 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
     }
   }
 
+  async #captureArtifacts(
+    session: VercelRunnerSession,
+    command: RunnerExecutionCommandV1,
+    broker: RunnerBrokerExecuteResultV1,
+    signal: AbortSignal,
+  ) {
+    const brokerArtifacts = broker.artifacts ?? []
+    if (
+      brokerArtifacts.length !== command.expectedArtifacts.length ||
+      brokerArtifacts.some(
+        (artifact, index) => artifact.path !== command.expectedArtifacts[index]?.path,
+      )
+    ) {
+      throw new Error('Broker artifact evidence does not match the authorized artifact set.')
+    }
+    if (brokerArtifacts.length === 0) return []
+    if (this.#artifactStore === undefined) {
+      throw new Error('Artifact storage is unavailable after command authorization.')
+    }
+
+    let totalBytes = 0
+    const captured: RunnerExecutionResultV1['artifacts'][number][] = []
+    for (const [index, brokerArtifact] of brokerArtifacts.entries()) {
+      const expected = command.expectedArtifacts[index]
+      if (expected === undefined) throw new Error('Expected artifact metadata is missing.')
+      const content = await session.handle.readFileToBuffer(
+        { path: `${VERCEL_RUNNER_IMAGE_SPEC_V1.workspaceRoot}/${expected.path}` },
+        { signal },
+      )
+      if (content === null) throw new Error('Expected artifact content is missing.')
+      totalBytes += content.byteLength
+      const contentDigest = createHash('sha256').update(content).digest('hex')
+      if (
+        content.byteLength !== brokerArtifact.sizeBytes ||
+        contentDigest !== brokerArtifact.digest ||
+        totalBytes > session.profile.artifacts.maxBytes
+      ) {
+        throw new Error('Expected artifact content does not match broker evidence or limits.')
+      }
+      const reference = artifactReferenceV1Schema.parse(
+        await this.#artifactStore.put(command.context, content, {
+          mediaType: expected.mediaType,
+          retentionClass: expected.retentionClass,
+        }),
+      )
+      if (
+        reference.digest !== contentDigest ||
+        reference.mediaType !== expected.mediaType ||
+        reference.retentionClass !== expected.retentionClass
+      ) {
+        throw new Error('Artifact storage returned evidence that does not match captured content.')
+      }
+      captured.push(
+        runnerArtifactEvidenceV1Schema.parse({
+          path: expected.path,
+          commandId: command.id,
+          reference,
+          sizeBytes: content.byteLength,
+        }),
+      )
+    }
+    return captured
+  }
+
   #error(
     correlationId: string,
     code: ConstructorParameters<typeof PlatformError>[0]['code'],
@@ -457,6 +533,7 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
 function mapExecutionResult(
   command: RunnerExecutionCommandV1,
   broker: RunnerBrokerExecuteResultV1,
+  artifacts: RunnerExecutionResultV1['artifacts'],
   startedAt: Date,
   completedAt: Date,
 ): RunnerExecutionResultV1 {
@@ -485,7 +562,7 @@ function mapExecutionResult(
     executionKind: 'isolated_runtime',
     status: broker.status,
     exitCode: broker.exitCode,
-    artifacts: [],
+    artifacts,
     startedAt: startedAt.toISOString(),
     completedAt: completedAt.toISOString(),
   })

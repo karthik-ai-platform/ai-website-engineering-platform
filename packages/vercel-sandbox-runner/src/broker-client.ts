@@ -275,6 +275,11 @@ export function planVercelBrokerExecution(
       maxFiles: profile.resources.maxFiles,
       maxBytes: profile.resources.maxBytes,
     },
+    artifacts: {
+      expectedPaths: command.expectedArtifacts.map(({ path }) => path),
+      maxCount: profile.artifacts.maxCount,
+      maxBytes: profile.artifacts.maxBytes,
+    },
     installScripts: profile.dependencies.installScripts,
   })
 }

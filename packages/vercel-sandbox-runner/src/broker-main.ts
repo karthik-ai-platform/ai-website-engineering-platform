@@ -10,6 +10,7 @@ import {
   open,
   readdir,
   readFile,
+  realpath,
   rm,
   unlink,
 } from 'node:fs/promises'
@@ -277,6 +278,25 @@ async function executeCommand(request: RunnerBrokerExecuteRequestV1) {
   const stderrBuffer = Buffer.concat(stderr)
   if (limitFailure !== undefined) return executeFailure(request, limitFailure)
 
+  const artifactEvidence =
+    exitCode === 0 ? await captureArtifacts(request, workspaceRoot) : ([] as const)
+  if (artifactEvidence === undefined) {
+    return {
+      schemaVersion: '1' as const,
+      requestId: request.requestId,
+      action: 'execute' as const,
+      status: 'failed' as const,
+      failureCode: 'ARTIFACT_CAPTURE_FAILED' as const,
+      exitCode,
+      durationMs: Date.now() - startedAt,
+      stdoutDigest: digestBuffer(stdoutBuffer),
+      stderrDigest: digestBuffer(stderrBuffer),
+      stdoutBytes: stdoutBuffer.length,
+      stderrBytes: stderrBuffer.length,
+      artifacts: [],
+    }
+  }
+
   return {
     schemaVersion: '1' as const,
     requestId: request.requestId,
@@ -285,17 +305,46 @@ async function executeCommand(request: RunnerBrokerExecuteRequestV1) {
     failureCode: exitCode === 0 ? undefined : ('COMMAND_FAILED' as const),
     exitCode,
     durationMs: Date.now() - startedAt,
-    stdoutDigest:
-      stdoutBuffer.length === 0
-        ? EMPTY_DIGEST
-        : createHash('sha256').update(stdoutBuffer).digest('hex'),
-    stderrDigest:
-      stderrBuffer.length === 0
-        ? EMPTY_DIGEST
-        : createHash('sha256').update(stderrBuffer).digest('hex'),
+    stdoutDigest: digestBuffer(stdoutBuffer),
+    stderrDigest: digestBuffer(stderrBuffer),
     stdoutBytes: stdoutBuffer.length,
     stderrBytes: stderrBuffer.length,
+    artifacts: artifactEvidence,
   }
+}
+
+async function captureArtifacts(
+  request: RunnerBrokerExecuteRequestV1,
+  workspaceRoot: string,
+): Promise<readonly { path: string; digest: string; sizeBytes: number }[] | undefined> {
+  if (request.artifacts.expectedPaths.length > request.artifacts.maxCount) return undefined
+  const root = await realpath(workspaceRoot)
+  const evidence: { path: string; digest: string; sizeBytes: number }[] = []
+  let totalBytes = 0
+  try {
+    for (const relativePath of request.artifacts.expectedPaths) {
+      const candidate = resolve(workspaceRoot, relativePath)
+      const resolved = await realpath(candidate)
+      if (resolved !== root && !resolved.startsWith(`${root}${sep}`)) return undefined
+      const before = await lstat(resolved)
+      if (!before.isFile() || before.isSymbolicLink()) return undefined
+      totalBytes += before.size
+      if (totalBytes > request.artifacts.maxBytes) return undefined
+      const artifactDigest = await digestFile(resolved)
+      const after = await lstat(resolved)
+      if (!after.isFile() || after.size !== before.size || after.mtimeMs !== before.mtimeMs) {
+        return undefined
+      }
+      evidence.push({ path: relativePath, digest: artifactDigest, sizeBytes: before.size })
+    }
+    return evidence
+  } catch {
+    return undefined
+  }
+}
+
+function digestBuffer(value: Buffer): string {
+  return value.length === 0 ? EMPTY_DIGEST : createHash('sha256').update(value).digest('hex')
 }
 
 async function run(command: string, args: readonly string[], cwd: string, timeoutMs: number) {

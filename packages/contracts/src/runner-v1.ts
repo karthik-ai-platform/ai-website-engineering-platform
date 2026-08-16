@@ -199,7 +199,9 @@ export const runnerWorkspaceV1Schema = z
 
 export const runnerExpectedArtifactV1Schema = z
   .object({
-    path: relativeWorkspacePathSchema,
+    path: relativeWorkspacePathSchema.refine((path) => path !== '.', {
+      message: 'Expected artifact path must identify a file.',
+    }),
     mediaType: z.string().trim().min(1).max(160),
     retentionClass: z.string().trim().min(1).max(120),
   })

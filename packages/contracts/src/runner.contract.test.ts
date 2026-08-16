@@ -120,6 +120,23 @@ describe('M08 runner contracts', () => {
         expectedArtifacts: [],
       }).success,
     ).toBe(false)
+    expect(
+      runnerExecutionCommandV1Schema.safeParse({
+        schemaVersion: '1',
+        context,
+        id: id('8'),
+        workspaceId: id('9'),
+        runId: id('6'),
+        baseCommit: 'b'.repeat(40),
+        profileDigest: 'c'.repeat(64),
+        tool: 'test',
+        executable: 'npm',
+        arguments: ['test'],
+        workingDirectory: '.',
+        timeoutMs: 1000,
+        expectedArtifacts: [{ path: '.', mediaType: 'application/json', retentionClass: 'test' }],
+      }).success,
+    ).toBe(false)
   })
 
   it('requires coherent rejection and exit evidence', () => {

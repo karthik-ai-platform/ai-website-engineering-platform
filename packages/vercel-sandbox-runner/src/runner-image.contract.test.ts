@@ -72,6 +72,7 @@ describe('Vercel runner image and broker contract', () => {
       workingDirectory: '.',
       timeoutMs: 60_000,
       limits: { maxProcesses: 64, maxFiles: 10_000, maxBytes: 100_000_000 },
+      artifacts: { expectedPaths: ['reports/result.json'], maxCount: 10, maxBytes: 1_000_000 },
       installScripts: 'denied',
     }
     expect(runnerBrokerExecuteRequestV1Schema.parse(request)).toEqual(request)
@@ -112,6 +113,24 @@ describe('Vercel runner image and broker contract', () => {
     expect(runnerBrokerResultV1Schema.parse(rejectedExecution)).toEqual(rejectedExecution)
     expect(() =>
       runnerBrokerResultV1Schema.parse({ ...rejectedExecution, failureCode: undefined }),
+    ).toThrow()
+
+    const successfulExecution = {
+      schemaVersion: '1',
+      action: 'execute',
+      requestId: id('6'),
+      status: 'succeeded',
+      exitCode: 0,
+      durationMs: 20,
+      stdoutDigest: 'd'.repeat(64),
+      stderrDigest: 'e'.repeat(64),
+      stdoutBytes: 10,
+      stderrBytes: 0,
+      artifacts: [{ path: 'reports/result.json', digest: 'f'.repeat(64), sizeBytes: 120 }],
+    }
+    expect(runnerBrokerResultV1Schema.parse(successfulExecution)).toEqual(successfulExecution)
+    expect(() =>
+      runnerBrokerResultV1Schema.parse({ ...successfulExecution, artifacts: undefined }),
     ).toThrow()
   })
 })

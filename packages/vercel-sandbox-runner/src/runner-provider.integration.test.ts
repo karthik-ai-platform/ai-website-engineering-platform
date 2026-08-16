@@ -6,7 +6,7 @@ import type {
   RunnerIsolationProfileV1,
   RunnerWorkspaceRequestV1,
 } from '@platform/contracts'
-import type { RunnerCheckoutBundleSourcePort } from '@platform/domain'
+import type { ArtifactStorePort, RunnerCheckoutBundleSourcePort } from '@platform/domain'
 import { describe, expect, it, vi } from 'vitest'
 
 import { VERCEL_RUNNER_IMAGE_SPEC_V1, vercelRunnerImageSpecDigest } from './image-policy.js'
@@ -105,7 +105,11 @@ function bundle(): RunnerCheckoutBundleV1 {
   }
 }
 
-function provider(checkoutStatus: 'succeeded' | 'failed' = 'succeeded') {
+function provider(
+  checkoutStatus: 'succeeded' | 'failed' = 'succeeded',
+  artifactContent?: Buffer,
+  readArtifactContent = artifactContent,
+) {
   let runCommandCalls = 0
   let stopCalls = 0
   const createBundle = vi.fn<RunnerCheckoutBundleSourcePort['createBundle']>(() =>
@@ -147,6 +151,16 @@ function provider(checkoutStatus: 'succeeded' | 'failed' = 'succeeded') {
               stderrDigest: 'e'.repeat(64),
               stdoutBytes: 10,
               stderrBytes: 0,
+              artifacts:
+                artifactContent === undefined
+                  ? []
+                  : [
+                      {
+                        path: 'report.txt',
+                        digest: createHash('sha256').update(artifactContent).digest('hex'),
+                        sizeBytes: artifactContent.byteLength,
+                      },
+                    ],
             }
       return Promise.resolve({
         exitCode: 0,
@@ -166,6 +180,7 @@ function provider(checkoutStatus: 'succeeded' | 'failed' = 'succeeded') {
       networkPolicy: create.networkPolicy,
       writeFiles,
       runCommand,
+      readFileToBuffer: vi.fn(() => Promise.resolve(readArtifactContent ?? null)),
       stop: vi.fn(() => {
         stopCalls += 1
         return Promise.resolve(undefined)
@@ -174,8 +189,19 @@ function provider(checkoutStatus: 'succeeded' | 'failed' = 'succeeded') {
     return Promise.resolve(handle)
   })
   const factory: VercelSandboxFactory = { create: createSandbox }
+  const artifactPut = vi.fn<ArtifactStorePort['put']>((_context, content, metadata) =>
+    Promise.resolve({
+      schemaVersion: '1',
+      uri: `fixture-artifact://${createHash('sha256').update(content).digest('hex')}`,
+      digest: createHash('sha256').update(content).digest('hex'),
+      ...metadata,
+    }),
+  )
+  const artifactStore: ArtifactStorePort | undefined =
+    artifactContent === undefined ? undefined : { put: artifactPut }
   const runner = new VercelSandboxRunnerProvider({
     approvedImages: [approvedImage],
+    ...(artifactStore === undefined ? {} : { artifactStore }),
     bundleSource: { createBundle },
     clock: () => now,
     factory,
@@ -188,6 +214,7 @@ function provider(checkoutStatus: 'succeeded' | 'failed' = 'succeeded') {
     createSandbox,
     runCommandCallCount: () => runCommandCalls,
     stopCallCount: () => stopCalls,
+    artifactPut,
   }
 }
 
@@ -289,6 +316,74 @@ describe('Vercel Sandbox RunnerProvider lifecycle', () => {
       }),
     ).rejects.toMatchObject({ code: 'CONFIGURATION_INVALID', retryable: false })
     expect(fixture.runCommandCallCount()).toBe(1)
+  })
+
+  it('independently verifies and stores broker-attested artifacts with retention evidence', async () => {
+    const artifactContent = Buffer.from('validated report')
+    const fixture = provider('succeeded', artifactContent)
+    const workspace = await fixture.runner.provision(request)
+    const result = await fixture.runner.execute({
+      schemaVersion: '1',
+      context: { ...request.context, idempotencyKey: 'execute-artifact-2' },
+      id: id('12'),
+      workspaceId: workspace.id,
+      runId: workspace.runId,
+      baseCommit,
+      profileDigest: workspace.profileDigest,
+      tool: 'npm-test',
+      executable: 'npm',
+      arguments: ['test'],
+      workingDirectory: '.',
+      timeoutMs: 60_000,
+      expectedArtifacts: [
+        { path: 'report.txt', mediaType: 'text/plain', retentionClass: 'validation-log' },
+      ],
+    })
+
+    expect(result.status).toBe('succeeded')
+    expect(result.artifacts).toHaveLength(1)
+    const evidence = result.artifacts[0]
+    expect(evidence?.path).toBe('report.txt')
+    expect(evidence?.sizeBytes).toBe(artifactContent.byteLength)
+    expect(evidence?.reference).toMatchObject({
+      digest: createHash('sha256').update(artifactContent).digest('hex'),
+      mediaType: 'text/plain',
+      retentionClass: 'validation-log',
+    })
+    expect(fixture.artifactPut).toHaveBeenCalledWith(
+      expect.objectContaining({ organizationId: request.context.organizationId }),
+      artifactContent,
+      { mediaType: 'text/plain', retentionClass: 'validation-log' },
+    )
+  })
+
+  it('stops the workspace when provider-read artifact bytes differ from broker evidence', async () => {
+    const fixture = provider(
+      'succeeded',
+      Buffer.from('broker-attested report'),
+      Buffer.from('mutated report'),
+    )
+    const workspace = await fixture.runner.provision(request)
+    await expect(
+      fixture.runner.execute({
+        schemaVersion: '1',
+        context: { ...request.context, idempotencyKey: 'execute-artifact-3' },
+        id: id('13'),
+        workspaceId: workspace.id,
+        runId: workspace.runId,
+        baseCommit,
+        profileDigest: workspace.profileDigest,
+        tool: 'npm-test',
+        executable: 'npm',
+        arguments: ['test'],
+        workingDirectory: '.',
+        timeoutMs: 60_000,
+        expectedArtifacts: [
+          { path: 'report.txt', mediaType: 'text/plain', retentionClass: 'validation-log' },
+        ],
+      }),
+    ).rejects.toMatchObject({ code: 'VALIDATION_FAILED', retryable: false })
+    expect(fixture.stopCallCount()).toBe(1)
   })
 
   it('stops and refuses to register a workspace when immutable checkout fails', async () => {

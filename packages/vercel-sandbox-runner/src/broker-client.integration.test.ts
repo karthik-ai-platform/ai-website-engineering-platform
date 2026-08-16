@@ -65,6 +65,7 @@ function handle(result: VercelSandboxCommandResult) {
     networkPolicy: 'deny-all',
     writeFiles,
     runCommand,
+    readFileToBuffer: vi.fn(() => Promise.resolve(null)),
     stop,
   } satisfies VercelSandboxHandle
 }
@@ -243,6 +244,7 @@ describe('Vercel Sandbox broker transport', () => {
       stderrDigest: 'e'.repeat(64),
       stdoutBytes: 12,
       stderrBytes: 0,
+      artifacts: [],
     } as const
     const sandbox = handle(commandResult(result))
     const client = new VercelSandboxBrokerClient()
@@ -257,6 +259,7 @@ describe('Vercel Sandbox broker transport', () => {
     expect(JSON.stringify(providerRequest)).not.toContain('--runInBand')
     const controlContent = sandbox.writeFiles.mock.calls[0]?.[0][0]?.content
     expect(controlContent).toEqual(expect.stringContaining('--runInBand'))
+    expect(request.artifacts).toEqual({ expectedPaths: [], maxCount: 20, maxBytes: 10_000_000 })
   })
 
   it('rechecks deterministic command policy before staging an envelope', () => {
