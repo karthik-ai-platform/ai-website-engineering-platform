@@ -153,6 +153,24 @@ export const runnerWorkspaceRequestV1Schema = z
   })
   .strict()
 
+export const runnerCheckoutBundleV1Schema = z
+  .object({
+    schemaVersion: schemaVersionV1,
+    requestId: opaqueIdSchema,
+    repository: z
+      .object({
+        provider: z.string().trim().min(1).max(80),
+        repositoryId: z.string().trim().min(1).max(256),
+      })
+      .strict(),
+    baseCommit: gitCommitSchema,
+    bundleDigest: sha256DigestSchema,
+    issuedAt: isoTimestampSchema,
+    expiresAt: isoTimestampSchema,
+    content: z.instanceof(Uint8Array),
+  })
+  .strict()
+
 export const runnerWorkspaceV1Schema = z
   .object({
     schemaVersion: schemaVersionV1,
@@ -241,6 +259,7 @@ export const runnerExecutionResultV1Schema = z
         'STALE_BINDING',
         'COMMAND_NOT_ALLOWED',
         'TIME_LIMIT_EXCEEDED',
+        'OUTPUT_LIMIT_EXCEEDED',
         'FILESYSTEM_DENIED',
         'NETWORK_DENIED',
         'ARTIFACT_POLICY_DENIED',
@@ -305,6 +324,7 @@ export const runnerLifecycleResultV1Schema = z
 
 export type RunnerIsolationProfileV1 = z.infer<typeof runnerIsolationProfileV1Schema>
 export type RunnerWorkspaceRequestV1 = z.infer<typeof runnerWorkspaceRequestV1Schema>
+export type RunnerCheckoutBundleV1 = z.infer<typeof runnerCheckoutBundleV1Schema>
 export type RunnerWorkspaceV1 = z.infer<typeof runnerWorkspaceV1Schema>
 export type RunnerExecutionCommandV1 = z.infer<typeof runnerExecutionCommandV1Schema>
 export type RunnerExecutionResultV1 = z.infer<typeof runnerExecutionResultV1Schema>

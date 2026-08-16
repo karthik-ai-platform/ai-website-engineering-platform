@@ -9,6 +9,7 @@ import type {
   ProviderRequestContextV1,
   RunnerCancellationRequestV1,
   RunnerCleanupRequestV1,
+  RunnerCheckoutBundleV1,
   RunnerExecutionCommandV1,
   RunnerExecutionResultV1,
   RunnerLifecycleResultV1,
@@ -56,6 +57,11 @@ export interface RunnerProviderPort {
   execute(command: RunnerExecutionCommandV1): Promise<RunnerExecutionResultV1>
   cancel(request: RunnerCancellationRequestV1): Promise<RunnerLifecycleResultV1>
   destroy(request: RunnerCleanupRequestV1): Promise<RunnerLifecycleResultV1>
+}
+
+/** Credential-free immutable checkout acquisition for runner adapters. */
+export interface RunnerCheckoutBundleSourcePort {
+  createBundle(request: RunnerWorkspaceRequestV1): Promise<RunnerCheckoutBundleV1>
 }
 
 export interface OrchestrationProviderPort {

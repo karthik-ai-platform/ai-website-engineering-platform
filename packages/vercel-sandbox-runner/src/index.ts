@@ -30,3 +30,10 @@ export {
   type VercelCheckoutBundleV1,
 } from './broker-client.js'
 export { VERCEL_RUNNER_IMAGE_SPEC_V1, vercelRunnerImageSpecDigest } from './image-policy.js'
+export {
+  MemoryVercelRunnerSessionStore,
+  VercelSandboxRunnerProvider,
+  type VercelRunnerSession,
+  type VercelRunnerSessionStore,
+  type VercelSandboxRunnerProviderOptions,
+} from './runner-provider.js'

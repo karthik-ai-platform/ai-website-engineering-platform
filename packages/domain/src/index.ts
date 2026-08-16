@@ -73,6 +73,7 @@ export {
   type GithubAppOnboardingPort,
   type OrchestrationProviderPort,
   type RunnerProviderPort,
+  type RunnerCheckoutBundleSourcePort,
   type SecretsPort,
 } from './provider-ports.js'
 export {
