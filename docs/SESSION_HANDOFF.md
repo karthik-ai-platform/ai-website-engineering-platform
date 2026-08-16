@@ -1,9 +1,9 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-11 21:15:00 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-16 11:25:36 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
-**Implementation commits:** `2d385f1` (`feat(M08): orchestrate approved runner lifecycle [codex]`) and `cb28fe6` (`refactor(M08): keep runner persistence in worker [codex]`)
+**Implementation commits:** `2d385f1` (`feat(M08): orchestrate approved runner lifecycle [codex]`) and `cb28fe6` (`refactor(M08): keep runner persistence in worker [codex]`); pushed checkpoint `9fc8b11`
 **Active milestone:** M08 Isolated runner - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06, M07
 
@@ -25,7 +25,7 @@ M07 completion record `7089a1e` is pushed. GitHub CI run 31495684020, job 937926
 
 M08 is in progress. Foundation `f512045` is pushed and draft PR #8 is stacked on completed M07. GitHub CI run 31502183703, job 93814733180, passed full validation and ephemeral PostgreSQL migration. The foundation replaces the M03 raw runner command with versioned profile/workspace/argv/result/cancellation/cleanup contracts; deterministic tenant/run/base-commit/profile/allowlist/resource/filesystem/artifact policy; canonical profile digests; and an explicitly non-isolating conformance fixture that never invokes host processes and refuses production-isolation claims. ADR-017 records the boundary.
 
-M08 orchestration/persistence implementation `2d385f1` and worker-boundary correction `cb28fe6` are committed locally. The service reauthorizes the current project-scoped service grant with service-only `run:execute`, recomputes current approvals, requires current policy/repository/base-commit evidence, schema-validates runner responses, and owns deterministic provision/execute/cancel/cleanup transitions. Migration `0007` and the worker-owned PostgreSQL adapter add tenant-scoped/idempotent workspace, command, artifact-reference, cancellation, cleanup, and append-only audit persistence without storing argv, environment, raw stdout/stderr, or secret values. ADR-018 records the decision. Push and new remote CI evidence are pending.
+M08 orchestration/persistence implementation `2d385f1`, worker-boundary correction `cb28fe6`, and checkpoint `9fc8b11` are pushed. The service reauthorizes the current project-scoped service grant with service-only `run:execute`, recomputes current approvals, requires current policy/repository/base-commit evidence, schema-validates runner responses, and owns deterministic provision/execute/cancel/cleanup transitions. Migration `0007` and the worker-owned PostgreSQL adapter add tenant-scoped/idempotent workspace, command, artifact-reference, cancellation, cleanup, and append-only audit persistence without storing argv, environment, raw stdout/stderr, or secret values. ADR-018 records the decision. Pull-request CI run 31929973797/job 95123194324 and push CI run 31929972885/job 95123191756 passed full validation and ephemeral PostgreSQL migration at `9fc8b11`.
 
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 
@@ -41,7 +41,7 @@ Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/
 ## Known limitations and safety
 
 - M02 completion evidence is satisfied by GitHub CI run 31456298365 and the recorded local validation.
-- `gh auth status` reports the active `karthik18mohan` token is invalid. The GitHub publishing workflow requires `gh auth login -h github.com` and a successful `gh auth status` before staging/commit/push.
+- Host `gh auth status` succeeds for the active `karthik18mohan` account. Sandboxed processes cannot read the host keyring, so authenticated GitHub CLI operations require the approved host execution path; never expose the token.
 - M03 final remote evidence is satisfied by CI run 31459194718 and the recorded local validation.
 - M04 final remote repository/CI evidence is satisfied by run 31463150845; provider evidence remains deterministic mock/contract only.
 - M05 final remote repository/CI evidence is satisfied by run 31466267638, job 93699691293.
@@ -59,7 +59,6 @@ Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/
 
 ## Next exact work
 
-1. Push `2d385f1` and `cb28fe6`, update draft PR #8, and require green CI including the ephemeral PostgreSQL migration before relying on remote evidence.
-2. Select an approved production-isolation runtime and runner image/profile matrix; implement real immutable checkout, enforced CPU/memory/time/filesystem/process/network controls, cancellation/cleanup, and digest artifact capture behind the existing port.
-3. Add forbidden host filesystem/process/network/credential/production-secret, resource-limit, malicious-install-script, cleanup, and artifact-integrity acceptance evidence. Never cite the conformance fixture as production isolation.
-4. Integrate the production adapter through durable worker dispatch while preserving current approval reauthorization, immutable bindings, deny-by-default network/secrets/tool policy, and append-only evidence. Do not make a live model call or merge any PR autonomously.
+1. Select an approved production-isolation runtime and runner image/profile matrix; implement real immutable checkout, enforced CPU/memory/time/filesystem/process/network controls, cancellation/cleanup, and digest artifact capture behind the existing port.
+2. Add forbidden host filesystem/process/network/credential/production-secret, resource-limit, malicious-install-script, cleanup, and artifact-integrity acceptance evidence. Never cite the conformance fixture as production isolation.
+3. Integrate the production adapter through durable worker dispatch while preserving current approval reauthorization, immutable bindings, deny-by-default network/secrets/tool policy, and append-only evidence. Do not make a live model call or merge any PR autonomously.
