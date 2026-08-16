@@ -69,8 +69,16 @@ export interface VercelRunnerSession {
  * handles when records cross a process boundary.
  */
 export interface VercelRunnerSessionStore {
-  findByProvisionKey(provisionKey: string): Promise<VercelRunnerSession | undefined>
-  findByWorkspaceId(workspaceId: string): Promise<VercelRunnerSession | undefined>
+  findByProvisionKey(
+    organizationId: string,
+    projectId: string,
+    provisionKey: string,
+  ): Promise<VercelRunnerSession | undefined>
+  findByWorkspaceId(
+    organizationId: string,
+    projectId: string,
+    workspaceId: string,
+  ): Promise<VercelRunnerSession | undefined>
   save(session: VercelRunnerSession): Promise<void>
 }
 
@@ -79,12 +87,32 @@ export class MemoryVercelRunnerSessionStore implements VercelRunnerSessionStore 
   readonly #byProvisionKey = new Map<string, VercelRunnerSession>()
   readonly #byWorkspaceId = new Map<string, VercelRunnerSession>()
 
-  findByProvisionKey(provisionKey: string): Promise<VercelRunnerSession | undefined> {
-    return Promise.resolve(this.#byProvisionKey.get(provisionKey))
+  findByProvisionKey(
+    organizationId: string,
+    projectId: string,
+    provisionKey: string,
+  ): Promise<VercelRunnerSession | undefined> {
+    const session = this.#byProvisionKey.get(provisionKey)
+    return Promise.resolve(
+      session?.workspace.organizationId === organizationId &&
+        session.workspace.projectId === projectId
+        ? session
+        : undefined,
+    )
   }
 
-  findByWorkspaceId(workspaceId: string): Promise<VercelRunnerSession | undefined> {
-    return Promise.resolve(this.#byWorkspaceId.get(workspaceId))
+  findByWorkspaceId(
+    organizationId: string,
+    projectId: string,
+    workspaceId: string,
+  ): Promise<VercelRunnerSession | undefined> {
+    const session = this.#byWorkspaceId.get(workspaceId)
+    return Promise.resolve(
+      session?.workspace.organizationId === organizationId &&
+        session.workspace.projectId === projectId
+        ? session
+        : undefined,
+    )
   }
 
   save(session: VercelRunnerSession): Promise<void> {
@@ -142,7 +170,11 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
       `${request.context.organizationId}:${request.context.projectId}:${request.runId}:${request.context.idempotencyKey}`,
     )
     const requestFingerprint = digest(JSON.stringify(request))
-    const existing = await this.#sessions.findByProvisionKey(provisionKey)
+    const existing = await this.#sessions.findByProvisionKey(
+      request.context.organizationId,
+      request.context.projectId,
+      provisionKey,
+    )
     if (existing !== undefined) {
       if (existing.requestFingerprint !== requestFingerprint) {
         throw this.#error(
@@ -455,7 +487,7 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
     runId: string,
     correlationId: string,
   ) {
-    const session = await this.#sessions.findByWorkspaceId(workspaceId)
+    const session = await this.#sessions.findByWorkspaceId(organizationId, projectId, workspaceId)
     if (
       session === undefined ||
       session.workspace.organizationId !== organizationId ||

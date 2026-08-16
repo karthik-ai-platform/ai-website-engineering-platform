@@ -99,12 +99,24 @@ const approvedImage: ApprovedVercelSandboxImageV1 = {
 class FixtureSessionStore implements VercelRunnerSessionStore {
   session: VercelRunnerSession | undefined
 
-  findByProvisionKey(provisionKey: string) {
-    return Promise.resolve(this.session?.provisionKey === provisionKey ? this.session : undefined)
+  findByProvisionKey(organizationId: string, projectId: string, provisionKey: string) {
+    return Promise.resolve(
+      this.session?.provisionKey === provisionKey &&
+        this.session.workspace.organizationId === organizationId &&
+        this.session.workspace.projectId === projectId
+        ? this.session
+        : undefined,
+    )
   }
 
-  findByWorkspaceId(workspaceId: string) {
-    return Promise.resolve(this.session?.workspace.id === workspaceId ? this.session : undefined)
+  findByWorkspaceId(organizationId: string, projectId: string, workspaceId: string) {
+    return Promise.resolve(
+      this.session?.workspace.id === workspaceId &&
+        this.session.workspace.organizationId === organizationId &&
+        this.session.workspace.projectId === projectId
+        ? this.session
+        : undefined,
+    )
   }
 
   save(session: VercelRunnerSession) {

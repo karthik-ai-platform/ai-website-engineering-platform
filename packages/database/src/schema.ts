@@ -829,6 +829,211 @@ export const runnerLifecycleRecords = pgTable(
   ],
 )
 
+export const runnerProviderSessions = pgTable(
+  'runner_provider_sessions',
+  {
+    provisionKey: text('provision_key').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    runId: uuid('run_id').notNull(),
+    executionPlanId: uuid('execution_plan_id').notNull(),
+    workspaceId: uuid('workspace_id').notNull(),
+    provider: text('provider').notNull(),
+    requestFingerprint: text('request_fingerprint').notNull(),
+    identityDigest: text('identity_digest').notNull(),
+    plan: jsonb('plan').notNull(),
+    profile: jsonb('profile').notNull(),
+    workspace: jsonb('workspace').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique('runner_provider_sessions_tenant_provision_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.provisionKey,
+    ),
+    unique('runner_provider_sessions_tenant_workspace_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.workspaceId,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.runId, table.executionPlanId],
+      foreignColumns: [runs.organizationId, runs.projectId, runs.id, runs.executionPlanId],
+      name: 'runner_provider_sessions_run_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    check('runner_provider_sessions_provision_key_check', sql`length(${table.provisionKey}) = 64`),
+    check(
+      'runner_provider_sessions_request_fingerprint_check',
+      sql`length(${table.requestFingerprint}) = 64`,
+    ),
+    check(
+      'runner_provider_sessions_identity_digest_check',
+      sql`length(${table.identityDigest}) = 64`,
+    ),
+    check('runner_provider_sessions_provider_check', sql`${table.provider} = 'vercel_sandbox'`),
+    check('runner_provider_sessions_plan_check', sql`jsonb_typeof(${table.plan}) = 'object'`),
+    check('runner_provider_sessions_profile_check', sql`jsonb_typeof(${table.profile}) = 'object'`),
+    check(
+      'runner_provider_sessions_workspace_check',
+      sql`jsonb_typeof(${table.workspace}) = 'object'`,
+    ),
+  ],
+)
+
+export const runnerProviderCommandReplays = pgTable(
+  'runner_provider_command_replays',
+  {
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    provisionKey: text('provision_key').notNull(),
+    commandId: uuid('command_id').notNull(),
+    requestFingerprint: text('request_fingerprint').notNull(),
+    result: jsonb('result').notNull(),
+    completedAt: timestamp('completed_at', { mode: 'date', withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.organizationId, table.projectId, table.commandId],
+      name: 'runner_provider_command_replays_pk',
+    }),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.provisionKey],
+      foreignColumns: [
+        runnerProviderSessions.organizationId,
+        runnerProviderSessions.projectId,
+        runnerProviderSessions.provisionKey,
+      ],
+      name: 'runner_provider_command_replays_session_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    check(
+      'runner_provider_command_replays_fingerprint_check',
+      sql`length(${table.requestFingerprint}) = 64`,
+    ),
+    check(
+      'runner_provider_command_replays_result_check',
+      sql`jsonb_typeof(${table.result}) = 'object'`,
+    ),
+  ],
+)
+
+export const workerDispatches = pgTable(
+  'worker_dispatches',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    actorRef: text('actor_ref').notNull(),
+    correlationId: uuid('correlation_id').notNull(),
+    requestedAt: timestamp('requested_at', { mode: 'date', withTimezone: true }).notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestDigest: text('request_digest').notNull(),
+    commandRef: jsonb('command_ref').notNull(),
+    status: text('status').notNull(),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    maxAttempts: integer('max_attempts').notNull(),
+    availableAt: timestamp('available_at', { mode: 'date', withTimezone: true }).notNull(),
+    leaseOwner: text('lease_owner'),
+    leaseExpiresAt: timestamp('lease_expires_at', { mode: 'date', withTimezone: true }),
+    lastFailureCode: text('last_failure_code'),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp('completed_at', { mode: 'date', withTimezone: true }),
+  },
+  (table) => [
+    unique('worker_dispatches_tenant_idempotency_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.idempotencyKey,
+    ),
+    unique('worker_dispatches_tenant_id_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.id,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.projectId],
+      foreignColumns: [projects.organizationId, projects.id],
+      name: 'worker_dispatches_project_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    index('worker_dispatches_claim_idx').on(table.status, table.availableAt),
+    check('worker_dispatches_request_digest_check', sql`length(${table.requestDigest}) = 64`),
+    check(
+      'worker_dispatches_actor_ref_check',
+      sql`${table.actorRef} ~ '^(user|service):[0-9a-f-]{36}$'`,
+    ),
+    check(
+      'worker_dispatches_idempotency_key_check',
+      sql`length(${table.idempotencyKey}) between 8 and 256`,
+    ),
+    check('worker_dispatches_command_ref_check', sql`jsonb_typeof(${table.commandRef}) = 'object'`),
+    check(
+      'worker_dispatches_status_check',
+      sql`${table.status} in ('queued', 'running', 'retry_wait', 'succeeded', 'failed')`,
+    ),
+    check(
+      'worker_dispatches_attempts_check',
+      sql`${table.attemptCount} between 0 and ${table.maxAttempts} AND ${table.maxAttempts} between 1 and 10`,
+    ),
+    check(
+      'worker_dispatches_lease_shape_check',
+      sql`(${table.status} = 'running' AND ${table.leaseOwner} IS NOT NULL AND ${table.leaseExpiresAt} IS NOT NULL) OR (${table.status} <> 'running' AND ${table.leaseOwner} IS NULL AND ${table.leaseExpiresAt} IS NULL)`,
+    ),
+    check(
+      'worker_dispatches_completion_shape_check',
+      sql`(${table.status} in ('succeeded', 'failed')) = (${table.completedAt} IS NOT NULL)`,
+    ),
+  ],
+)
+
+export const workerDispatchAttempts = pgTable(
+  'worker_dispatch_attempts',
+  {
+    id: uuid('id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    dispatchId: uuid('dispatch_id').notNull(),
+    attemptNumber: integer('attempt_number').notNull(),
+    workerId: text('worker_id').notNull(),
+    outcome: text('outcome').notNull(),
+    failureCode: text('failure_code'),
+    startedAt: timestamp('started_at', { mode: 'date', withTimezone: true }).notNull(),
+    completedAt: timestamp('completed_at', { mode: 'date', withTimezone: true }).notNull(),
+    nextAvailableAt: timestamp('next_available_at', { mode: 'date', withTimezone: true }),
+  },
+  (table) => [
+    unique('worker_dispatch_attempts_dispatch_number_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.dispatchId,
+      table.attemptNumber,
+    ),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.dispatchId],
+      foreignColumns: [
+        workerDispatches.organizationId,
+        workerDispatches.projectId,
+        workerDispatches.id,
+      ],
+      name: 'worker_dispatch_attempts_dispatch_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    check('worker_dispatch_attempts_number_check', sql`${table.attemptNumber} between 1 and 10`),
+    check(
+      'worker_dispatch_attempts_outcome_check',
+      sql`${table.outcome} in ('succeeded', 'retry_scheduled', 'failed', 'lease_expired')`,
+    ),
+  ],
+)
+
 export const auditEvents = pgTable(
   'audit_events',
   {
@@ -895,3 +1100,7 @@ export type RunnerWorkspaceRow = typeof runnerWorkspaces.$inferSelect
 export type RunnerCommandRow = typeof runnerCommands.$inferSelect
 export type RunnerArtifactRow = typeof runnerArtifacts.$inferSelect
 export type RunnerLifecycleRecordRow = typeof runnerLifecycleRecords.$inferSelect
+export type RunnerProviderSessionRow = typeof runnerProviderSessions.$inferSelect
+export type RunnerProviderCommandReplayRow = typeof runnerProviderCommandReplays.$inferSelect
+export type WorkerDispatchRow = typeof workerDispatches.$inferSelect
+export type WorkerDispatchAttemptRow = typeof workerDispatchAttempts.$inferSelect

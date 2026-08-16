@@ -3,7 +3,7 @@ import { loadWorkerConfig } from './config.js'
 import { WorkerRuntime } from './runtime.js'
 
 const config = loadWorkerConfig()
-const runtime = new WorkerRuntime()
+const runtime = new WorkerRuntime({ workerId: config.workerId })
 await runtime.start()
 
 const app = buildWorkerApp({ config, runtime })

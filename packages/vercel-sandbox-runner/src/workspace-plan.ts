@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto'
 
 import { runnerWorkspaceRequestV1Schema, type RunnerWorkspaceRequestV1 } from '@platform/contracts'
 import { PlatformError, runnerProfileDigest } from '@platform/domain'
-import type { NetworkPolicy } from '@vercel/sandbox'
 import { z } from 'zod'
 
 import type { VercelSandboxCreateRequest } from './sdk-client.js'
@@ -48,20 +47,52 @@ export const approvedVercelSandboxImageV1Schema = z
 
 export type ApprovedVercelSandboxImageV1 = z.infer<typeof approvedVercelSandboxImageV1Schema>
 
-export interface VercelSandboxWorkspacePlan {
-  readonly provider: 'vercel_sandbox'
-  readonly correlationId: string
-  readonly sdkVersion: typeof SDK_VERSION
-  readonly profileDigest: string
-  readonly create: VercelSandboxCreateRequest
-  readonly expected: {
-    readonly image: string
-    readonly vcpus: number
-    readonly memoryMiB: number
-    readonly persistent: false
-    readonly networkPolicy: NetworkPolicy
-  }
-}
+const plannedNetworkPolicySchema = z.union([
+  z.literal('deny-all'),
+  z.object({ allow: z.array(z.string().trim().min(1).max(253)).min(1).max(40) }).strict(),
+])
+
+export const vercelSandboxWorkspacePlanSchema = z
+  .object({
+    provider: z.literal('vercel_sandbox'),
+    correlationId: z.uuid(),
+    sdkVersion: z.literal(SDK_VERSION),
+    profileDigest: z.string().regex(/^[a-f0-9]{64}$/u),
+    create: z
+      .object({
+        name: z.string().regex(/^awp-[a-f0-9]{32}$/u),
+        image: z.string().trim().min(1).max(1_000),
+        resources: z
+          .object({
+            vcpus: z
+              .number()
+              .int()
+              .refine((value) => SUPPORTED_VCPUS.has(value)),
+          })
+          .strict(),
+        timeout: z.number().int().min(100).max(3_600_000),
+        networkPolicy: plannedNetworkPolicySchema,
+        persistent: z.literal(false),
+        ports: z.tuple([]),
+        tags: z.record(z.string().min(1).max(64), z.string().max(256)),
+      })
+      .strict(),
+    expected: z
+      .object({
+        image: z.string().trim().min(1).max(1_000),
+        vcpus: z
+          .number()
+          .int()
+          .refine((value) => SUPPORTED_VCPUS.has(value)),
+        memoryMiB: z.number().int().positive(),
+        persistent: z.literal(false),
+        networkPolicy: plannedNetworkPolicySchema,
+      })
+      .strict(),
+  })
+  .strict()
+
+export type VercelSandboxWorkspacePlan = z.infer<typeof vercelSandboxWorkspacePlanSchema>
 
 export function planVercelSandboxWorkspace(
   rawRequest: RunnerWorkspaceRequestV1,
@@ -121,7 +152,7 @@ export function planVercelSandboxWorkspace(
     .digest('hex')
     .slice(0, 32)}`
 
-  return {
+  return vercelSandboxWorkspacePlanSchema.parse({
     provider: 'vercel_sandbox',
     correlationId: request.context.correlationId,
     sdkVersion: SDK_VERSION,
@@ -146,7 +177,7 @@ export function planVercelSandboxWorkspace(
       persistent: false,
       networkPolicy,
     },
-  }
+  })
 }
 
 function assertApprovedImage(
@@ -171,7 +202,9 @@ function assertApprovedImage(
   }
 }
 
-function toNetworkPolicy(request: RunnerWorkspaceRequestV1): NetworkPolicy {
+function toNetworkPolicy(
+  request: RunnerWorkspaceRequestV1,
+): VercelSandboxCreateRequest['networkPolicy'] {
   if (request.profile.network.mode === 'denied') return 'deny-all'
   if (
     request.profile.network.destinations.some(({ ports }) => ports.some((port) => port !== 443))

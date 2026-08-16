@@ -83,6 +83,8 @@ describe('M08 runner lifecycle migration', () => {
       'runner_artifacts',
       'runner_commands',
       'runner_lifecycle_records',
+      'runner_provider_command_replays',
+      'runner_provider_sessions',
       'runner_workspaces',
     ])
     const columns = await database.query<{ column_name: string }>(`

@@ -7,6 +7,7 @@ export {
 export {
   planVercelSandboxWorkspace,
   approvedVercelSandboxImageV1Schema,
+  vercelSandboxWorkspacePlanSchema,
   type ApprovedVercelSandboxImageV1,
   type VercelSandboxWorkspacePlan,
 } from './workspace-plan.js'
