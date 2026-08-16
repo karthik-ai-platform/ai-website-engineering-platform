@@ -1,6 +1,6 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-16 12:47:01 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-16 13:03:54 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
 **Implementation commits:** `2d385f1` (`feat(M08): orchestrate approved runner lifecycle [codex]`) and `cb28fe6` (`refactor(M08): keep runner persistence in worker [codex]`); latest pushed checkpoint `b3e49e9`
@@ -29,7 +29,7 @@ M08 orchestration/persistence implementation `2d385f1`, worker-boundary correcti
 
 Documentation checkpoint `b3e49e9` is pushed; pull-request CI run 31930359565 and push CI run 31930357204 passed full validation and ephemeral PostgreSQL migration.
 
-M08 production-adapter foundation is locally validated and pending commit. ADR-019 selects Vercel Sandbox behind a separate `@platform/vercel-sandbox-runner` package with the GA SDK pinned to 3.0.0. A strict versioned approved-image manifest requires an exact SHA-256 image reference and attested hardening controls. Planning permits only non-persistent, zero-port, empty-environment sessions, provider-supported whole-vCPU/fixed-memory profiles, and deny-all or HTTPS-only domain allowlists. Creation verifies provider-reported immutable image, resources, timeout, persistence, status, expiry, and network policy, stopping and rejecting mismatches. No live sandbox was created and no production-isolation acceptance is claimed: a linked non-production Vercel project/OIDC context, published hardened image, immutable checkout, broker-enforced process/filesystem/disk controls, artifacts, worker integration, and live host-boundary suite remain required.
+M08 production-adapter foundation `757820c` is pushed. ADR-019 selects Vercel Sandbox behind a separate `@platform/vercel-sandbox-runner` package with the GA SDK pinned to 3.0.0. A strict versioned approved-image manifest requires an exact SHA-256 image reference and attested hardening controls. Planning permits only non-persistent, zero-port, empty-environment sessions, provider-supported whole-vCPU/fixed-memory profiles, and deny-all or HTTPS-only domain allowlists. Creation verifies provider-reported immutable image, resources, timeout, persistence, status, expiry, and network policy, stopping and rejecting mismatches. Pull-request CI run 31933994202/job 95133007721 and push CI run 31933992460/job 95133002939 passed full validation and ephemeral PostgreSQL migration. No live sandbox was created and no production-isolation acceptance is claimed: a linked non-production Vercel project/OIDC context, published hardened image, immutable checkout, broker-enforced process/filesystem/disk controls, artifacts, worker integration, and live host-boundary suite remain required.
 
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 

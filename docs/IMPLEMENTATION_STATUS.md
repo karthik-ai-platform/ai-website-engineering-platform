@@ -1,9 +1,9 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-16 12:47:01 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-16 13:03:54 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m08-isolated-runner`
-**Latest recorded checkpoint commit:** `b3e49e9` (`docs(M08): record orchestration CI checkpoint [codex]`)
+**Latest recorded checkpoint commit:** `757820c` (`feat(M08): add Vercel Sandbox adapter foundation [codex]`)
 **Pull request:** Draft PR [#8](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/8), stacked on completed M07
 **Vercel preview:** None; production deployment is not authorized
 
@@ -148,7 +148,7 @@
 - **Production-adapter foundation:** `@platform/vercel-sandbox-runner` pins the GA `@vercel/sandbox` 3.0.0 SDK behind its own package. A strict versioned approved-image manifest binds an exact SHA-256 image digest to the runner profile and image-hardening controls. The planner emits only non-persistent, zero-port, empty-environment sessions with supported vCPU/memory coupling and deny-all or HTTPS-only domain allowlisting. Session creation verifies provider-reported image, resources, timeout, persistence, status, expiry, and network policy; any mismatch triggers best-effort stop and a non-retryable validation failure.
 - **Architecture:** ADR-017 records the no-false-isolation boundary; ADR-018 records delayed authorization, service-only runner authority, safe evidence retention, and worker ownership; ADR-019 selects Vercel Sandbox for the first production adapter while keeping live acceptance pending. Real immutable checkout, a published hardened image, in-image process/filesystem/disk enforcement, artifact capture, durable dispatch integration, and the host-boundary security suite remain required before M08 completion.
 - **Validation:** post-boundary formatting/lint passed; typecheck and build passed 10/10 packages; unit 14 files / 75 tests; contract 7 files / 39 tests; integration 14 files / 51 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 6 files / 20 tests; browser/accessibility 4 tests; secret scan 178 files; dependency tree exited 0 with the documented optional/extraneous packages; approved-network high-threshold audit exited 0 with the unchanged four moderate `esbuild` advisories; `git diff --check` passed. One aggregate migration run had two uniform 10-second PGlite setup-hook timeouts while 18 tests passed; the no-file-parallelism rerun passed 20/20.
-- **GitHub/Vercel:** latest pushed checkpoint `b3e49e9` passed pull-request CI run 31930359565 and push CI run 31930357204. The adapter foundation remains local pending commit/push. No live Vercel Sandbox or production deployment was attempted.
+- **GitHub/Vercel:** adapter foundation `757820c` is pushed. Pull-request CI run 31933994202/job 95133007721 and push CI run 31933992460/job 95133002939 passed full validation and ephemeral PostgreSQL migration. Draft PR #8 is updated. No live Vercel Sandbox or production deployment was attempted.
 - **Adapter validation:** package typecheck passed; focused planner contract tests passed 5/5 and verified-session integration tests passed 2/2. Repository formatting and lint passed; typecheck and build passed 11/11 packages; unit 14 files / 75 tests; contract 8 files / 44 tests; integration 15 files / 53 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 6 files / 20 tests; browser/accessibility 4 tests; secret scan 187 files; dependency tree exit 0; high-threshold audit exit 0 with the unchanged four moderate `esbuild` advisories. The aggregate and incorrectly forwarded migration reruns reproduced known PGlite setup-hook timeouts; the correctly serialized command passed 20/20.
 - **Provider evidence boundary:** no live Vercel Sandbox was created. The checkout has no linked non-production Vercel project/OIDC context or published approved image digest, so provider isolation, checkout, artifact, and forbidden-host-resource acceptance remain unclaimed.
 - **Next task:** publish/build the approved hardened image and implement immutable checkout, command broker execution, enforced process/filesystem/disk limits, cancellation/cleanup, and digest artifact capture; then integrate the adapter through durable worker dispatch and run the live forbidden-host-resource acceptance suite without weakening the conformance boundary.
@@ -172,7 +172,7 @@
 | Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
 | Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
 | Browser/accessibility/visual tests   | `npm run test:browser` passed 4 Playwright tests, including M06 intake/review interaction and axe WCAG A/AA scans.                              |
-| GitHub CI                            | Latest pre-adapter checkpoint `b3e49e9`: PR run 31930359565 and push run 31930357204 passed; adapter remote CI pending.                         |
+| GitHub CI                            | Adapter `757820c`: PR run 31933994202/job 95133007721 and push run 31933992460/job 95133002939 passed full validation and PostgreSQL migration. |
 | Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
 
 ## Next checkpoint requirements
