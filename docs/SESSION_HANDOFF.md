@@ -1,9 +1,9 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-16 23:47:52 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-17 00:05:42 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
-**Implementation commits:** `2d385f1`, `cb28fe6`, `835e6d7`, `6e3d4e7`, `0f6ff8d`, `c0cb6d0`, `29842a3`, `281f08c`, `0770d49`, `a77fabe`, and benchmark `3485446`; latest pushed checkpoint `1f14088`
+**Implementation commits:** `2d385f1`, `cb28fe6`, `835e6d7`, `6e3d4e7`, `0f6ff8d`, `c0cb6d0`, `29842a3`, `281f08c`, `0770d49`, `a77fabe`, and benchmark `3485446`; latest pushed checkpoint `865379c`
 **Active milestone:** M08 Isolated runner - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06, M07
 
@@ -54,6 +54,8 @@ ADR-007 comparative benchmark revision 1 is committed at `3485446`. `docs/ADR_00
 Benchmark documentation checkpoint `6abd962` is pushed. Push run 31963152876/job 95204109659 and pull-request run 31963154691/job 95204114236 passed full validation and the ephemeral PostgreSQL migration at that exact head. Draft PR #8 remains open and unmerged.
 
 The 2026-08-16 external-readiness audit was read-only. Vercel CLI 56.4.1 is authenticated, but the repository has no repo/project link, no Vercel/Temporal/artifact environment-variable names, and no identifiable platform project in the accessible account. PR #8 and the matching issue search contain no provider approval. The current GitHub user token cannot enumerate App installations (`/user/installations` returned HTTP 403 because the token is not App-authorized), so installation absence is not claimed. No external resource or credential was changed. M08 cannot safely advance until an organization owner supplies the recorded approvals and non-production scopes.
+
+External-readiness checkpoint `865379c` is pushed. Push run 31964837803/job 95208301114 and pull-request run 31964840938/job 95208309092 passed full validation and the ephemeral PostgreSQL migration at that exact head. Draft PR #8 remains open and unmerged.
 
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 
