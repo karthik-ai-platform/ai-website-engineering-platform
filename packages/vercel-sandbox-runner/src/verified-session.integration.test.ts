@@ -46,6 +46,7 @@ function handle(overrides: Partial<VercelSandboxHandle> = {}) {
     status: 'running',
     expiresAt: new Date('2026-08-16T07:00:00.000Z'),
     networkPolicy: create.networkPolicy,
+    tags: create.tags,
     writeFiles: vi.fn(() => Promise.resolve()),
     runCommand: vi.fn(() => Promise.reject(new Error('Not used by session verification.'))),
     readFileToBuffer: vi.fn(() => Promise.resolve(null)),
@@ -57,7 +58,10 @@ function handle(overrides: Partial<VercelSandboxHandle> = {}) {
 describe('verified Vercel Sandbox session creation', () => {
   it('returns a provider session only after its immutable controls match the plan', async () => {
     const sandbox = handle()
-    const factory: VercelSandboxFactory = { create: vi.fn(() => Promise.resolve(sandbox)) }
+    const factory: VercelSandboxFactory = {
+      create: vi.fn(() => Promise.resolve(sandbox)),
+      get: vi.fn(() => Promise.resolve(sandbox)),
+    }
 
     await expect(createVerifiedVercelSandboxSession(plan, factory)).resolves.toBe(sandbox)
     expect(sandbox.stop).not.toHaveBeenCalled()
@@ -65,7 +69,10 @@ describe('verified Vercel Sandbox session creation', () => {
 
   it('stops and rejects a session whose provider evidence differs from the plan', async () => {
     const sandbox = handle({ image: 'team/runner:mutable' })
-    const factory: VercelSandboxFactory = { create: vi.fn(() => Promise.resolve(sandbox)) }
+    const factory: VercelSandboxFactory = {
+      create: vi.fn(() => Promise.resolve(sandbox)),
+      get: vi.fn(() => Promise.resolve(sandbox)),
+    }
 
     await expect(createVerifiedVercelSandboxSession(plan, factory)).rejects.toMatchObject({
       code: 'VALIDATION_FAILED',

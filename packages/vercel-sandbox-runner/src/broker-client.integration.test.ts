@@ -63,6 +63,7 @@ function handle(result: VercelSandboxCommandResult) {
     status: 'running',
     expiresAt: new Date('2026-08-16T10:00:00.000Z'),
     networkPolicy: 'deny-all',
+    tags: {},
     writeFiles,
     runCommand,
     readFileToBuffer: vi.fn(() => Promise.resolve(null)),

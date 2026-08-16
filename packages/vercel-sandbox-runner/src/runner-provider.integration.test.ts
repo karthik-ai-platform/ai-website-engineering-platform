@@ -10,7 +10,11 @@ import type { ArtifactStorePort, RunnerCheckoutBundleSourcePort } from '@platfor
 import { describe, expect, it, vi } from 'vitest'
 
 import { VERCEL_RUNNER_IMAGE_SPEC_V1, vercelRunnerImageSpecDigest } from './image-policy.js'
-import { MemoryVercelRunnerSessionStore, VercelSandboxRunnerProvider } from './runner-provider.js'
+import {
+  VercelSandboxRunnerProvider,
+  type VercelRunnerSession,
+  type VercelRunnerSessionStore,
+} from './runner-provider.js'
 import type {
   VercelSandboxCommandResult,
   VercelSandboxCreateRequest,
@@ -92,6 +96,31 @@ const approvedImage: ApprovedVercelSandboxImageV1 = {
   },
 }
 
+class FixtureSessionStore implements VercelRunnerSessionStore {
+  session: VercelRunnerSession | undefined
+
+  findByProvisionKey(provisionKey: string) {
+    return Promise.resolve(this.session?.provisionKey === provisionKey ? this.session : undefined)
+  }
+
+  findByWorkspaceId(workspaceId: string) {
+    return Promise.resolve(this.session?.workspace.id === workspaceId ? this.session : undefined)
+  }
+
+  save(session: VercelRunnerSession) {
+    this.session = session
+    return Promise.resolve()
+  }
+
+  dropTransientHandle() {
+    if (this.session !== undefined) {
+      const recovered = { ...this.session }
+      delete recovered.handle
+      this.session = recovered
+    }
+  }
+}
+
 function bundle(): RunnerCheckoutBundleV1 {
   return {
     schemaVersion: '1',
@@ -112,6 +141,7 @@ function provider(
 ) {
   let runCommandCalls = 0
   let stopCalls = 0
+  let createdHandle: VercelSandboxHandle | undefined
   const createBundle = vi.fn<RunnerCheckoutBundleSourcePort['createBundle']>(() =>
     Promise.resolve(bundle()),
   )
@@ -178,6 +208,7 @@ function provider(
       status: 'running',
       expiresAt: new Date('2026-08-16T10:10:00.000Z'),
       networkPolicy: create.networkPolicy,
+      tags: { ...create.tags },
       writeFiles,
       runCommand,
       readFileToBuffer: vi.fn(() => Promise.resolve(readArtifactContent ?? null)),
@@ -186,9 +217,14 @@ function provider(
         return Promise.resolve(undefined)
       }),
     }
+    createdHandle = handle
     return Promise.resolve(handle)
   })
-  const factory: VercelSandboxFactory = { create: createSandbox }
+  const getSandbox = vi.fn<VercelSandboxFactory['get']>(() => {
+    if (createdHandle === undefined) return Promise.reject(new Error('No sandbox was created.'))
+    return Promise.resolve(createdHandle)
+  })
+  const factory: VercelSandboxFactory = { create: createSandbox, get: getSandbox }
   const artifactPut = vi.fn<ArtifactStorePort['put']>((_context, content, metadata) =>
     Promise.resolve({
       schemaVersion: '1',
@@ -199,22 +235,29 @@ function provider(
   )
   const artifactStore: ArtifactStorePort | undefined =
     artifactContent === undefined ? undefined : { put: artifactPut }
-  const runner = new VercelSandboxRunnerProvider({
-    approvedImages: [approvedImage],
-    ...(artifactStore === undefined ? {} : { artifactStore }),
-    bundleSource: { createBundle },
-    clock: () => now,
-    factory,
-    idFactory: () => id('9'),
-    sessions: new MemoryVercelRunnerSessionStore(),
-  })
+  const sessions = new FixtureSessionStore()
+  const createRunner = () =>
+    new VercelSandboxRunnerProvider({
+      approvedImages: [approvedImage],
+      ...(artifactStore === undefined ? {} : { artifactStore }),
+      bundleSource: { createBundle },
+      clock: () => now,
+      factory,
+      idFactory: () => id('9'),
+      sessions,
+    })
+  const runner = createRunner()
   return {
     runner,
     createBundle,
     createSandbox,
+    createRunner,
+    getSandbox,
+    currentHandle: () => createdHandle,
     runCommandCallCount: () => runCommandCalls,
     stopCallCount: () => stopCalls,
     artifactPut,
+    sessions,
   }
 }
 
@@ -291,6 +334,100 @@ describe('Vercel Sandbox RunnerProvider lifecycle', () => {
       }),
     ).rejects.toMatchObject({ code: 'AUTHORIZATION_DENIED' })
     expect(fixture.stopCallCount()).toBe(0)
+  })
+
+  it('reconnects and re-verifies a running sandbox after transient process state is lost', async () => {
+    const fixture = provider()
+    const workspace = await fixture.runner.provision(request)
+    fixture.sessions.dropTransientHandle()
+    const recoveredRunner = fixture.createRunner()
+
+    await expect(
+      recoveredRunner.execute({
+        schemaVersion: '1',
+        context: { ...request.context, idempotencyKey: 'execute-recovered-1' },
+        id: id('14'),
+        workspaceId: workspace.id,
+        runId: workspace.runId,
+        baseCommit,
+        profileDigest: workspace.profileDigest,
+        tool: 'npm-test',
+        executable: 'npm',
+        arguments: ['test'],
+        workingDirectory: '.',
+        timeoutMs: 60_000,
+        expectedArtifacts: [],
+      }),
+    ).resolves.toMatchObject({ status: 'succeeded', executionKind: 'isolated_runtime' })
+    expect(fixture.getSandbox).toHaveBeenCalledOnce()
+    const recoveryRequest = fixture.getSandbox.mock.calls[0]?.[0]
+    expect(recoveryRequest?.name).toMatch(/^awp-[a-f0-9]{32}$/u)
+    expect(recoveryRequest?.resume).toBe(true)
+    expect(fixture.createSandbox).toHaveBeenCalledOnce()
+  })
+
+  it('stops and destroys a recovered sandbox whose immutable evidence changed', async () => {
+    const fixture = provider()
+    const workspace = await fixture.runner.provision(request)
+    const created = fixture.currentHandle()
+    if (created === undefined) throw new Error('Fixture sandbox was not created.')
+    fixture.sessions.dropTransientHandle()
+    fixture.getSandbox.mockResolvedValue({ ...created, image: 'team/runner:mutable' })
+
+    await expect(
+      fixture.createRunner().execute({
+        schemaVersion: '1',
+        context: { ...request.context, idempotencyKey: 'execute-recovered-2' },
+        id: id('15'),
+        workspaceId: workspace.id,
+        runId: workspace.runId,
+        baseCommit,
+        profileDigest: workspace.profileDigest,
+        tool: 'npm-test',
+        executable: 'npm',
+        arguments: ['test'],
+        workingDirectory: '.',
+        timeoutMs: 60_000,
+        expectedArtifacts: [],
+      }),
+    ).rejects.toMatchObject({ code: 'VALIDATION_FAILED', retryable: false })
+    expect(fixture.stopCallCount()).toBeGreaterThanOrEqual(1)
+    expect(fixture.sessions.session?.workspace.state).toBe('destroyed')
+  })
+
+  it('rejects tampered recovery metadata before provider lookup', async () => {
+    const fixture = provider()
+    const workspace = await fixture.runner.provision(request)
+    const stored = fixture.sessions.session
+    if (stored === undefined) throw new Error('Fixture session was not stored.')
+    const tampered: VercelRunnerSession = {
+      ...stored,
+      plan: {
+        ...stored.plan,
+        create: { ...stored.plan.create, name: 'awp-' + '0'.repeat(32) },
+      },
+    }
+    delete tampered.handle
+    fixture.sessions.session = tampered
+
+    await expect(
+      fixture.createRunner().execute({
+        schemaVersion: '1',
+        context: { ...request.context, idempotencyKey: 'execute-recovered-3' },
+        id: id('16'),
+        workspaceId: workspace.id,
+        runId: workspace.runId,
+        baseCommit,
+        profileDigest: workspace.profileDigest,
+        tool: 'npm-test',
+        executable: 'npm',
+        arguments: ['test'],
+        workingDirectory: '.',
+        timeoutMs: 60_000,
+        expectedArtifacts: [],
+      }),
+    ).rejects.toMatchObject({ code: 'VALIDATION_FAILED', retryable: false })
+    expect(fixture.getSandbox).not.toHaveBeenCalled()
   })
 
   it('fails closed before command staging when artifact capture is not composed', async () => {

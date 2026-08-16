@@ -10,7 +10,10 @@ export {
   type ApprovedVercelSandboxImageV1,
   type VercelSandboxWorkspacePlan,
 } from './workspace-plan.js'
-export { createVerifiedVercelSandboxSession } from './verified-session.js'
+export {
+  createVerifiedVercelSandboxSession,
+  verifyVercelSandboxSession,
+} from './verified-session.js'
 export {
   runnerBrokerCheckoutRequestV1Schema,
   runnerBrokerExecuteRequestV1Schema,

@@ -8,6 +8,7 @@ import {
   runnerCleanupRequestV1Schema,
   runnerExecutionCommandV1Schema,
   runnerExecutionResultV1Schema,
+  runnerIsolationProfileV1Schema,
   runnerLifecycleResultV1Schema,
   runnerWorkspaceRequestV1Schema,
   runnerWorkspaceV1Schema,
@@ -21,6 +22,7 @@ import {
 import {
   evaluateRunnerCommand,
   PlatformError,
+  runnerProfileDigest,
   type ArtifactStorePort,
   type RunnerCheckoutBundleSourcePort,
   type RunnerProviderPort,
@@ -30,8 +32,15 @@ import { VercelSandboxBrokerClient, type VercelBrokerExecutionInput } from './br
 import type { RunnerBrokerExecuteResultV1 } from './broker-protocol.js'
 import { VERCEL_RUNNER_IMAGE_SPEC_V1 } from './image-policy.js'
 import type { VercelSandboxFactory, VercelSandboxHandle } from './sdk-client.js'
-import { createVerifiedVercelSandboxSession } from './verified-session.js'
-import { planVercelSandboxWorkspace, type ApprovedVercelSandboxImageV1 } from './workspace-plan.js'
+import {
+  createVerifiedVercelSandboxSession,
+  verifyVercelSandboxSession,
+} from './verified-session.js'
+import {
+  planVercelSandboxWorkspace,
+  type ApprovedVercelSandboxImageV1,
+  type VercelSandboxWorkspacePlan,
+} from './workspace-plan.js'
 
 interface StoredCommand {
   readonly fingerprint: string
@@ -47,7 +56,8 @@ interface ActiveCommand {
 export interface VercelRunnerSession {
   readonly provisionKey: string
   readonly requestFingerprint: string
-  readonly handle: VercelSandboxHandle
+  handle?: VercelSandboxHandle
+  readonly plan: VercelSandboxWorkspacePlan
   readonly profile: RunnerIsolationProfileV1
   workspace: RunnerWorkspaceV1
   readonly commands: Map<string, StoredCommand>
@@ -55,8 +65,8 @@ export interface VercelRunnerSession {
 }
 
 /**
- * The store owns live SDK handles. A production worker must supply a recoverable
- * implementation before durable dispatch is claimed.
+ * The store owns credential-free recovery metadata and may omit transient SDK
+ * handles when records cross a process boundary.
  */
 export interface VercelRunnerSessionStore {
   findByProvisionKey(provisionKey: string): Promise<VercelRunnerSession | undefined>
@@ -243,6 +253,7 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
         provisionKey,
         requestFingerprint,
         handle,
+        plan,
         profile: request.profile,
         workspace,
         commands: new Map(),
@@ -309,10 +320,33 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
 
     const controller = new AbortController()
     const startedAt = this.#clock()
+    const handle = await this.#requireHandle(session, command.context.correlationId)
+    const recoveredExisting = session.commands.get(command.id)
+    if (recoveredExisting !== undefined) {
+      if (recoveredExisting.fingerprint !== fingerprint) {
+        throw this.#error(
+          command.context.correlationId,
+          'CONFLICT',
+          'The runner command identifier belongs to a different request.',
+        )
+      }
+      return recoveredExisting.result
+    }
+    const recoveredActive = session.activeCommands.get(command.id)
+    if (recoveredActive !== undefined) {
+      if (recoveredActive.fingerprint !== fingerprint) {
+        throw this.#error(
+          command.context.correlationId,
+          'CONFLICT',
+          'The active runner command identifier belongs to a different request.',
+        )
+      }
+      return recoveredActive.result
+    }
     const operation = (async () => {
       try {
         const broker = await this.#broker.execute(
-          session.handle,
+          handle,
           {
             workspace: session.workspace,
             profile: session.profile,
@@ -323,14 +357,14 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
         const completedAt = this.#clock()
         const artifacts =
           broker.status === 'succeeded'
-            ? await this.#captureArtifacts(session, command, broker, controller.signal)
+            ? await this.#captureArtifacts(session, handle, command, broker, controller.signal)
             : []
         const result = mapExecutionResult(command, broker, artifacts, startedAt, completedAt)
         session.commands.set(command.id, { fingerprint, result })
         await this.#sessions.save(session)
         return result
       } catch (cause) {
-        await safeStop(session.handle)
+        await safeStop(handle)
         session.workspace = { ...session.workspace, state: 'destroyed' }
         await this.#sessions.save(session).catch(() => undefined)
         if (cause instanceof PlatformError) throw cause
@@ -371,7 +405,8 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
     if (!already) {
       for (const activeCommand of session.activeCommands.values())
         activeCommand.controller.abort(request.reason)
-      await this.#stopRequired(session.handle, request.context.correlationId)
+      const handle = await this.#requireHandle(session, request.context.correlationId)
+      await this.#stopRequired(handle, request.context.correlationId)
       session.workspace = { ...session.workspace, state: 'cancelled' }
       await this.#sessions.save(session)
     }
@@ -398,7 +433,8 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
       if (session.workspace.state !== 'cancelled') {
         for (const activeCommand of session.activeCommands.values())
           activeCommand.controller.abort('Workspace cleanup requested.')
-        await this.#stopRequired(session.handle, request.context.correlationId)
+        const handle = await this.#requireHandle(session, request.context.correlationId)
+        await this.#stopRequired(handle, request.context.correlationId)
       }
       session.workspace = { ...session.workspace, state: 'destroyed' }
       await this.#sessions.save(session)
@@ -432,6 +468,33 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
         'The workspace is unavailable in this tenant and run scope.',
       )
     }
+    try {
+      session.workspace = runnerWorkspaceV1Schema.parse(session.workspace)
+      const profile = runnerIsolationProfileV1Schema.parse(session.profile)
+      const expectedName = `awp-${session.provisionKey.slice(0, 32)}`
+      if (
+        runnerProfileDigest(profile) !== session.workspace.profileDigest ||
+        session.plan.profileDigest !== session.workspace.profileDigest ||
+        session.plan.create.name !== expectedName ||
+        session.plan.create.image !== profile.image.reference ||
+        session.plan.expected.image !== profile.image.reference ||
+        session.plan.create.timeout !== profile.resources.timeoutMs ||
+        session.plan.create.resources.vcpus !== profile.resources.cpuMillicores / 1000 ||
+        session.plan.expected.memoryMiB !== profile.resources.memoryMiB ||
+        session.plan.create.tags['profile'] !== session.workspace.profileDigest.slice(0, 24) ||
+        session.plan.create.tags['run'] !== session.workspace.runId.replaceAll('-', '').slice(0, 24)
+      ) {
+        throw new Error('Stored runner recovery metadata is not canonically bound.')
+      }
+    } catch (cause) {
+      throw this.#error(
+        correlationId,
+        'VALIDATION_FAILED',
+        'Stored runner recovery evidence is invalid.',
+        false,
+        cause,
+      )
+    }
     return session
   }
 
@@ -449,8 +512,49 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
     }
   }
 
+  async #requireHandle(session: VercelRunnerSession, correlationId: string) {
+    if (session.handle !== undefined) return session.handle
+    let handle: VercelSandboxHandle
+    try {
+      handle = await this.#factory.get({ name: session.plan.create.name, resume: true })
+    } catch (cause) {
+      throw this.#error(
+        correlationId,
+        'DEPENDENCY_UNAVAILABLE',
+        'The sandbox provider could not reconnect to the authorized workspace.',
+        true,
+        cause,
+      )
+    }
+    try {
+      const verified = await verifyVercelSandboxSession(handle, session.plan)
+      if (
+        verified.expiresAt?.toISOString() !== session.workspace.expiresAt ||
+        verified.expiresAt.getTime() <= this.#clock().getTime()
+      ) {
+        throw new Error('Recovered sandbox expiry does not match the authorized workspace.')
+      }
+      session.handle = verified
+      await this.#sessions.save(session)
+      return verified
+    } catch (cause) {
+      await safeStop(handle)
+      session.workspace = { ...session.workspace, state: 'destroyed' }
+      await this.#sessions.save(session).catch(() => undefined)
+      if (cause instanceof PlatformError) throw cause
+      throw this.#error(
+        correlationId,
+        'VALIDATION_FAILED',
+        'The recovered sandbox does not match the authorized workspace.',
+        false,
+        cause,
+      )
+    }
+  }
+
   async #captureArtifacts(
     session: VercelRunnerSession,
+    handle: VercelSandboxHandle,
     command: RunnerExecutionCommandV1,
     broker: RunnerBrokerExecuteResultV1,
     signal: AbortSignal,
@@ -474,7 +578,7 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
     for (const [index, brokerArtifact] of brokerArtifacts.entries()) {
       const expected = command.expectedArtifacts[index]
       if (expected === undefined) throw new Error('Expected artifact metadata is missing.')
-      const content = await session.handle.readFileToBuffer(
+      const content = await handle.readFileToBuffer(
         { path: `${VERCEL_RUNNER_IMAGE_SPEC_V1.workspaceRoot}/${expected.path}` },
         { signal },
       )

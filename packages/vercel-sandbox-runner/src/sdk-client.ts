@@ -21,6 +21,7 @@ export interface VercelSandboxHandle {
   readonly status: string
   readonly expiresAt: Date | undefined
   readonly networkPolicy: NetworkPolicy | undefined
+  readonly tags: Record<string, string> | undefined
   writeFiles(
     files: Array<{ path: string; content: string | Uint8Array; mode?: number }>,
     options?: { signal?: AbortSignal },
@@ -50,6 +51,7 @@ export interface VercelSandboxCommandResult {
 
 export interface VercelSandboxFactory {
   create(request: VercelSandboxCreateRequest): Promise<VercelSandboxHandle>
+  get(request: { readonly name: string; readonly resume: true }): Promise<VercelSandboxHandle>
 }
 
 /** Live SDK boundary. Credentials are resolved by Vercel OIDC or its credential chain. */
@@ -66,5 +68,9 @@ export class SdkVercelSandboxFactory implements VercelSandboxFactory {
       tags: { ...request.tags },
       env: {},
     })
+  }
+
+  async get(request: { readonly name: string; readonly resume: true }) {
+    return Sandbox.get(request)
   }
 }

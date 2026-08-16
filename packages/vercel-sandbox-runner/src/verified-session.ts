@@ -8,6 +8,13 @@ export async function createVerifiedVercelSandboxSession(
   factory: VercelSandboxFactory,
 ): Promise<VercelSandboxHandle> {
   const handle = await factory.create(plan.create)
+  return verifyVercelSandboxSession(handle, plan)
+}
+
+export async function verifyVercelSandboxSession(
+  handle: VercelSandboxHandle,
+  plan: VercelSandboxWorkspacePlan,
+): Promise<VercelSandboxHandle> {
   const matches =
     handle.name === plan.create.name &&
     handle.image === plan.expected.image &&
@@ -17,7 +24,8 @@ export async function createVerifiedVercelSandboxSession(
     handle.persistent === plan.expected.persistent &&
     handle.status === 'running' &&
     handle.expiresAt !== undefined &&
-    JSON.stringify(handle.networkPolicy) === JSON.stringify(plan.expected.networkPolicy)
+    JSON.stringify(handle.networkPolicy) === JSON.stringify(plan.expected.networkPolicy) &&
+    JSON.stringify(handle.tags) === JSON.stringify(plan.create.tags)
 
   if (matches) return handle
 
