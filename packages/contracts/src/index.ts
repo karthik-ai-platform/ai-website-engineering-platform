@@ -35,6 +35,12 @@ export {
   type RunV1,
 } from './planning-policy-v1.js'
 export {
+  RUNNER_DISPATCH_ARTIFACT_MEDIA_TYPE,
+  RUNNER_DISPATCH_ARTIFACT_RETENTION_CLASS,
+  runnerDispatchEnvelopeV1Schema,
+  type RunnerDispatchEnvelopeV1,
+} from './runner-dispatch-v1.js'
+export {
   runnerAllowedCommandV1Schema,
   runnerArtifactEvidenceV1Schema,
   runnerBackendClassV1Schema,

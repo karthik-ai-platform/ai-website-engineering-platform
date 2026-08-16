@@ -67,6 +67,7 @@ export {
 } from './project-service.js'
 export {
   type AiCostControllerPort,
+  type ArtifactReaderPort,
   type ArtifactStorePort,
   type DeploymentProviderPort,
   type GitProviderPort,

@@ -52,6 +52,11 @@ export interface ArtifactStorePort {
   ): Promise<ArtifactReferenceV1>
 }
 
+/** Tenant-scoped access to protected artifact bytes. */
+export interface ArtifactReaderPort {
+  read(context: ProviderRequestContextV1, reference: ArtifactReferenceV1): Promise<Uint8Array>
+}
+
 export interface RunnerProviderPort {
   provision(request: RunnerWorkspaceRequestV1): Promise<RunnerWorkspaceV1>
   execute(command: RunnerExecutionCommandV1): Promise<RunnerExecutionResultV1>

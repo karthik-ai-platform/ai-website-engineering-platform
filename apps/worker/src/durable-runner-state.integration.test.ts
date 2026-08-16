@@ -11,17 +11,19 @@ import {
   workerDispatches,
   type PlatformDatabase,
 } from '@platform/database'
-import { PlatformError } from '@platform/domain'
+import { PlatformError, type RunnerProviderPort } from '@platform/domain'
 import {
   type VercelRunnerSession,
   type VercelSandboxWorkspacePlan,
 } from '@platform/vercel-sandbox-runner'
+import { eq } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/pglite'
 import { migrate } from 'drizzle-orm/pglite/migrator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { PostgresDurableDispatch } from './postgres-durable-dispatch.js'
 import { PostgresVercelRunnerSessionStore } from './postgres-vercel-runner-session-store.js'
+import { createRunnerDispatchRuntime } from './runner-dispatch-composition.js'
 
 const organizationId = id('800')
 const projectId = id('801')
@@ -176,6 +178,50 @@ describe('M08 durable runner state', () => {
     })
     const [attempt] = await database.select().from(workerDispatchAttempts)
     expect(attempt).toMatchObject({ outcome: 'lease_expired', workerId: 'lost-worker' })
+  })
+
+  it('wires the runtime pump and fails unapproved artifact metadata before provider access', async () => {
+    const enqueue = new PostgresDurableDispatch(database, { idFactory: () => id('825') })
+    const { dispatchId } = await enqueue.dispatch(
+      fixtureContext('dispatch-runtime-composition'),
+      fixtureReference('9'),
+    )
+    let artifactRead = false
+    let providerInvoked = false
+    const unavailable = () => {
+      providerInvoked = true
+      return Promise.reject(new Error('Provider must not be reached.'))
+    }
+    const runner: RunnerProviderPort = {
+      provision: unavailable,
+      execute: unavailable,
+      cancel: unavailable,
+      destroy: unavailable,
+    }
+    const runtime = createRunnerDispatchRuntime({
+      artifacts: {
+        read() {
+          artifactRead = true
+          return Promise.reject(new Error('Artifact store must not be reached.'))
+        },
+      },
+      database,
+      pollIntervalMs: 10,
+      runner,
+      workerId: 'worker-composed',
+    })
+    await runtime.start()
+    await waitForDispatchStatus(database, dispatchId, 'failed')
+    await runtime.stop()
+
+    expect(artifactRead).toBe(false)
+    expect(providerInvoked).toBe(false)
+    const [row] = await database.select().from(workerDispatches)
+    expect(row).toMatchObject({
+      status: 'failed',
+      attemptCount: 1,
+      lastFailureCode: 'VALIDATION_FAILED',
+    })
   })
 })
 
@@ -354,6 +400,23 @@ async function seedRun(database: PGlite) {
 
 function sequence(...values: string[]) {
   return () => values.shift()!
+}
+
+async function waitForDispatchStatus(
+  database: PlatformDatabase,
+  dispatchId: string,
+  status: 'failed',
+) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const [row] = await database
+      .select({ status: workerDispatches.status })
+      .from(workerDispatches)
+      .where(eq(workerDispatches.id, dispatchId))
+      .limit(1)
+    if (row?.status === status) return
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+  throw new Error(`Dispatch ${dispatchId} did not reach ${status}.`)
 }
 
 function id(seed: string) {
