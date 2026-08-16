@@ -1,9 +1,9 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-16 14:51:59 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-16 15:02:36 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
-**Implementation commits:** `2d385f1` (`feat(M08): orchestrate approved runner lifecycle [codex]`), `cb28fe6` (`refactor(M08): keep runner persistence in worker [codex]`), and `835e6d7` (`feat(M08): define hardened runner image broker [codex]`); latest pushed checkpoint `835e6d7`
+**Implementation commits:** `2d385f1` (`feat(M08): orchestrate approved runner lifecycle [codex]`), `cb28fe6` (`refactor(M08): keep runner persistence in worker [codex]`), and `835e6d7` (`feat(M08): define hardened runner image broker [codex]`); latest pushed checkpoint `46b9016`
 **Active milestone:** M08 Isolated runner - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06, M07
 
@@ -32,6 +32,8 @@ Documentation checkpoint `b3e49e9` is pushed; pull-request CI run 31930359565 an
 M08 production-adapter foundation `757820c` is pushed. ADR-019 selects Vercel Sandbox behind a separate `@platform/vercel-sandbox-runner` package with the GA SDK pinned to 3.0.0. A strict versioned approved-image manifest requires an exact SHA-256 image reference and attested hardening controls. Planning permits only non-persistent, zero-port, empty-environment sessions, provider-supported whole-vCPU/fixed-memory profiles, and deny-all or HTTPS-only domain allowlists. Creation verifies provider-reported immutable image, resources, timeout, persistence, status, expiry, and network policy, stopping and rejecting mismatches. Pull-request CI run 31933994202/job 95133007721 and push CI run 31933992460/job 95133002939 passed full validation and ephemeral PostgreSQL migration. No live sandbox was created and no production-isolation acceptance is claimed: a linked non-production Vercel project/OIDC context, published hardened image, immutable checkout, broker-enforced process/filesystem/disk controls, artifacts, worker integration, and live host-boundary suite remain required.
 
 M08 hardened image/broker definition `835e6d7` is pushed. It adds a base-image-index-digest-pinned OCI definition, canonical image specification digest `5039c6256a2e531a6e68ffa09ac862ced57551bd638996c101e12e61f4d9053d`, fixed absolute command paths, absent `sudo`, non-root UID/GID 10001 execution, strict checkout/execute/result schemas, Git-bundle digest verification, exact detached clean checkout evidence, fixed profile ceilings, install-script denial, process-group time/output/filesystem-limit termination, and output digests/counts without raw logs. The provider must explicitly start the fixed broker with privileged-command semantics; the broker then drops permanently before repository or command execution. This is a locally validated definition only: Docker is unavailable, the checkout is not Vercel-linked, no VCR image was built/pushed, and no live isolation claim is made. Vercel custom images/VCR are public beta and require organization approval.
+
+Documentation checkpoint `46b9016` is pushed. Pull-request CI run 31939133330/job 95145638982 and push CI run 31939130424/job 95145632003 passed full validation and ephemeral PostgreSQL migration at that exact head.
 
 Implementation `94d34b7` and checkpoint `8ee4b4a` remain historical M07 service/API evidence. Do not repeat that slice.
 

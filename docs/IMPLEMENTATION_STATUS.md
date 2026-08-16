@@ -1,9 +1,9 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-16 14:51:59 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-16 15:02:36 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m08-isolated-runner`
-**Latest recorded checkpoint commit:** `835e6d7` (`feat(M08): define hardened runner image broker [codex]`)
+**Latest recorded checkpoint commit:** `46b9016` (`docs(M08): record hardened broker checkpoint [codex]`)
 **Pull request:** Draft PR [#8](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/8), stacked on completed M07
 **Vercel preview:** None; production deployment is not authorized
 
@@ -149,7 +149,7 @@
 - **Hardened image/broker definition:** `835e6d7` adds a two-stage OCI definition pinned to the observed `node:22.16.0-bookworm-slim` image-index digest, a canonical reviewed image specification, fixed absolute `node`/`npm` command paths, no `sudo` binary, non-root UID/GID 10001 execution, and a strict versioned broker protocol. The provider-started privileged broker accepts only fixed-path mode-restricted staging files, verifies a Git bundle digest, checks out the exact detached commit with hooks and global/system Git configuration disabled, emits clean-tree evidence, enforces fixed profile ceilings and install-script denial, kills the command process group on time/output/filesystem violations, and returns only bounded-output digests/counts rather than raw logs. The image specification digest is `5039c6256a2e531a6e68ffa09ac862ced57551bd638996c101e12e61f4d9053d`.
 - **Architecture:** ADR-017 records the no-false-isolation boundary; ADR-018 records delayed authorization, service-only runner authority, safe evidence retention, and worker ownership; ADR-019 selects Vercel Sandbox for the first production adapter while keeping live acceptance pending. The immutable-checkout and command-broker definitions now exist, but a built/published digest, short-lived checkout credential transport, live provider verification of privileged invocation/process cleanup/filesystem/disk enforcement, artifact capture, durable dispatch integration, and the host-boundary security suite remain required before M08 completion.
 - **Validation:** post-boundary formatting/lint passed; typecheck and build passed 10/10 packages; unit 14 files / 75 tests; contract 7 files / 39 tests; integration 14 files / 51 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 6 files / 20 tests; browser/accessibility 4 tests; secret scan 178 files; dependency tree exited 0 with the documented optional/extraneous packages; approved-network high-threshold audit exited 0 with the unchanged four moderate `esbuild` advisories; `git diff --check` passed. One aggregate migration run had two uniform 10-second PGlite setup-hook timeouts while 18 tests passed; the no-file-parallelism rerun passed 20/20.
-- **GitHub/Vercel:** adapter foundation `757820c` is pushed. Pull-request CI run 31933994202/job 95133007721 and push CI run 31933992460/job 95133002939 passed full validation and ephemeral PostgreSQL migration. Draft PR #8 is updated. No live Vercel Sandbox or production deployment was attempted.
+- **GitHub/Vercel:** image/broker implementation `835e6d7` and documentation checkpoint `46b9016` are pushed. At `46b9016`, pull-request CI run 31939133330/job 95145638982 and push CI run 31939130424/job 95145632003 passed full validation and ephemeral PostgreSQL migration. Draft PR #8 is updated. No live Vercel Sandbox or production deployment was attempted.
 - **Adapter validation:** package typecheck passed; focused planner contract tests passed 5/5 and verified-session integration tests passed 2/2. Repository formatting and lint passed; typecheck and build passed 11/11 packages; unit 14 files / 75 tests; contract 8 files / 44 tests; integration 15 files / 53 tests with 1 file / 1 live PostgreSQL test skipped; serialized migration validation 6 files / 20 tests; browser/accessibility 4 tests; secret scan 187 files; dependency tree exit 0; high-threshold audit exit 0 with the unchanged four moderate `esbuild` advisories. The aggregate and incorrectly forwarded migration reruns reproduced known PGlite setup-hook timeouts; the correctly serialized command passed 20/20.
 - **Image/broker validation:** formatting and lint passed; typecheck and build passed 11/11 packages; unit 14 files / 75 tests; contract 9 files / 51 tests, including 12/12 focused image/planner/broker contracts; integration 15 files / 53 tests with 1 file / 1 live PostgreSQL test skipped; correctly serialized migration validation 6 files / 20 tests; browser/accessibility 4 tests; secret scan 194 files; dependency tree exit 0; high-threshold audit exit 0 with the unchanged four moderate `esbuild` advisories; `git diff --check` passed after the documented whitespace correction. The aggregate validation exceeded the local 129-second shell ceiling during integration, and an incorrectly forwarded migration attempt reproduced five known 10-second PGlite setup-hook timeouts while 15 tests passed; the individually rerun integration suite and direct serialized migration command passed completely.
 - **Provider evidence boundary:** no live Vercel Sandbox was created. The checkout has no linked non-production Vercel project/OIDC context or published approved image digest, so provider isolation, checkout, artifact, and forbidden-host-resource acceptance remain unclaimed.
@@ -157,25 +157,25 @@
 
 ## Validation ledger
 
-| Check                                | Outcome                                                                                                                                         |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| SRS extraction and visual inspection | Completed earlier for planning; PDF remains authoritative.                                                                                      |
-| Install                              | `npm ci` passed; npm reported 4 moderate vulnerabilities after clean install.                                                                   |
-| Dependency tree                      | `npm ls --omit=dev --all` exited 0 but reported extraneous WASM helper packages.                                                                |
-| Formatting                           | `npm run format:check` passed.                                                                                                                  |
-| Lint                                 | `npm run lint` passed; Next App Router pages-directory notice printed.                                                                          |
-| Type checking                        | M08 adapter: `npm run typecheck` passed 11/11 packages.                                                                                         |
-| Unit tests                           | M08 orchestration: 14 files / 75 tests passed.                                                                                                  |
-| Contract tests                       | M08 image/broker: 9 files / 51 tests passed; focused image/planner/broker contracts passed 12/12.                                               |
-| Integration tests                    | M08 adapter: 15 files / 53 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                           |
-| Database migration validation        | M08 serialized PGlite run passed 6 files / 20 tests; CI runs 31929973797 and 31929972885 applied migrations to ephemeral PostgreSQL.            |
-| Production build                     | M08 adapter: `npm run build` passed 11/11 packages.                                                                                             |
-| Secret scanning                      | M08 image/broker: `npm run security:secrets` passed; 194 text files scanned.                                                                    |
-| Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                     |
-| Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200. |
-| Browser/accessibility/visual tests   | `npm run test:browser` passed 4 Playwright tests, including M06 intake/review interaction and axe WCAG A/AA scans.                              |
-| GitHub CI                            | Adapter `757820c`: PR run 31933994202/job 95133007721 and push run 31933992460/job 95133002939 passed full validation and PostgreSQL migration. |
-| Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                           |
+| Check                                | Outcome                                                                                                                                                         |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SRS extraction and visual inspection | Completed earlier for planning; PDF remains authoritative.                                                                                                      |
+| Install                              | `npm ci` passed; npm reported 4 moderate vulnerabilities after clean install.                                                                                   |
+| Dependency tree                      | `npm ls --omit=dev --all` exited 0 but reported extraneous WASM helper packages.                                                                                |
+| Formatting                           | `npm run format:check` passed.                                                                                                                                  |
+| Lint                                 | `npm run lint` passed; Next App Router pages-directory notice printed.                                                                                          |
+| Type checking                        | M08 adapter: `npm run typecheck` passed 11/11 packages.                                                                                                         |
+| Unit tests                           | M08 orchestration: 14 files / 75 tests passed.                                                                                                                  |
+| Contract tests                       | M08 image/broker: 9 files / 51 tests passed; focused image/planner/broker contracts passed 12/12.                                                               |
+| Integration tests                    | M08 adapter: 15 files / 53 tests passed with 1 file / 1 live PostgreSQL test skipped.                                                                           |
+| Database migration validation        | M08 serialized PGlite run passed 6 files / 20 tests; CI runs 31929973797 and 31929972885 applied migrations to ephemeral PostgreSQL.                            |
+| Production build                     | M08 adapter: `npm run build` passed 11/11 packages.                                                                                                             |
+| Secret scanning                      | M08 image/broker: `npm run security:secrets` passed; 194 text files scanned.                                                                                    |
+| Dependency audit                     | `npm run security:deps` passed at high threshold; 4 moderate `esbuild` advisories remain via `drizzle-kit`.                                                     |
+| Runtime health                       | Passed: API `/health/live` 200, API `/health/ready` 200 with database check disabled locally, worker `/health/live` 200, web `/api/health` 200.                 |
+| Browser/accessibility/visual tests   | `npm run test:browser` passed 4 Playwright tests, including M06 intake/review interaction and axe WCAG A/AA scans.                                              |
+| GitHub CI                            | Image/broker checkpoint `46b9016`: PR run 31939133330/job 95145638982 and push run 31939130424/job 95145632003 passed full validation and PostgreSQL migration. |
+| Preview smoke test                   | Not run; Vercel project unlinked and M12 not reached.                                                                                                           |
 
 ## Next checkpoint requirements
 
