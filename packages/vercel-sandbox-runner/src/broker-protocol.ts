@@ -139,3 +139,5 @@ export type RunnerBrokerRequestV1 = z.infer<typeof runnerBrokerRequestV1Schema>
 export type RunnerBrokerCheckoutRequestV1 = z.infer<typeof runnerBrokerCheckoutRequestV1Schema>
 export type RunnerBrokerExecuteRequestV1 = z.infer<typeof runnerBrokerExecuteRequestV1Schema>
 export type RunnerBrokerResultV1 = z.infer<typeof runnerBrokerResultV1Schema>
+export type RunnerBrokerCheckoutResultV1 = z.infer<typeof runnerBrokerCheckoutResultV1Schema>
+export type RunnerBrokerExecuteResultV1 = z.infer<typeof runnerBrokerExecuteResultV1Schema>

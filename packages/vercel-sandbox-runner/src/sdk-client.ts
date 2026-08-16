@@ -21,7 +21,27 @@ export interface VercelSandboxHandle {
   readonly status: string
   readonly expiresAt: Date | undefined
   readonly networkPolicy: NetworkPolicy | undefined
-  stop(): Promise<unknown>
+  writeFiles(
+    files: Array<{ path: string; content: string | Uint8Array; mode?: number }>,
+    options?: { signal?: AbortSignal },
+  ): Promise<void>
+  runCommand(request: VercelSandboxRunCommandRequest): Promise<VercelSandboxCommandResult>
+  stop(options?: { signal?: AbortSignal }): Promise<unknown>
+}
+
+export interface VercelSandboxRunCommandRequest {
+  readonly cmd: string
+  readonly args: string[]
+  readonly env: Record<string, string>
+  readonly sudo: true
+  readonly timeoutMs: number
+  readonly signal?: AbortSignal
+}
+
+export interface VercelSandboxCommandResult {
+  readonly exitCode: number
+  stdout(options?: { signal?: AbortSignal }): Promise<string>
+  stderr(options?: { signal?: AbortSignal }): Promise<string>
 }
 
 export interface VercelSandboxFactory {

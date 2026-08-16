@@ -18,5 +18,15 @@ export {
   runnerBrokerResultV1Schema,
   type RunnerBrokerRequestV1,
   type RunnerBrokerResultV1,
+  type RunnerBrokerCheckoutResultV1,
+  type RunnerBrokerExecuteResultV1,
 } from './broker-protocol.js'
+export {
+  planVercelBrokerExecution,
+  vercelCheckoutBundleMetadataV1Schema,
+  VercelSandboxBrokerClient,
+  type VercelBrokerExecutionInput,
+  type VercelCheckoutBundleMetadataV1,
+  type VercelCheckoutBundleV1,
+} from './broker-client.js'
 export { VERCEL_RUNNER_IMAGE_SPEC_V1, vercelRunnerImageSpecDigest } from './image-policy.js'

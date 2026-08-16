@@ -46,6 +46,8 @@ function handle(overrides: Partial<VercelSandboxHandle> = {}) {
     status: 'running',
     expiresAt: new Date('2026-08-16T07:00:00.000Z'),
     networkPolicy: create.networkPolicy,
+    writeFiles: vi.fn(() => Promise.resolve()),
+    runCommand: vi.fn(() => Promise.reject(new Error('Not used by session verification.'))),
     stop: vi.fn(() => Promise.resolve(undefined)),
     ...overrides,
   } satisfies VercelSandboxHandle
