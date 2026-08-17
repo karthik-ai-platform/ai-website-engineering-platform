@@ -1,6 +1,9 @@
 # Vercel Sandbox runner image
 
-This directory defines the M08 custom OCI image. The definition is reviewable and locally type-checked, but this checkout has not built or published the image: Docker is unavailable and no approved non-production Vercel project/VCR namespace is linked.
+This directory defines the M08 custom OCI image. It is evaluation-only and may
+be published solely to the linked non-production project's `sandbox-benchmark`
+VCR repository. Never place environment files or credentials in the build
+context; the repository `.dockerignore` excludes them.
 
 ## Required build and publication gates
 

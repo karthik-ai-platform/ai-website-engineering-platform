@@ -777,6 +777,47 @@ export const runnerArtifacts = pgTable(
   ],
 )
 
+export const protectedArtifacts = pgTable(
+  'protected_artifacts',
+  {
+    artifactId: uuid('artifact_id').primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    runId: uuid('run_id').notNull(),
+    blobPath: text('blob_path').notNull(),
+    sha256: text('sha256').notNull(),
+    sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
+    mediaType: text('media_type').notNull(),
+    retentionClass: text('retention_class').notNull(),
+    deleteAfter: timestamp('delete_after', { mode: 'date', withTimezone: true }),
+    createdBy: text('created_by').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'date', withTimezone: true }),
+  },
+  (table) => [
+    unique('protected_artifacts_tenant_id_unique').on(
+      table.organizationId,
+      table.projectId,
+      table.artifactId,
+    ),
+    unique('protected_artifacts_blob_path_unique').on(table.blobPath),
+    foreignKey({
+      columns: [table.organizationId, table.projectId, table.runId],
+      foreignColumns: [runs.organizationId, runs.projectId, runs.id],
+      name: 'protected_artifacts_run_tenant_fk',
+    })
+      .onDelete('restrict')
+      .onUpdate('restrict'),
+    index('protected_artifacts_gc_idx').on(table.deleteAfter),
+    check('protected_artifacts_sha256_check', sql`${table.sha256} ~ '^[a-f0-9]{64}$'`),
+    check('protected_artifacts_size_check', sql`${table.sizeBytes} between 0 and 16777216`),
+    check(
+      'protected_artifacts_retention_check',
+      sql`${table.retentionClass} in ('ephemeral', 'benchmark', 'standard', 'pinned') AND ((${table.retentionClass} = 'pinned') = (${table.deleteAfter} IS NULL))`,
+    ),
+  ],
+)
+
 export const runnerLifecycleRecords = pgTable(
   'runner_lifecycle_records',
   {
@@ -1099,6 +1140,7 @@ export type ApprovalRow = typeof approvals.$inferSelect
 export type RunnerWorkspaceRow = typeof runnerWorkspaces.$inferSelect
 export type RunnerCommandRow = typeof runnerCommands.$inferSelect
 export type RunnerArtifactRow = typeof runnerArtifacts.$inferSelect
+export type ProtectedArtifactRow = typeof protectedArtifacts.$inferSelect
 export type RunnerLifecycleRecordRow = typeof runnerLifecycleRecords.$inferSelect
 export type RunnerProviderSessionRow = typeof runnerProviderSessions.$inferSelect
 export type RunnerProviderCommandReplayRow = typeof runnerProviderCommandReplays.$inferSelect

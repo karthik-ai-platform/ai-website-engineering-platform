@@ -1,9 +1,9 @@
 {
-  "name": "@platform/vercel-sandbox-runner",
+  "name": "@platform/vercel-blob-artifacts",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Vercel Sandbox production-isolation runner adapter",
+  "description": "Tenant-scoped protected artifact adapter for Vercel Private Blob",
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -12,13 +12,12 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "benchmark:live-image": "node --env-file-if-exists=../../.env.local --import tsx src/live-image-benchmark.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@platform/contracts": "*",
     "@platform/domain": "*",
-    "@vercel/sandbox": "3.0.0",
+    "@vercel/blob": "2.8.0",
     "zod": "4.4.3"
   },
   "devDependencies": {

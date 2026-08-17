@@ -1,5 +1,9 @@
 .git
 .github
+.env
+.env.*
+*.pem
+.vercel
 .next
 .turbo
 **/dist

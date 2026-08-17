@@ -48,7 +48,12 @@ export interface ArtifactStorePort {
   put(
     context: ProviderRequestContextV1,
     content: Uint8Array,
-    metadata: { readonly mediaType: string; readonly retentionClass: string },
+    metadata: {
+      readonly artifactId?: string
+      readonly mediaType: string
+      readonly retentionClass: string
+      readonly runId?: string
+    },
   ): Promise<ArtifactReferenceV1>
 }
 

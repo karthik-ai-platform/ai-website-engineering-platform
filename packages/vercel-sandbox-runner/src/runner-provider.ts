@@ -626,8 +626,10 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
       }
       const reference = artifactReferenceV1Schema.parse(
         await this.#artifactStore.put(command.context, content, {
+          artifactId: artifactId(command.id, expected.path),
           mediaType: expected.mediaType,
           retentionClass: expected.retentionClass,
+          runId: command.runId,
         }),
       )
       if (
@@ -664,6 +666,11 @@ export class VercelSandboxRunnerProvider implements RunnerProviderPort {
       ...(cause === undefined ? {} : { cause }),
     })
   }
+}
+
+function artifactId(commandId: string, path: string) {
+  const digest = createHash('sha256').update(`${commandId}:${path}`).digest('hex')
+  return `${digest.slice(0, 8)}-${digest.slice(8, 12)}-4${digest.slice(13, 16)}-8${digest.slice(17, 20)}-${digest.slice(20, 32)}`
 }
 
 function mapExecutionResult(

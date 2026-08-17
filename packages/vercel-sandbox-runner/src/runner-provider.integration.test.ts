@@ -502,7 +502,11 @@ describe('Vercel Sandbox RunnerProvider lifecycle', () => {
     expect(fixture.artifactPut).toHaveBeenCalledWith(
       expect.objectContaining({ organizationId: request.context.organizationId }),
       artifactContent,
-      { mediaType: 'text/plain', retentionClass: 'validation-log' },
+      expect.objectContaining({
+        mediaType: 'text/plain',
+        retentionClass: 'validation-log',
+        runId: request.runId,
+      }),
     )
   })
 

@@ -57,6 +57,13 @@
       "when": 1786892400000,
       "tag": "0008_m08_runner_dispatch",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787000400000,
+      "tag": "0009_m08_protected_artifacts",
+      "breakpoints": true
     }
   ]
 }
