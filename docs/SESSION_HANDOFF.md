@@ -1,11 +1,47 @@
 # Session Handoff
 
-**Checkpoint:** 2026-08-17 00:05:42 +05:30 (Asia/Calcutta)
+**Checkpoint:** 2026-08-18 02:40:00 +05:30 (Asia/Calcutta)
 **Repository:** `C:\Users\HP\Desktop\ai-website-engineering-platform`  
 **Branch:** `codex/m08-isolated-runner`
-**Implementation commits:** `2d385f1`, `cb28fe6`, `835e6d7`, `6e3d4e7`, `0f6ff8d`, `c0cb6d0`, `29842a3`, `281f08c`, `0770d49`, `a77fabe`, and benchmark `3485446`; latest pushed checkpoint `865379c`
+**Latest implementation commit:** `adf03ad`; Workflow benchmark commits `b2a2e63` and `e2f9fb1` are pushed on isolated branches
 **Active milestone:** M08 Isolated runner - in progress
 **Completed milestones:** M01, M02, M03, M04, M05, M06, M07
+
+## 2026-08-18 exact checkpoint
+
+Do not repeat the external-readiness audit or recreate infrastructure. The
+GitHub organization repository, App/installation, Vercel non-production project,
+Private Blob store, Temporal namespace, and VCR repository already exist.
+
+Main commit `adf03ad` adds the protected Private Blob artifact package and
+`0009` migration, Temporal SDK 1.22.0 benchmark worker/CLI/tests, raw-body GitHub
+webhook route, live Sandbox image benchmark script, and
+`docs/M08_DURABILITY_BENCHMARK_REPORT.md`. It passed the main repository gates:
+12/12 typecheck/build packages, 82 unit tests, 58 contract tests, 85 integration
+tests with one live PostgreSQL skip, 20 migration tests, four browser/accessibility
+tests, 233-file secret scan, and the high dependency threshold (four known
+moderate development advisories remain).
+
+Workflow stable commit `b2a2e6389adbef2914d3a08f83c8761907820876` and beta
+commit `e2f9fb1993187b66b9154dc98d77d3571445faed` are pushed and
+must remain unmerged. Both local Workflow suites passed 4/4 and builds 11/11.
+Guarded Preview basic runs completed on deployment suffixes `f5vqrvhb6` (stable)
+and `exhmk5ete` (beta). The Preview project is Vercel-auth protected and the
+benchmark APIs additionally require a sensitive Preview-only bearer token.
+
+VCR image `sandbox-benchmark@sha256:cfc9b64d4b5ccc2d7a88981157d19a7428825055bc37ff312a8dd40aa0fca67f`
+is private, linux/amd64 and 110.5 MB. Live startup/command/teardown evidence is
+1,041/717/2,384 ms with UID 10001, deny-all network, success exit 0 and forced
+failure exit 1.
+
+The only genuine external blocker is Temporal Cloud authentication: the local
+Preview pull returns an encrypted placeholder for `TEMPORAL_API_KEY`, and the
+Cloud endpoint rejects it as a malformed JWT. A human must replace the Vercel
+Preview variable with a real non-production Temporal Cloud API key. Never print
+or commit it. After that, run the live interruption/latency/cancellation/
+idempotency/cost matrix and a disposable PostgreSQL + live Private Blob composition.
+M08 remains in progress and ADR-007 remains deferred; no production winner is
+selected.
 
 ## Exact state
 

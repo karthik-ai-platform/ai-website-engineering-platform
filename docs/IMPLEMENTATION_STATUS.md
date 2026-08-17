@@ -1,11 +1,11 @@
 # Implementation Status
 
-**Status timestamp:** 2026-08-17 00:05:42 +05:30 (Asia/Calcutta)
+**Status timestamp:** 2026-08-18 02:40:00 +05:30 (Asia/Calcutta)
 **Authoritative specification:** `docs/product/AI_Website_Engineering_Platform_SRS_v1.1_AI_Cost_Controller.pdf`  
 **Working branch:** `codex/m08-isolated-runner`
-**Latest recorded checkpoint commit:** `865379c` (`docs(M08): record external readiness boundary [codex]`)
-**Pull request:** Draft PR [#8](https://github.com/karthik18mohan/ai-website-engineering-platform/pull/8), stacked on completed M07
-**Vercel preview:** None; production deployment is not authorized
+**Latest implementation checkpoint commit:** `adf03ad` (`feat(M08): add protected artifacts and durability evidence [codex]`)
+**Pull request:** Draft PR [#8](https://github.com/karthik-ai-platform/ai-website-engineering-platform/pull/8), stacked on completed M07
+**Vercel preview:** Workflow stable and beta benchmark Previews observed; production deployment remains unauthorized
 
 ## Milestone summary
 
@@ -203,3 +203,45 @@
 ## Next checkpoint requirements
 
 Build/publish the approved hardened runner image, compose live approved short-lived GitHub bundle acquisition, implement recoverable Sandbox session lookup and durable dispatch, and obtain live forbidden-host-resource plus artifact-integrity acceptance evidence without representing the conformance fixture or mocked provider session as production isolation. Never merge PR #8 autonomously.
+
+## M08 external evaluation checkpoint - 2026-08-18
+
+- **Status:** M08 remains in progress. Commit `adf03ad` is locally validated;
+  production selection, production deployment, and production activation remain
+  prohibited.
+- **Protected artifacts:** added the tenant/project/run-scoped Vercel Private
+  Blob adapter, SHA-256 read verification, 16 MiB and MIME limits, retention and
+  deletion/GC behavior, PostgreSQL metadata migration `0009`, and denial/integrity/
+  retention tests. Runner artifact writes now supply run and artifact identity.
+- **Temporal:** pinned official Node SDK `1.22.0` in `apps/worker`; added isolated
+  workflows, activities, deterministic workflow IDs, worker lifecycle, CLI and
+  time-skipping integration coverage for basic, retry/recovery, sleep, approval,
+  parallel, permanent failure, replay/payload and cancellation. The configured
+  Cloud endpoint was reached, but the Preview secret pulled locally is an
+  encrypted placeholder and was rejected as a malformed JWT. Live Cloud evidence
+  is therefore **blocked**, not skipped or passed.
+- **Workflow:** isolated commits `b2a2e63` (`4.8.3`) and `e2f9fb1`
+  (`5.0.0-beta.42`) are pushed on their benchmark branches and remain unmerged.
+  Both local suites passed 1 file / 4 tests and dependency-aware 11/11 builds.
+  Guarded basic runs completed on READY Preview deployments `f5vqrvhb6` and
+  `exhmk5ete`; SDK 5 remains beta/non-production.
+- **Sandbox/VCR:** private VCR repository `sandbox-benchmark` is verified. Image
+  digest `sha256:cfc9b64d4b5ccc2d7a88981157d19a7428825055bc37ff312a8dd40aa0fca67f`
+  is linux/amd64 and 110.5 MB. Build/push took 88.692 s. A deny-all-network live
+  Sandbox passed UID 10001 success/failure checks (startup 1,041 ms, command
+  717 ms, teardown 2,384 ms). `.dockerignore` now excludes all env and PEM files.
+- **GitHub:** read-only API evidence confirms repository ID `1303930605`, private
+  organization ownership, App ID `4626913`, selected-repository installation ID
+  `154456584`, Push-only subscription, Contents/Metadata read permissions and no
+  Pull requests permission. The API now exposes the raw-body signature-verified
+  webhook handler and uses current `installation_repositories` events.
+- **Validation:** typecheck/build 12/12 packages; unit 15 files / 82 tests;
+  contract 11 / 58; integration 22 / 85 with one live PostgreSQL file/test
+  skipped; migration compatibility 6 / 20; browser/accessibility 4; secret scan
+  233 files; dependency high-threshold gate passed with the known four moderate
+  development `esbuild` advisories. See `docs/M08_DURABILITY_BENCHMARK_REPORT.md`.
+- **Remaining external/manual gate:** replace `TEMPORAL_API_KEY` in Preview with
+  a real non-production Temporal Cloud key, then run the common live interruption,
+  latency, cancellation, idempotency and cost matrix. Compose a disposable
+  PostgreSQL benchmark run with the live Private Blob adapter. Do not select a
+  production engine or merge either Workflow benchmark branch.

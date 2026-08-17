@@ -249,6 +249,41 @@ Status values: **Accepted**, **Proposed**, **Deferred**, **Superseded**, **Rejec
 - **Alternatives considered:** Storing command JSON or argv in the queue; trusting artifact URI metadata without reading and hashing bytes; parsing an unversioned command union; permitting human actors in delayed runner artifacts; trusting the actor/request snapshot without current orchestration authorization; converting every artifact-store exception into a retryable failure; enabling a filesystem or memory fallback in the server; allowing artifact/provider-specific code into domain orchestration.
 - **Consequences:** Local tests prove service-only schema enforcement, tenant-scoped reads, metadata/digest/context substitution rejection, actor-expiry denial, preservation of explicit typed retryability, and runtime-pump rejection before artifact/provider access. The server has no silent execution fallback: setting `WORKER_RUNNER_DISPATCH_ENABLED=true` without injected protected artifact and isolated-runner providers stops startup. This completes the local command-resolution and handler composition seam, not live activation or production isolation. M08 still requires an approved protected artifact read/write adapter, concrete GitHub bundle client, published image digest, provider dependencies supplied to the server composition, the ADR-007 production durability decision, and organization-approved live security/recovery evidence.
 
+## ADR-025 - M08 non-production durability and artifact evaluation boundary
+
+- **Status:** Accepted for non-production evaluation; production engine selection deferred
+- **Date:** 2026-08-18
+- **Milestone:** M08
+- **Context:** Approved external infrastructure now exists for Vercel Workflow,
+  Temporal Cloud, Vercel Private Blob, a project-scoped VCR repository and Vercel
+  Sandbox. The evaluation must produce comparable evidence without allowing beta
+  Workflow code, benchmark APIs, provider credentials, raw storage URLs or an
+  incomplete benchmark to become production authority.
+- **Decision:** Keep Workflow `4.8.3` and `5.0.0-beta.42` on isolated benchmark
+  branches, guard all benchmark routes with both Preview-only environment checks
+  and a sensitive bearer token, and never merge the beta branch into the main
+  application. Implement Temporal in the separately deployable worker using
+  official SDK `1.22.0`, deterministic workflow IDs and an isolated task queue.
+  Store artifacts privately behind a tenant/project/run-scoped application port,
+  verify SHA-256 and size on every read, expose only protected application
+  references, and retain immutable metadata plus a deletion mark. Publish Sandbox
+  images only to the private project VCR repository from a credential-free build
+  context and require an immutable image digest. Treat local official-runtime
+  tests and basic guarded Preview runs as evaluation evidence, not a production
+  selection. A malformed/placeholder Temporal credential is a blocker and must
+  never be bypassed or copied into code.
+- **Alternatives considered:** merging beta Workflow into the application;
+  declaring Vercel the winner from basic Preview success; using raw Blob URLs as
+  authorization; placing provider tokens in image build arguments; silently
+  substituting a local Temporal server for live Cloud acceptance; selecting an
+  engine before common interruption/cost evidence.
+- **Consequences:** Workflow stable and beta have reproducible local and Preview
+  evidence, Temporal has equivalent official time-skipping coverage, and the
+  custom Sandbox image has live non-production evidence. Temporal Cloud remains
+  blocked until a real Preview API key is supplied. ADR-007 remains deferred and
+  M08 remains in progress until the common live failure-injection, latency,
+  idempotency, cancellation, cost and provider-composition gates are observed.
+
 ## Open production decisions
 
 These are not blockers to contract-first/local implementation but must be resolved before their production acceptance gates:
