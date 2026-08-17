@@ -14,9 +14,11 @@
     "geist": "1.7.0",
     "next": "16.3.0",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "workflow": "5.0.0-beta.42"
   },
   "devDependencies": {
+    "@workflow/vitest": "5.0.0-beta.42",
     "@types/node": "22.20.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",

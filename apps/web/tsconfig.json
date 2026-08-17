@@ -4,11 +4,12 @@
     "incremental": true,
     "jsx": "preserve",
     "paths": {},
-    "plugins": [{ "name": "next" }]
+    "plugins": [{ "name": "next" }, { "name": "workflow" }]
   },
   "include": [
     "next-env.d.ts",
     "next.config.ts",
+    "vitest.workflow.config.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "src/**/*.ts",
